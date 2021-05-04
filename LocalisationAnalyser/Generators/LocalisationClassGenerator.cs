@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Immutable;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -24,7 +25,8 @@ namespace LocalisationAnalyser.Generators
 
         private readonly Workspace workspace;
         private readonly string className;
-        private readonly string filename;
+        private readonly IFileInfo classFile;
+        private readonly string targetNamespace;
 
         private ClassDeclarationSyntax? classSyntax;
 
@@ -33,12 +35,14 @@ namespace LocalisationAnalyser.Generators
         /// </summary>
         /// <param name="workspace">The generation workspace, used for code formatting.</param>
         /// <param name="className">The name of the class being localised.</param>
-        /// <param name="filename">The localisation class location.</param>
-        public LocalisationClassGenerator(Workspace workspace, string className, string filename)
+        /// <param name="classFile">The localisation class file.</param>
+        /// <param name="targetNamespace">The target namespace of the class file.</param>
+        public LocalisationClassGenerator(Workspace workspace, string className, IFileInfo classFile, string targetNamespace)
         {
             this.workspace = workspace;
             this.className = className;
-            this.filename = filename;
+            this.classFile = classFile;
+            this.targetNamespace = targetNamespace;
         }
 
         /// <summary>
@@ -46,9 +50,9 @@ namespace LocalisationAnalyser.Generators
         /// </summary>
         public async Task Open()
         {
-            if (File.Exists(filename))
+            if (classFile.Exists)
             {
-                var syntaxTree = CSharpSyntaxTree.ParseText(await File.ReadAllTextAsync(filename));
+                var syntaxTree = CSharpSyntaxTree.ParseText(await File.ReadAllTextAsync(classFile.FullName));
                 var syntaxRoot = await syntaxTree.GetRootAsync();
                 classSyntax = syntaxRoot.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().SingleOrDefault(c => c.Identifier.ToString() == className);
             }
@@ -73,7 +77,7 @@ namespace LocalisationAnalyser.Generators
             if (classSyntax == null)
                 throw new InvalidOperationException("Class not opened.");
 
-            await File.WriteAllTextAsync(filename, Formatter.Format(generateClassSyntax(), workspace).ToFullString());
+            await File.WriteAllTextAsync(classFile.FullName, Formatter.Format(generateClassSyntax(), workspace).ToFullString());
         }
 
         /// <summary>
@@ -108,7 +112,7 @@ namespace LocalisationAnalyser.Generators
         /// <returns>The syntax.</returns>
         private SyntaxNode generateClassSyntax()
             => SyntaxFactory.NamespaceDeclaration(
-                                SyntaxFactory.IdentifierName(localisation_namespace))
+                                SyntaxFactory.IdentifierName(targetNamespace))
                             .WithMembers(
                                 SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
                                     classSyntax!.WithMembers(
@@ -162,7 +166,7 @@ namespace LocalisationAnalyser.Generators
         /// Generates the syntax for the prefix constant.
         /// </summary>
         private MemberDeclarationSyntax generatePrefixSyntax()
-            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationClassTemplates.PREFIX_SIGNATURE, $"{localisation_namespace}.{classSyntax!.Identifier.ValueText}"))!;
+            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationClassTemplates.PREFIX_SIGNATURE, $"{targetNamespace}.{classSyntax!.Identifier.ValueText}"))!;
 
         /// <summary>
         /// Generates the syntax for the getKey() method.
