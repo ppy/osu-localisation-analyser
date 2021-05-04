@@ -34,15 +34,15 @@ namespace LocalisationAnalyser.Generators
         /// Creates a new localisation class generator.
         /// </summary>
         /// <param name="workspace">The generation workspace, used for code formatting.</param>
-        /// <param name="className">The name of the class being localised.</param>
         /// <param name="classFile">The localisation class file.</param>
-        /// <param name="targetNamespace">The target namespace of the class file.</param>
-        public LocalisationClassGenerator(Workspace workspace, string className, IFileInfo classFile, string targetNamespace)
+        /// <param name="classNamespace">The localisation class namespace.</param>
+        /// <param name="className">The localisation class name.</param>
+        public LocalisationClassGenerator(Workspace workspace, IFileInfo classFile, string classNamespace, string className)
         {
             this.workspace = workspace;
             this.className = className;
             this.classFile = classFile;
-            this.targetNamespace = targetNamespace;
+            this.targetNamespace = classNamespace;
         }
 
         /// <summary>
@@ -52,9 +52,12 @@ namespace LocalisationAnalyser.Generators
         {
             if (classFile.Exists)
             {
-                var syntaxTree = CSharpSyntaxTree.ParseText(await File.ReadAllTextAsync(classFile.FullName));
-                var syntaxRoot = await syntaxTree.GetRootAsync();
-                classSyntax = syntaxRoot.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().SingleOrDefault(c => c.Identifier.ToString() == className);
+                using (var sr = new StreamReader(classFile.OpenRead()))
+                {
+                    var syntaxTree = CSharpSyntaxTree.ParseText(await sr.ReadToEndAsync());
+                    var syntaxRoot = await syntaxTree.GetRootAsync();
+                    classSyntax = syntaxRoot.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().SingleOrDefault(c => c.Identifier.ToString() == className);
+                }
             }
 
             classSyntax ??= SyntaxFactory.ClassDeclaration(className)
@@ -77,7 +80,8 @@ namespace LocalisationAnalyser.Generators
             if (classSyntax == null)
                 throw new InvalidOperationException("Class not opened.");
 
-            await File.WriteAllTextAsync(classFile.FullName, Formatter.Format(generateClassSyntax(), workspace).ToFullString());
+            using (var sw = new StreamWriter(classFile.OpenWrite()))
+                await sw.WriteAsync(Formatter.Format(generateClassSyntax(), workspace).ToFullString());
         }
 
         /// <summary>
@@ -159,14 +163,14 @@ namespace LocalisationAnalyser.Generators
         private MemberAccessExpressionSyntax generateMemberAccessSyntax(LocalisationMember member)
             => SyntaxFactory.MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
-                SyntaxFactory.IdentifierName(classSyntax!.Identifier.ValueText),
+                SyntaxFactory.IdentifierName(className),
                 SyntaxFactory.IdentifierName(member.Name));
 
         /// <summary>
         /// Generates the syntax for the prefix constant.
         /// </summary>
         private MemberDeclarationSyntax generatePrefixSyntax()
-            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationClassTemplates.PREFIX_SIGNATURE, $"{targetNamespace}.{classSyntax!.Identifier.ValueText}"))!;
+            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationClassTemplates.PREFIX_SIGNATURE, $"{targetNamespace}.{className}"))!;
 
         /// <summary>
         /// Generates the syntax for the getKey() method.

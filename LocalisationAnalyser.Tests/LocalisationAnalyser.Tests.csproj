@@ -8,7 +8,14 @@
 
     <ItemGroup>
       <ProjectReference Include="..\LocalisationAnalyser.CodeFixes\LocalisationAnalyser.CodeFixes.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
-      <ProjectReference Include="..\LocalisationAnalyser\LocalisationAnalyser.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+      <ProjectReference Include="..\LocalisationAnalyser\LocalisationAnalyser.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
+      <PackageReference Include="System.IO.Abstractions" Version="13.2.31" />
+      <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="13.2.31" />
+      <PackageReference Include="xunit" Version="2.4.1" />
     </ItemGroup>
     
 
