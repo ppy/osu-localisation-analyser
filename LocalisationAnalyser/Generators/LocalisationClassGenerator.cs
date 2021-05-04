@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -21,6 +19,7 @@ namespace LocalisationAnalyser.Generators
         /// All members part of the class.
         /// </summary>
         public ImmutableArray<LocalisationMember> Members => members.ToImmutableArray();
+
         private readonly ImmutableArray<LocalisationMember>.Builder members = ImmutableArray.CreateBuilder<LocalisationMember>();
 
         private readonly Workspace workspace;
@@ -54,15 +53,12 @@ namespace LocalisationAnalyser.Generators
                 classSyntax = syntaxRoot.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().SingleOrDefault(c => c.Identifier.ToString() == className);
             }
 
-            if (classSyntax == null)
-            {
-                classSyntax = SyntaxFactory.ClassDeclaration(className)
-                                           .WithMembers(SyntaxFactory.List(new[]
-                                           {
-                                              generatePrefixSyntax(),
-                                              generateGetKeySyntax()
-                                           }));
-            }
+            classSyntax ??= SyntaxFactory.ClassDeclaration(className)
+                                         .WithMembers(SyntaxFactory.List(new[]
+                                         {
+                                             generatePrefixSyntax(),
+                                             generateGetKeySyntax()
+                                         }));
 
             var walker = new LocalisationClassWalker();
             classSyntax.Accept(walker);
@@ -112,14 +108,14 @@ namespace LocalisationAnalyser.Generators
         /// <returns>The syntax.</returns>
         private SyntaxNode generateClassSyntax()
             => SyntaxFactory.NamespaceDeclaration(
-                        SyntaxFactory.IdentifierName(localisation_namespace))
-                    .WithMembers(
-                        SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                            classSyntax!.WithMembers(
-                                SyntaxFactory.List<MemberDeclarationSyntax>(
-                                    Members.Select(m => m.Parameters.Length == 0 ? generatePropertySyntax(m) : generateMethodSyntax(m))
-                                        .Prepend(generatePrefixSyntax())
-                                        .Append(generateGetKeySyntax())))));
+                                SyntaxFactory.IdentifierName(localisation_namespace))
+                            .WithMembers(
+                                SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                                    classSyntax!.WithMembers(
+                                        SyntaxFactory.List(
+                                            Members.Select(m => m.Parameters.Length == 0 ? generatePropertySyntax(m) : generateMethodSyntax(m))
+                                                   .Prepend(generatePrefixSyntax())
+                                                   .Append(generateGetKeySyntax())))));
 
         /// <summary>
         /// Generates the syntax for a property member.
@@ -140,9 +136,9 @@ namespace LocalisationAnalyser.Generators
             var paramList = SyntaxFactory.ParameterList(
                 SyntaxFactory.SeparatedList(
                     member.Parameters.Select(param => SyntaxFactory.Parameter(
-                                                              SyntaxFactory.Identifier(param.Name))
-                                                          .WithType(
-                                                              SyntaxFactory.IdentifierName(param.Type)))));
+                                                                       SyntaxFactory.Identifier(param.Name))
+                                                                   .WithType(
+                                                                       SyntaxFactory.IdentifierName(param.Type)))));
 
             return SyntaxFactory.ParseMemberDeclaration(
                 string.Format(LocalisationClassTemplates.METHOD_SIGNATURE,

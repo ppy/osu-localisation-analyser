@@ -20,8 +20,8 @@ namespace LocalisationAnalyser.Generators
         /// <remarks>
         /// {0} : Value
         /// </remarks>
-        public readonly static string PREFIX_SIGNATURE = $@"
-private const string prefix = ""{{0}}"";";
+        public const string PREFIX_SIGNATURE = @"
+private const string prefix = ""{0}"";";
 
         /// <summary>
         /// The template signature for a localisation property.
@@ -32,7 +32,7 @@ private const string prefix = ""{{0}}"";";
         /// {2} : English text
         /// {3} : Xmldoc
         /// </remarks>
-        public readonly static string PROPERTY_SIGNATURE = $@"
+        public static readonly string PROPERTY_SIGNATURE = $@"
 /// <summary>
 /// ""{{3}}""
 /// </summary>
@@ -48,7 +48,7 @@ public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_
         /// {3} : English text
         /// {4} : Xmldoc
         /// </remarks>
-        public readonly static string METHOD_SIGNATURE = $@"
+        public static readonly string METHOD_SIGNATURE = $@"
 /// <summary>
 /// ""{{4}}""
 /// </summary>
@@ -57,7 +57,9 @@ public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}(
         /// <summary>
         /// The template signature for the 'getKey' method.
         /// </summary>
-        public readonly static string GET_KEY_SIGNATURE = $@"
+        // Todo: Ignore the extra newline here - somehow this format messes up R#.
+        public static readonly string GET_KEY_SIGNATURE =
+            $@"
 private static string {GET_KEY_METHOD_NAME}(string key) => $""{{prefix}}:{{key}}"";";
     }
 }

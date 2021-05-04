@@ -60,9 +60,9 @@ namespace LocalisationAnalyser.Generators
                 body = methodMember.ExpressionBody;
 
                 parameters = methodMember.ParameterList.Parameters
-                    .Where(p => p.Type != null)
-                    .Select(p => new LocalisationParameter(p.Type!.ToString(), p.Identifier.ValueText))
-                    .ToArray();
+                                         .Where(p => p.Type != null)
+                                         .Select(p => new LocalisationParameter(p.Type!.ToString(), p.Identifier.ValueText))
+                                         .ToArray();
             }
             else
                 return false;
