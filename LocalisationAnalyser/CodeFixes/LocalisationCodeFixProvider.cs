@@ -146,7 +146,7 @@ namespace LocalisationAnalyser.CodeFixes
             var generator = await createGenerator(project, nodeToReplace);
 
             var name = createMemberName(generator, text);
-            var key = char.ToUpper(name[0]) + name[1..];
+            var key = name.ToLowerInvariant();
 
             var memberAccess = generator.AddMember(new LocalisationMember(name, key, text, parameters.ToArray()));
             await generator.Save();
@@ -218,6 +218,8 @@ namespace LocalisationAnalyser.CodeFixes
         private static string createMemberName(LocalisationClassGenerator generator, string englishText)
         {
             var basePropertyName = new string(englishText.Where(char.IsLetter).Take(10).ToArray());
+            basePropertyName = char.ToUpperInvariant(basePropertyName[0]) + basePropertyName[1..];
+
             var finalPropertyName = basePropertyName;
             int propertyNameSuffix = 0;
 
