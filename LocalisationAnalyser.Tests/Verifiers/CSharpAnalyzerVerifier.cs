@@ -23,12 +23,12 @@ namespace LocalisationAnalyser.Tests.Verifiers
         public static DiagnosticResult Diagnostic(DiagnosticDescriptor descriptor)
             => CSharpAnalyzerVerifier<TAnalyzer, XUnitVerifier>.Diagnostic(descriptor);
 
-        public static async Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
+        public static async Task VerifyAnalyzerAsync(string[] sources, params DiagnosticResult[] expected)
         {
-            var test = new Test
-            {
-                TestCode = source,
-            };
+            var test = new Test();
+
+            foreach (var s in sources)
+                test.TestState.Sources.Add(s);
 
             test.ExpectedDiagnostics.AddRange(expected);
             await test.RunAsync(CancellationToken.None);

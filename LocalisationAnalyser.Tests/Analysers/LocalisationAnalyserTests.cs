@@ -6,14 +6,22 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
-using Verify = LocalisationAnalyser.Tests.Verifiers.CSharpCodeFixVerifier<LocalisationAnalyser.Analysers.LocalisationAnalyser, LocalisationAnalyser.Tests.CodeFixes.MockLocalisationCodeFixProvider>;
+using Verify = LocalisationAnalyser.Tests.Verifiers.CSharpAnalyzerVerifier<LocalisationAnalyser.Analysers.LocalisationAnalyser>;
 
-namespace LocalisationAnalyser.Tests.CodeFixes
+namespace LocalisationAnalyser.Tests.Analysers
 {
-    public class LocalisationCodeFixTests
+    public class LocalisationAnalyserTests
     {
+        private static int i = 5;
+        private static string x = $"{i}";
+
         [Theory]
         [InlineData("BasicString")]
+        [InlineData("EmptyString")]
+        [InlineData("InterpolatedString")]
+        [InlineData("NumericString")]
+        [InlineData("StringConcatenation")]
+        [InlineData("VerbatimString")]
         public async Task Check(string name)
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -25,12 +33,9 @@ namespace LocalisationAnalyser.Tests.CodeFixes
                 resourceNames.Single(n => n.Contains("TranslatableString.txt"))
             };
 
-            var sourceFiles = requiredFiles.Concat(resourceNames.Where(n => n.Contains($"CF_{name}_Source")));
-            var fixedFiles = requiredFiles.Concat(resourceNames.Where(n => n.Contains($"CF_{name}_Fixed")));
+            var sourceFiles = requiredFiles.Append(resourceNames.Single(n => n.Contains($"ANA_{name}")));
 
-            await Verify.VerifyCodeFixAsync(
-                sourceFiles.Select(f => readResourceStream(assembly, f)).ToArray(),
-                fixedFiles.Select(f => readResourceStream(assembly, f)).ToArray());
+            await Verify.VerifyAnalyzerAsync(sourceFiles.Select(f => readResourceStream(assembly, f)).ToArray());
         }
 
         private string readResourceStream(Assembly asm, string resource)

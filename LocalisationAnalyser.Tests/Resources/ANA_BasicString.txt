@@ -1,0 +1,15 @@
+namespace Test
+{
+    class Program
+    {
+        private static string y = [|"abc"|];
+        
+        static void Main()
+        {
+            string x = [|"abc"|];
+            method([|"abc"|]);
+        }
+        
+        private static void method(string input) { }
+    }
+}
