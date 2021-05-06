@@ -24,9 +24,9 @@ namespace LocalisationAnalyser.Generators
         private readonly ImmutableArray<LocalisationMember>.Builder members = ImmutableArray.CreateBuilder<LocalisationMember>();
 
         private readonly Workspace workspace;
-        private readonly string className;
         private readonly IFileInfo classFile;
-        private readonly string targetNamespace;
+        private readonly string classNamespace;
+        private readonly string className;
 
         private ClassDeclarationSyntax? classSyntax;
 
@@ -42,7 +42,7 @@ namespace LocalisationAnalyser.Generators
             this.workspace = workspace;
             this.className = className;
             this.classFile = classFile;
-            this.targetNamespace = classNamespace;
+            this.classNamespace = classNamespace;
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace LocalisationAnalyser.Generators
         /// <returns>The syntax.</returns>
         private SyntaxNode generateClassSyntax()
             => SyntaxFactory.NamespaceDeclaration(
-                                SyntaxFactory.IdentifierName(targetNamespace))
+                                SyntaxFactory.IdentifierName(classNamespace))
                             .WithMembers(
                                 SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
                                     classSyntax!.WithMembers(
@@ -176,7 +176,7 @@ namespace LocalisationAnalyser.Generators
         /// Generates the syntax for the prefix constant.
         /// </summary>
         private MemberDeclarationSyntax generatePrefixSyntax()
-            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationClassTemplates.PREFIX_SIGNATURE, $"{targetNamespace}.{className}"))!;
+            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationClassTemplates.PREFIX_SIGNATURE, $"{classNamespace}.{className}"))!;
 
         /// <summary>
         /// Generates the syntax for the getKey() method.

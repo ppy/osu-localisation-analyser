@@ -20,12 +20,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace LocalisationAnalyser.CodeFixes
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LocalisationAnalyserCodeFixProvider)), Shared]
-    public class LocalisationAnalyserCodeFixProvider : CodeFixProvider
+    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LocalisationCodeFixProvider)), Shared]
+    public class LocalisationCodeFixProvider : CodeFixProvider
     {
         private const string localisation_path = "LocalisationAnalyser.Tests/Localisation";
         private const string class_suffix = "Strings";
-        private static readonly string localisation_namespace = localisation_path.Replace('/', '.');
 
         public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(LocalisationAnalyser.DIAGNOSTIC_ID);
 
@@ -46,7 +45,7 @@ namespace LocalisationAnalyser.CodeFixes
                     CodeAction.Create(
                         $"Localise literal string {literal}",
                         c => localiseLiteralAsync(context.Document, literal, c),
-                        nameof(LocalisationAnalyserCodeFixProvider)),
+                        nameof(LocalisationCodeFixProvider)),
                     diagnostic);
             }
 
@@ -56,7 +55,7 @@ namespace LocalisationAnalyser.CodeFixes
                     CodeAction.Create(
                         $"Localise interpolated string {interpolated}",
                         c => localiseInterpolatedStringAsync(context.Document, interpolated, c),
-                        nameof(LocalisationAnalyserCodeFixProvider)),
+                        nameof(LocalisationCodeFixProvider)),
                     diagnostic);
             }
 
