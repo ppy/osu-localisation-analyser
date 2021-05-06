@@ -7,7 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\LocalisationAnalyser.CodeFixes\LocalisationAnalyser.CodeFixes.csproj" />
       <ProjectReference Include="..\LocalisationAnalyser\LocalisationAnalyser.csproj" />
     </ItemGroup>
 
