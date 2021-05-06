@@ -79,6 +79,7 @@ namespace LocalisationAnalyser.CodeFixes
             var formatString = new StringBuilder();
             var paramNames = new List<string>();
             var paramValues = new List<ExpressionSyntax>();
+            var paramTypes = new List<string>();
 
             int argCount = 0;
             int anonymousArgCount = 0;
@@ -97,6 +98,30 @@ namespace LocalisationAnalyser.CodeFixes
 
                     case InterpolationSyntax interpolation:
                         formatString.Append($"{{{argCount++}}}");
+
+                        var typeInfo = semanticModel.GetTypeInfo(interpolation.Expression, cancellationToken).Type;
+                        if (typeInfo == null)
+                            throw new InvalidOperationException("Couldn't determine the type of an interpolation expression.");
+
+                        paramTypes.Add(typeInfo.SpecialType switch
+                        {
+                            SpecialType.System_Object => "object",
+                            SpecialType.System_Boolean => "bool",
+                            SpecialType.System_Char => "char",
+                            SpecialType.System_SByte => "sbyte",
+                            SpecialType.System_Byte => "byte",
+                            SpecialType.System_Int16 => "short",
+                            SpecialType.System_UInt16 => "ushort",
+                            SpecialType.System_Int32 => "int",
+                            SpecialType.System_UInt32 => "uint",
+                            SpecialType.System_Int64 => "long",
+                            SpecialType.System_UInt64 => "ulong",
+                            SpecialType.System_Decimal => "decimal",
+                            SpecialType.System_Single => "float",
+                            SpecialType.System_Double => "double",
+                            SpecialType.System_String => "string",
+                            _ => typeInfo.Name
+                        });
 
                         if (interpolation.Expression is IdentifierNameSyntax identifier)
                         {
@@ -117,7 +142,7 @@ namespace LocalisationAnalyser.CodeFixes
                 }
             }
 
-            return await addMember(document, interpolated, formatString.ToString(), paramNames.Select(n => new LocalisationParameter("string", n)), paramValues, cancellationToken);
+            return await addMember(document, interpolated, formatString.ToString(), paramNames.Select((name, i) => new LocalisationParameter(paramTypes[i], name)), paramValues, cancellationToken);
         }
 
         private async Task<Solution> addMember(Document document, SyntaxNode nodeToReplace, string text, IEnumerable<LocalisationParameter> parameters, IEnumerable<ExpressionSyntax> parameterValues,
