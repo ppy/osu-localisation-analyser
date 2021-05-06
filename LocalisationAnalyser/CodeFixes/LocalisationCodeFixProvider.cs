@@ -146,7 +146,7 @@ namespace LocalisationAnalyser.CodeFixes
             var generator = await createGenerator(project, nodeToReplace);
 
             var name = createMemberName(generator, text);
-            var key = char.ToLower(name[0]) + name[1..];
+            var key = char.ToUpper(name[0]) + name[1..];
 
             var memberAccess = generator.AddMember(new LocalisationMember(name, key, text, parameters.ToArray()));
             await generator.Save();
