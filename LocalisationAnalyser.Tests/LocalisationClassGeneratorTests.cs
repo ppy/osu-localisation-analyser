@@ -74,6 +74,37 @@ namespace LocalisationAnalyser.Tests
         }
 
         [Fact]
+        public async Task CheckPropertyMemberIsReadCorrectly()
+        {
+            const string prop_name = "TestProperty";
+            const string key_name = "TestKey";
+            const string english_text = "TestEnglish";
+
+            setupFile($@"namespace {test_namespace}
+{{
+    class TestClass
+    {{
+        private const string prefix = ""{test_namespace}.{test_class_name}"";
+
+        /// <summary>
+        /// ""{english_text}""
+        /// </summary>
+        public static LocalisableString {prop_name} => new TranslatableString(getKey(""{key_name}""), ""{english_text}"");
+
+        private static string getKey(string key) => $""{{prefix}}:{{key}}"";
+    }}
+}}");
+
+            await generator.Open();
+
+            Assert.Single(generator.Members);
+            Assert.Equal(prop_name, generator.Members[0].Name);
+            Assert.Equal(key_name, generator.Members[0].Key);
+            Assert.Equal(english_text, generator.Members[0].EnglishText);
+            Assert.Empty(generator.Members[0].Parameters);
+        }
+
+        [Fact]
         public async Task MethodIsGeneratedFromParameters()
         {
             const string method_name = "TestMethod";
@@ -97,6 +128,45 @@ namespace LocalisationAnalyser.Tests
 
             Assert.Equal(test_class_name, memberAccess.Expression.ToString());
             Assert.Equal(method_name, memberAccess.Name.ToString());
+        }
+
+        [Fact]
+        public async Task CheckMethodMemberIsReadCorrectly()
+        {
+            const string method_name = "TestMethod";
+            const string key_name = "TestKey";
+            const string english_text = "TestEnglish{0}{1}{2}";
+
+            var param1 = new LocalisationParameter("int", "first");
+            var param2 = new LocalisationParameter("string", "second");
+            var param3 = new LocalisationParameter("customobj", "third");
+
+            setupFile($@"namespace {test_namespace}
+{{
+    class TestClass
+    {{
+        private const string prefix = ""{test_namespace}.{test_class_name}"";
+
+        /// <summary>
+        /// ""{english_text}""
+        /// </summary>
+        public static LocalisableString {method_name}({param1.Type} {param1.Name}, {param2.Type} {param2.Name}, {param3.Type} {param3.Name}) => new TranslatableString(getKey(""{key_name}""), ""{english_text}"", {param1.Name}, {param2.Name}, {param3.Name});
+
+        private static string getKey(string key) => $""{{prefix}}:{{key}}"";
+    }}
+}}");
+
+            await generator.Open();
+
+            Assert.Single(generator.Members);
+            Assert.Equal(method_name, generator.Members[0].Name);
+            Assert.Equal(key_name, generator.Members[0].Key);
+            Assert.Equal(english_text, generator.Members[0].EnglishText);
+
+            Assert.Equal(3, generator.Members[0].Parameters.Length);
+            Assert.Equal(param1, generator.Members[0].Parameters[0]);
+            Assert.Equal(param2, generator.Members[0].Parameters[1]);
+            Assert.Equal(param3, generator.Members[0].Parameters[2]);
         }
 
         private void setupFile(string contents)
