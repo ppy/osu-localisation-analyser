@@ -55,6 +55,9 @@ namespace LocalisationAnalyser.Analysers
                     break;
 
                 case InterpolatedStringExpressionSyntax interpolated:
+                    if (interpolated.StringStartToken.Kind() == SyntaxKind.InterpolatedVerbatimStringStartToken)
+                        break;
+
                     if (interpolated.Contents.Any(c => c is InterpolatedStringTextSyntax text && text.TextToken.ValueText.Where(char.IsLetter).Any()))
                         context.ReportDiagnostic(Diagnostic.Create(rule, context.Node.GetLocation(), context.Node));
                     break;

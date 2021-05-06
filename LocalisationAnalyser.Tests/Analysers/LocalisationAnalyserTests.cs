@@ -19,6 +19,7 @@ namespace LocalisationAnalyser.Tests.Analysers
         [InlineData("NumericString")]
         [InlineData("StringConcatenation")]
         [InlineData("VerbatimString")]
+        [InlineData("VerbatimInterpolatedString")]
         public async Task Check(string name)
         {
             var assembly = Assembly.GetExecutingAssembly();
