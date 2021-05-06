@@ -45,6 +45,7 @@ namespace {test_namespace}
     public static class TestClass
     {{
         private const string prefix = ""{test_namespace}.{test_class_name}"";
+
         private static string getKey(string key) => $""{{prefix}}:{{key}}"";
     }}
 }}");
@@ -191,12 +192,12 @@ namespace {test_namespace}
 {{
     public static class {test_class_name}
     {{
-        private const string prefix = ""{test_namespace}.{test_class_name}"";");
+        private const string prefix = ""{test_namespace}.{test_class_name}"";
+");
 
             if (!string.IsNullOrEmpty(inner))
                 sb.Append(inner);
-            else
-                sb.AppendLine();
+            sb.AppendLine();
 
             sb.Append(@"        private static string getKey(string key) => $""{prefix}:{key}"";
     }
