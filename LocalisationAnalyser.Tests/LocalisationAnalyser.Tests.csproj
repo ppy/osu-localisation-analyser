@@ -7,11 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\LocalisationAnalyser.CodeFixes\LocalisationAnalyser.CodeFixes.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+      <ProjectReference Include="..\LocalisationAnalyser.CodeFixes\LocalisationAnalyser.CodeFixes.csproj" />
       <ProjectReference Include="..\LocalisationAnalyser\LocalisationAnalyser.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" Version="1.0.1-beta1.21256.1" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" Version="1.0.1-beta1.21256.1" />
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
       <PackageReference Include="System.IO.Abstractions" Version="13.2.31" />
       <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="13.2.31" />
