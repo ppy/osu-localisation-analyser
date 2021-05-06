@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
-using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
@@ -23,7 +22,7 @@ namespace LocalisationAnalyser.CodeFixes
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LocalisationCodeFixProvider)), Shared]
     public class LocalisationCodeFixProvider : CodeFixProvider
     {
-        private const string localisation_path = "LocalisationAnalyser.Tests/Localisation";
+        private const string localisation_path = "Localisation";
         private const string class_suffix = "Strings";
 
         public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(LocalisationAnalyser.DIAGNOSTIC_ID);
@@ -153,25 +152,25 @@ namespace LocalisationAnalyser.CodeFixes
             SyntaxNode? containingClass = sourceNode.Parent;
             while (containingClass != null && containingClass.Kind() != SyntaxKind.ClassDeclaration)
                 containingClass = containingClass.Parent;
-
             if (containingClass == null)
                 throw new InvalidOperationException("String is not within a class.");
 
-            // Create the syntax for the localisation document.
             var className = $"{((ClassDeclarationSyntax)containingClass).Identifier.Text}{class_suffix}";
 
-            var solutionDirectory = Path.GetDirectoryName(project.Solution.FilePath);
-            var localisationDirectory = Path.Combine(new[] { solutionDirectory! }.Concat(localisation_path.Split('/')).ToArray());
+            var fileSystem = GetFileSystem();
+            var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath);
+            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory! }.Concat(localisation_path.Split('/')).ToArray());
 
-            var filename = Path.Combine(localisationDirectory, Path.ChangeExtension(className, "cs"));
-            var filesystem = new FileSystem();
-            var file = filesystem.FileInfo.FromFileName(filename);
+            var filename = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(className, "cs"));
+            var file = fileSystem.FileInfo.FromFileName(filename);
 
             var generator = new LocalisationClassGenerator(project.Solution.Workspace, file, "a", className);
             await generator.Open();
 
             return generator;
         }
+
+        protected virtual IFileSystem GetFileSystem() => new FileSystem();
 
         private static InvocationExpressionSyntax create_method_transformation(MemberAccessExpressionSyntax memberAccess, IEnumerable<ExpressionSyntax> paramValues)
             => SyntaxFactory.InvocationExpression(memberAccess)

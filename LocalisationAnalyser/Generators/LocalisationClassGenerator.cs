@@ -80,6 +80,8 @@ namespace LocalisationAnalyser.Generators
             if (classSyntax == null)
                 throw new InvalidOperationException("Class not opened.");
 
+            classFile.FileSystem.Directory.CreateDirectory(classFile.DirectoryName);
+
             using (var sw = new StreamWriter(classFile.OpenWrite()))
                 await sw.WriteAsync(Formatter.Format(generateClassSyntax(), workspace).ToFullString());
         }

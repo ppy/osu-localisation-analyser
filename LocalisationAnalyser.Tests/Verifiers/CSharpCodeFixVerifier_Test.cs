@@ -1,7 +1,6 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -15,7 +14,10 @@ namespace LocalisationAnalyser.Tests.Verifiers
     {
         public class Test : CSharpCodeFixTest<TAnalyzer, TCodeFix, XUnitVerifier>
         {
-            protected override IEnumerable<CodeFixProvider> GetCodeFixProviders() => base.GetCodeFixProviders();
+            public Test()
+            {
+                SolutionTransforms.Add((solution, project) => solution.WithProjectFilePath(project, "Project.csproj"));
+            }
         }
     }
 }
