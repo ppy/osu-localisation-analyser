@@ -47,6 +47,9 @@ namespace LocalisationAnalyser.Analysers
             switch (context.Node)
             {
                 case LiteralExpressionSyntax literal:
+                    if (literal.Token.IsVerbatimStringLiteral())
+                        break;
+
                     if (literal.Token.ValueText.Where(char.IsLetter).Any())
                         context.ReportDiagnostic(Diagnostic.Create(rule, context.Node.GetLocation(), context.Node));
                     break;
