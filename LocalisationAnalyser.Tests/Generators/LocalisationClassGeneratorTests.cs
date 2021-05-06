@@ -8,7 +8,7 @@ using LocalisationAnalyser.Generators;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
-namespace LocalisationAnalyser.Tests
+namespace LocalisationAnalyser.Tests.Generators
 {
     public class LocalisationClassGeneratorTests
     {
