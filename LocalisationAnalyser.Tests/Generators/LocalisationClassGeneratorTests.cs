@@ -42,7 +42,7 @@ namespace LocalisationAnalyser.Tests.Generators
 
 namespace {test_namespace}
 {{
-    class TestClass
+    public static class TestClass
     {{
         private const string prefix = ""{test_namespace}.{test_class_name}"";
         private static string getKey(string key) => $""{{prefix}}:{{key}}"";
@@ -87,7 +87,7 @@ namespace {test_namespace}
 
 namespace {test_namespace}
 {{
-    class TestClass
+    public static class TestClass
     {{
         private const string prefix = ""{test_namespace}.{test_class_name}"";
 
@@ -150,7 +150,7 @@ namespace {test_namespace}
 
 namespace {test_namespace}
 {{
-    class TestClass
+    public static class TestClass
     {{
         private const string prefix = ""{test_namespace}.{test_class_name}"";
 
@@ -189,7 +189,7 @@ namespace {test_namespace}
 
 namespace {test_namespace}
 {{
-    class {test_class_name}
+    public static class {test_class_name}
     {{
         private const string prefix = ""{test_namespace}.{test_class_name}"";");
 

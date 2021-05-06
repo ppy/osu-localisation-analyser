@@ -117,7 +117,11 @@ namespace LocalisationAnalyser.Generators
                                                                           .WithMembers(SyntaxFactory.List(
                                                                               Members.Select(m => m.Parameters.Length == 0 ? generatePropertySyntax(m) : generateMethodSyntax(m))
                                                                                      .Prepend(generatePrefixSyntax())
-                                                                                     .Append(generateGetKeySyntax()))))));
+                                                                                     .Append(generateGetKeySyntax())))
+                                                                          .WithModifiers(
+                                                                              new SyntaxTokenList(
+                                                                                  SyntaxFactory.Token(SyntaxKind.PublicKeyword),
+                                                                                  SyntaxFactory.Token(SyntaxKind.StaticKeyword))))));
 
         /// <summary>
         /// Generates the syntax for a property member.
