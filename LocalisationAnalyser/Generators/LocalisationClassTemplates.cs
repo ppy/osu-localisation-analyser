@@ -21,7 +21,7 @@ namespace LocalisationAnalyser.Generators
         /// {0} : Value
         /// </remarks>
         public const string PREFIX_SIGNATURE = @"
-private const string prefix = ""{0}"";
+private const string prefix = @""{0}"";
 ";
 
         /// <summary>
@@ -30,14 +30,14 @@ private const string prefix = ""{0}"";
         /// <remarks>
         /// {0} : Name
         /// {1} : Lookup key
-        /// {2} : English text
+        /// {2} : Verbatim english text
         /// {3} : Xmldoc
         /// </remarks>
         public static readonly string PROPERTY_SIGNATURE = $@"
 /// <summary>
 /// ""{{3}}""
 /// </summary>
-public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_KEY_METHOD_NAME}(""{{1}}""), ""{{2}}"");
+public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_KEY_METHOD_NAME}(@""{{1}}""), @""{{2}}"");
 ";
 
         /// <summary>
@@ -47,7 +47,7 @@ public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_
         /// {0} : Name
         /// {1} : Method parameters
         /// {2} : Lookup key
-        /// {3} : English text
+        /// {3} : Verbatim english text
         /// {4} : Localisation parameters
         /// {5} : Xmldoc
         /// </remarks>
@@ -55,14 +55,15 @@ public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_
 /// <summary>
 /// ""{{5}}""
 /// </summary>
-public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_KEY_METHOD_NAME}(""{{2}}""), ""{{3}}"", {{4}});
+public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_KEY_METHOD_NAME}(@""{{2}}""), @""{{3}}"", {{4}});
 ";
 
         /// <summary>
         /// The template signature for the 'getKey' method.
         /// </summary>
         // Todo: Ignore the extra newline here - somehow this format messes up R#.
-        public static readonly string GET_KEY_SIGNATURE = $@"
-private static string {GET_KEY_METHOD_NAME}(string key) => $""{{prefix}}:{{key}}"";";
+        public static readonly string GET_KEY_SIGNATURE =
+            $@"
+private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}}"";";
     }
 }

@@ -44,9 +44,9 @@ namespace {test_namespace}
 {{
     public static class TestClass
     {{
-        private const string prefix = ""{test_namespace}.{test_class_name}"";
+        private const string prefix = @""{test_namespace}.{test_class_name}"";
 
-        private static string getKey(string key) => $""{{prefix}}:{{key}}"";
+        private static string getKey(string key) => $@""{{prefix}}:{{key}}"";
     }}
 }}");
 
@@ -70,7 +70,7 @@ namespace {test_namespace}
         /// <summary>
         /// ""{english_text}""
         /// </summary>
-        public static LocalisableString {prop_name} => new TranslatableString(getKey(""{key_name}""), ""{english_text}"");
+        public static LocalisableString {prop_name} => new TranslatableString(getKey(@""{key_name}""), @""{english_text}"");
 ");
 
             Assert.Equal(test_class_name, memberAccess.Expression.ToString());
@@ -90,14 +90,14 @@ namespace {test_namespace}
 {{
     public static class TestClass
     {{
-        private const string prefix = ""{test_namespace}.{test_class_name}"";
+        private const string prefix = @""{test_namespace}.{test_class_name}"";
 
         /// <summary>
         /// ""{english_text}""
         /// </summary>
-        public static LocalisableString {prop_name} => new TranslatableString(getKey(""{key_name}""), ""{english_text}"");
+        public static LocalisableString {prop_name} => new TranslatableString(getKey(@""{key_name}""), @""{english_text}"");
 
-        private static string getKey(string key) => $""{{prefix}}:{{key}}"";
+        private static string getKey(string key) => $@""{{prefix}}:{{key}}"";
     }}
 }}");
 
@@ -129,7 +129,7 @@ namespace {test_namespace}
         /// <summary>
         /// ""{english_text}""
         /// </summary>
-        public static LocalisableString {method_name}({param1.Type} {param1.Name}, {param2.Type} {param2.Name}, {param3.Type} {param3.Name}) => new TranslatableString(getKey(""{key_name}""), ""{english_text}"", {param1.Name}, {param2.Name}, {param3.Name});
+        public static LocalisableString {method_name}({param1.Type} {param1.Name}, {param2.Type} {param2.Name}, {param3.Type} {param3.Name}) => new TranslatableString(getKey(@""{key_name}""), @""{english_text}"", {param1.Name}, {param2.Name}, {param3.Name});
 ");
 
             Assert.Equal(test_class_name, memberAccess.Expression.ToString());
@@ -192,14 +192,14 @@ namespace {test_namespace}
 {{
     public static class {test_class_name}
     {{
-        private const string prefix = ""{test_namespace}.{test_class_name}"";
+        private const string prefix = @""{test_namespace}.{test_class_name}"";
 ");
 
             if (!string.IsNullOrEmpty(inner))
                 sb.Append(inner);
             sb.AppendLine();
 
-            sb.Append(@"        private static string getKey(string key) => $""{prefix}:{key}"";
+            sb.Append(@"        private static string getKey(string key) => $@""{prefix}:{key}"";
     }
 }");
 

@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using LocalisationAnalyser.Abstractions.IO;
 using Microsoft.CodeAnalysis;
@@ -131,7 +132,7 @@ namespace LocalisationAnalyser.Generators
                 string.Format(LocalisationClassTemplates.PROPERTY_SIGNATURE,
                     member.Name,
                     member.Key,
-                    member.EnglishText,
+                    convertToVerbatim(member.EnglishText),
                     member.EnglishText))!;
 
         /// <summary>
@@ -156,7 +157,7 @@ namespace LocalisationAnalyser.Generators
                     member.Name,
                     Formatter.Format(paramList, workspace).ToFullString(),
                     member.Key,
-                    member.EnglishText,
+                    convertToVerbatim(member.EnglishText),
                     Formatter.Format(argList, workspace).ToFullString()[1..^1], // The entire string minus the parens
                     member.EnglishText))!; // Todo: Improve xmldoc
         }
@@ -181,5 +182,25 @@ namespace LocalisationAnalyser.Generators
         /// </summary>
         private MemberDeclarationSyntax generateGetKeySyntax()
             => SyntaxFactory.ParseMemberDeclaration(LocalisationClassTemplates.GET_KEY_SIGNATURE)!;
+
+        /// <summary>
+        /// Converts a string literal to its verbatim representation. Assumes that the string is already non-verbatim.
+        /// </summary>
+        /// <param name="input">The non-verbatim string.</param>
+        /// <returns>The verbatim replacement.</returns>
+        private static string convertToVerbatim(string input)
+        {
+            var result = new StringBuilder();
+
+            foreach (var c in input)
+            {
+                result.Append(c);
+
+                if (c == '"')
+                    result.Append(c);
+            }
+
+            return result.ToString();
+        }
     }
 }

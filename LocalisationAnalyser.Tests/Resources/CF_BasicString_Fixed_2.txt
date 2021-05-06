@@ -4,13 +4,13 @@ namespace Localisation
 {
     public static class ProgramStrings
     {
-        private const string prefix = "Localisation.ProgramStrings";
+        private const string prefix = @"Localisation.ProgramStrings";
 
         /// <summary>
         /// "abc"
         /// </summary>
-        public static LocalisableString Abc => new TranslatableString(getKey("abc"), "abc");
+        public static LocalisableString Abc => new TranslatableString(getKey(@"abc"), @"abc");
         
-        private static string getKey(string key) => $"{prefix}:{key}";
+        private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }
