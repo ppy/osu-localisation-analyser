@@ -13,8 +13,13 @@ namespace LocalisationAnalyser.Analysers
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class LocalisationAnalyser : DiagnosticAnalyzer
     {
-        public const string DIAGNOSTIC_ID = "Localisation";
+        public const string DIAGNOSTIC_ID = "OLOC001";
         private const string category = "Usage";
+
+        // Disable's roslyn analyser release tracking. Todo: Temporary? The analyser doesn't behave well with Rider :/
+        // Read more: https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
+
+#pragma warning disable RS2008
 
         private static readonly DiagnosticDescriptor rule = new DiagnosticDescriptor(
             DIAGNOSTIC_ID,
@@ -24,6 +29,8 @@ namespace LocalisationAnalyser.Analysers
             DiagnosticSeverity.Info,
             true,
             "Localise string.");
+
+#pragma warning restore RS2008
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(rule);
 
