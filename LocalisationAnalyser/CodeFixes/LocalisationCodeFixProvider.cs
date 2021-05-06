@@ -159,7 +159,7 @@ namespace LocalisationAnalyser.CodeFixes
             // Todo: Check for and add a new using directive to the document if required.
 
             // Check for and add the new class file to the project if required.
-            if (project.Documents.All(d => d.FilePath != generator.ClassFile.FullName))
+            if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != generator.ClassFile.FullName))
             {
                 var classDocument = project.AddDocument(Path.GetFileName(generator.ClassFile.FullName),
                     await generator.ClassFile.FileSystem.File.ReadAllTextAsync(generator.ClassFile.FullName, cancellationToken),
