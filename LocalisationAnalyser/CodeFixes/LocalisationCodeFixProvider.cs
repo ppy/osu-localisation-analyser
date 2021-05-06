@@ -58,16 +58,6 @@ namespace LocalisationAnalyser.CodeFixes
                         nameof(LocalisationCodeFixProvider)),
                     diagnostic);
             }
-
-            // foreach (var op in nodes.OfType<BinaryExpressionSyntax>())
-            // {
-            //     context.RegisterCodeFix(
-            //         CodeAction.Create(
-            //             "Localise string operation",
-            //             c => Task.FromResult(context.Document),
-            //             nameof(LocalisationAnalyserCodeFixProvider)),
-            //         diagnostic);
-            // }
         }
 
         private async Task<Solution> localiseLiteralAsync(Document document, LiteralExpressionSyntax literal, CancellationToken cancellationToken)
