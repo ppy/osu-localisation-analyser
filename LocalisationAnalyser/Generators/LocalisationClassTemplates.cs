@@ -43,16 +43,17 @@ public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_
         /// </summary>
         /// <remarks>
         /// {0} : Name
-        /// {1} : Parameters
+        /// {1} : Method parameters
         /// {2} : Lookup key
         /// {3} : English text
-        /// {4} : Xmldoc
+        /// {4} : Localisation parameters
+        /// {5} : Xmldoc
         /// </remarks>
         public static readonly string METHOD_SIGNATURE = $@"
 /// <summary>
-/// ""{{4}}""
+/// ""{{5}}""
 /// </summary>
-public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_KEY_METHOD_NAME}(""{{2}}""), ""{{3}}"");";
+public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_KEY_METHOD_NAME}(""{{2}}""), ""{{3}}"", {{4}});";
 
         /// <summary>
         /// The template signature for the 'getKey' method.

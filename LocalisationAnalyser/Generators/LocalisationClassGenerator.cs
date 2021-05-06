@@ -148,12 +148,18 @@ namespace LocalisationAnalyser.Generators
                                                                    .WithType(
                                                                        SyntaxFactory.IdentifierName(param.Type)))));
 
+            var argList = SyntaxFactory.ArgumentList(
+                SyntaxFactory.SeparatedList(
+                    member.Parameters.Select(param => SyntaxFactory.Argument(
+                        SyntaxFactory.IdentifierName(param.Name)))));
+
             return SyntaxFactory.ParseMemberDeclaration(
                 string.Format(LocalisationClassTemplates.METHOD_SIGNATURE,
                     member.Name,
                     Formatter.Format(paramList, workspace).ToFullString(),
                     member.Key,
                     member.EnglishText,
+                    Formatter.Format(argList, workspace).ToFullString()[1..^1],
                     member.EnglishText))!; // Todo: Improve xmldoc
         }
 
