@@ -24,7 +24,7 @@ namespace LocalisationAnalyser.CodeFixes
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LocalisationCodeFixProvider)), Shared]
     public class LocalisationCodeFixProvider : CodeFixProvider
     {
-        private const string localisation_path = "Localisation";
+        private const string relative_localisation_path = "Localisation";
         private const string class_suffix = "Strings";
 
         public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(Analysers.LocalisationAnalyser.DIAGNOSTIC_ID);
@@ -184,15 +184,13 @@ namespace LocalisationAnalyser.CodeFixes
 
             var fileSystem = GetFileSystem();
 
-            var className = $"{((ClassDeclarationSyntax)containingClass).Identifier.Text}{class_suffix}";
-
-            var solutionDirectory = fileSystem.Path.GetDirectoryName(project.Solution.FilePath)!;
             var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath)!;
-            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(localisation_path.Split('/')).ToArray());
+            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(relative_localisation_path.Split('/')).ToArray());
 
+            var className = $"{((ClassDeclarationSyntax)containingClass).Identifier.Text}{class_suffix}";
             var classFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(className, "cs"));
             var classFile = fileSystem.FileInfo.FromFileName(classFileName);
-            var classNamespace = localisationDirectory.Replace(solutionDirectory, string.Empty).Replace('/', '.').Trim('.');
+            var classNamespace = $"{project.AssemblyName}.{relative_localisation_path.Replace('/', '.')}";
 
             var generator = new LocalisationClassGenerator(project.Solution.Workspace, classFile, classNamespace, className);
             await generator.Open();
