@@ -69,25 +69,12 @@ namespace LocalisationAnalyser.CodeFixes
             // }
         }
 
-        private async Task<Document> localiseLiteralAsync(Document document, LiteralExpressionSyntax literal, CancellationToken cancellationToken)
+        private async Task<Solution> localiseLiteralAsync(Document document, LiteralExpressionSyntax literal, CancellationToken cancellationToken)
         {
-            var generator = await createGenerator(document.Project, literal);
-
-            var englishText = literal.Token.ValueText;
-            var name = createMemberName(generator, englishText);
-            var key = char.ToLower(name[0]) + name[1..];
-
-            var memberAccess = generator.AddMember(new LocalisationMember(name, key, englishText));
-
-            await generator.Save();
-
-            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            var newRoot = oldRoot!.ReplaceNode(literal, memberAccess);
-
-            return document.WithSyntaxRoot(newRoot);
+            return await addMember(document, literal, literal.Token.ValueText, Enumerable.Empty<LocalisationParameter>(), Enumerable.Empty<ExpressionSyntax>(), cancellationToken);
         }
 
-        private async Task<Document> localiseInterpolatedStringAsync(Document document, InterpolatedStringExpressionSyntax interpolated, CancellationToken cancellationToken)
+        private async Task<Solution> localiseInterpolatedStringAsync(Document document, InterpolatedStringExpressionSyntax interpolated, CancellationToken cancellationToken)
         {
             var formatString = new StringBuilder();
             var paramNames = new List<string>();
@@ -98,7 +85,7 @@ namespace LocalisationAnalyser.CodeFixes
 
             var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
             if (semanticModel == null)
-                return document;
+                return document.Project.Solution;
 
             foreach (var part in interpolated.Contents)
             {
@@ -130,20 +117,32 @@ namespace LocalisationAnalyser.CodeFixes
                 }
             }
 
-            var generator = await createGenerator(document.Project, interpolated);
+            return await addMember(document, interpolated, formatString.ToString(), paramNames.Select(n => new LocalisationParameter("string", n)), paramValues, cancellationToken);
+        }
 
-            var englishText = formatString.ToString();
-            var name = createMemberName(generator, englishText);
+        private async Task<Solution> addMember(Document document, SyntaxNode nodeToReplace, string text, IEnumerable<LocalisationParameter> parameters, IEnumerable<ExpressionSyntax> parameterValues,
+                                               CancellationToken cancellationToken)
+        {
+            var generator = await createGenerator(document.Project, nodeToReplace);
+
+            var name = createMemberName(generator, text);
             var key = char.ToLower(name[0]) + name[1..];
 
-            var memberAccess = generator.AddMember(new LocalisationMember(name, key, englishText, paramNames.Select(n => new LocalisationParameter("string", n)).ToArray()));
-
+            var memberAccess = generator.AddMember(new LocalisationMember(name, key, text, parameters.ToArray()));
             await generator.Save();
 
-            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            var newRoot = oldRoot!.ReplaceNode(interpolated, create_method_transformation(memberAccess, paramValues));
+            var solution = document.Project.Solution;
 
-            return document.WithSyntaxRoot(newRoot);
+            // Replace the syntax node (the localised string) in the target document.
+            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            var newRoot = oldRoot!.ReplaceNode(nodeToReplace, create_syntax_transformation(memberAccess, parameterValues));
+            solution = solution.WithDocumentSyntaxRoot(document.Id, newRoot);
+
+            // Todo: Check for and add a new using directive to the document if required.
+
+            // Todo: Check for and add the new class file to the project if required.
+
+            return solution;
         }
 
         private async Task<LocalisationClassGenerator> createGenerator(Project project, SyntaxNode sourceNode)
@@ -172,12 +171,18 @@ namespace LocalisationAnalyser.CodeFixes
 
         protected virtual IFileSystem GetFileSystem() => new FileSystem();
 
-        private static InvocationExpressionSyntax create_method_transformation(MemberAccessExpressionSyntax memberAccess, IEnumerable<ExpressionSyntax> paramValues)
-            => SyntaxFactory.InvocationExpression(memberAccess)
-                            .WithArgumentList(
-                                SyntaxFactory.ArgumentList(
-                                    SyntaxFactory.SeparatedList(
-                                        paramValues.Select(SyntaxFactory.Argument))));
+        private static SyntaxNode create_syntax_transformation(MemberAccessExpressionSyntax memberAccess, IEnumerable<ExpressionSyntax> parameterValues)
+        {
+            var valueArray = parameterValues.ToArray();
+            if (valueArray.Length == 0)
+                return memberAccess;
+
+            return SyntaxFactory.InvocationExpression(memberAccess)
+                                .WithArgumentList(
+                                    SyntaxFactory.ArgumentList(
+                                        SyntaxFactory.SeparatedList(
+                                            valueArray.Select(SyntaxFactory.Argument))));
+        }
 
         private static string createMemberName(LocalisationClassGenerator generator, string englishText)
         {
