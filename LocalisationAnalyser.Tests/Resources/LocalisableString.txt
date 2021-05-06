@@ -1,0 +1,7 @@
+namespace osu.Framework.Localisation
+{
+    public readonly struct LocalisableString
+    {
+        public static implicit operator LocalisableString(TranslatableString translatable) => new LocalisableString();
+    }
+}

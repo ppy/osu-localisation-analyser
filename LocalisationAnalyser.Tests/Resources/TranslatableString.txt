@@ -1,0 +1,9 @@
+namespace osu.Framework.Localisation
+{
+    public class TranslatableString
+    {
+        public TranslatableString(string key, string fallback, params object?[] args)
+        {
+        }
+    }
+}

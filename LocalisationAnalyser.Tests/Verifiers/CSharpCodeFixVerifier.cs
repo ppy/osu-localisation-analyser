@@ -3,12 +3,9 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 
 namespace LocalisationAnalyser.Tests.Verifiers
 {
@@ -16,39 +13,21 @@ namespace LocalisationAnalyser.Tests.Verifiers
         where TAnalyzer : DiagnosticAnalyzer, new()
         where TCodeFix : CodeFixProvider, new()
     {
-        public static DiagnosticResult Diagnostic()
-            => CSharpCodeFixVerifier<TAnalyzer, TCodeFix, XUnitVerifier>.Diagnostic();
+        public static async Task VerifyCodeFixAsync(string[] sources, string[] fixedSources)
+            => await VerifyCodeFixAsync(sources, DiagnosticResult.EmptyDiagnosticResults, fixedSources);
 
-        public static DiagnosticResult Diagnostic(string diagnosticId)
-            => CSharpCodeFixVerifier<TAnalyzer, TCodeFix, XUnitVerifier>.Diagnostic(diagnosticId);
+        public static async Task VerifyCodeFixAsync(string[] sources, DiagnosticResult expected, string[] fixedSources)
+            => await VerifyCodeFixAsync(sources, new[] { expected }, fixedSources);
 
-        public static DiagnosticResult Diagnostic(DiagnosticDescriptor descriptor)
-            => CSharpCodeFixVerifier<TAnalyzer, TCodeFix, XUnitVerifier>.Diagnostic(descriptor);
-
-        public static async Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
+        public static async Task VerifyCodeFixAsync(string[] sources, DiagnosticResult[] expected, string[] fixedSources)
         {
-            var test = new Test
-            {
-                TestCode = source,
-            };
+            var test = new Test();
 
-            test.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync(CancellationToken.None);
-        }
+            foreach (var s in sources)
+                test.TestState.Sources.Add(s);
 
-        public static async Task VerifyCodeFixAsync(string source, string fixedSource)
-            => await VerifyCodeFixAsync(source, DiagnosticResult.EmptyDiagnosticResults, fixedSource);
-
-        public static async Task VerifyCodeFixAsync(string source, DiagnosticResult expected, string fixedSource)
-            => await VerifyCodeFixAsync(source, new[] { expected }, fixedSource);
-
-        public static async Task VerifyCodeFixAsync(string source, DiagnosticResult[] expected, string fixedSource)
-        {
-            var test = new Test
-            {
-                TestCode = source,
-                FixedCode = fixedSource,
-            };
+            foreach (var s in fixedSources)
+                test.FixedState.Sources.Add(s);
 
             test.ExpectedDiagnostics.AddRange(expected);
             await test.RunAsync(CancellationToken.None);
