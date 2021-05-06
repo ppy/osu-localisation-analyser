@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -28,8 +27,6 @@ namespace LocalisationAnalyser.Generators
         public readonly string ClassName;
         private readonly Workspace workspace;
 
-        private ClassDeclarationSyntax? classSyntax;
-
         /// <summary>
         /// Creates a new localisation class generator.
         /// </summary>
@@ -50,26 +47,23 @@ namespace LocalisationAnalyser.Generators
         /// </summary>
         public async Task Open()
         {
-            if (ClassFile.Exists)
+            if (!ClassFile.Exists)
+                return;
+
+            using (var sr = new StreamReader(ClassFile.OpenRead()))
             {
-                using (var sr = new StreamReader(ClassFile.OpenRead()))
-                {
-                    var syntaxTree = CSharpSyntaxTree.ParseText(await sr.ReadToEndAsync());
-                    var syntaxRoot = await syntaxTree.GetRootAsync();
-                    classSyntax = syntaxRoot.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().SingleOrDefault(c => c.Identifier.ToString() == ClassName);
-                }
+                var syntaxTree = CSharpSyntaxTree.ParseText(await sr.ReadToEndAsync());
+                var syntaxRoot = await syntaxTree.GetRootAsync();
+
+                var classSyntax = syntaxRoot.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().SingleOrDefault(c => c.Identifier.ToString() == ClassName);
+
+                if (classSyntax == null)
+                    return;
+
+                var walker = new LocalisationClassWalker();
+                classSyntax.Accept(walker);
+                members.AddRange(walker.Members);
             }
-
-            classSyntax ??= SyntaxFactory.ClassDeclaration(ClassName)
-                                         .WithMembers(SyntaxFactory.List(new[]
-                                         {
-                                             generatePrefixSyntax(),
-                                             generateGetKeySyntax()
-                                         }));
-
-            var walker = new LocalisationClassWalker();
-            classSyntax.Accept(walker);
-            members.AddRange(walker.Members);
         }
 
         /// <summary>
@@ -77,9 +71,6 @@ namespace LocalisationAnalyser.Generators
         /// </summary>
         public async Task Save()
         {
-            if (classSyntax == null)
-                throw new InvalidOperationException("Class not opened.");
-
             ClassFile.FileSystem.Directory.CreateDirectory(ClassFile.DirectoryName!);
 
             using (var sw = new StreamWriter(ClassFile.OpenWrite()))
@@ -93,9 +84,6 @@ namespace LocalisationAnalyser.Generators
         /// <returns>A <see cref="MemberAccessExpressionSyntax"/> that can be used to refer to the added member.</returns>
         public MemberAccessExpressionSyntax AddMember(LocalisationMember member)
         {
-            if (classSyntax == null)
-                throw new InvalidOperationException("Class not opened.");
-
             members.Add(member);
             return generateMemberAccessSyntax(member);
         }
@@ -106,9 +94,6 @@ namespace LocalisationAnalyser.Generators
         /// <param name="member">The member to remove.</param>
         public void RemoveMember(LocalisationMember member)
         {
-            if (classSyntax == null)
-                throw new InvalidOperationException("Class not opened.");
-
             members.Remove(member);
         }
 
@@ -128,11 +113,11 @@ namespace LocalisationAnalyser.Generators
                                                          SyntaxFactory.IdentifierName(ClassNamespace))
                                                      .WithMembers(
                                                          SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                                             classSyntax!.WithMembers(
-                                                                 SyntaxFactory.List(
-                                                                     Members.Select(m => m.Parameters.Length == 0 ? generatePropertySyntax(m) : generateMethodSyntax(m))
-                                                                            .Prepend(generatePrefixSyntax())
-                                                                            .Append(generateGetKeySyntax()))))));
+                                                             SyntaxFactory.ClassDeclaration(ClassName)
+                                                                          .WithMembers(SyntaxFactory.List(
+                                                                              Members.Select(m => m.Parameters.Length == 0 ? generatePropertySyntax(m) : generateMethodSyntax(m))
+                                                                                     .Prepend(generatePrefixSyntax())
+                                                                                     .Append(generateGetKeySyntax()))))));
 
         /// <summary>
         /// Generates the syntax for a property member.
