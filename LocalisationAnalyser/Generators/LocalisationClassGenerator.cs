@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Immutable;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
+using LocalisationAnalyser.Abstractions.IO;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -80,7 +80,7 @@ namespace LocalisationAnalyser.Generators
             if (classSyntax == null)
                 throw new InvalidOperationException("Class not opened.");
 
-            ClassFile.FileSystem.Directory.CreateDirectory(ClassFile.DirectoryName);
+            ClassFile.FileSystem.Directory.CreateDirectory(ClassFile.DirectoryName!);
 
             using (var sw = new StreamWriter(ClassFile.OpenWrite()))
                 await sw.WriteAsync(Formatter.Format(generateClassSyntax(), workspace).ToFullString());

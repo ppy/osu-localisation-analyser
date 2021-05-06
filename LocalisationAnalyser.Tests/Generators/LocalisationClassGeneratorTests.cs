@@ -1,10 +1,11 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System.IO.Abstractions.TestingHelpers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using LocalisationAnalyser.Generators;
+using LocalisationAnalyser.Tests.Helpers.IO;
 using Microsoft.CodeAnalysis;
 using Xunit;
 
@@ -31,7 +32,7 @@ namespace LocalisationAnalyser.Tests.Generators
             await generator.Open();
             await generator.Save();
 
-            checkResult(string.Empty);
+            await checkResult(string.Empty);
         }
 
         [Fact]
@@ -64,7 +65,7 @@ namespace {test_namespace}
             var memberAccess = generator.AddMember(new LocalisationMember(prop_name, key_name, english_text));
             await generator.Save();
 
-            checkResult($@"
+            await checkResult($@"
         /// <summary>
         /// ""{english_text}""
         /// </summary>
@@ -123,7 +124,7 @@ namespace {test_namespace}
             var memberAccess = generator.AddMember(new LocalisationMember(method_name, key_name, english_text, new[] { param1, param2, param3 }));
             await generator.Save();
 
-            checkResult($@"
+            await checkResult($@"
         /// <summary>
         /// ""{english_text}""
         /// </summary>
@@ -180,7 +181,7 @@ namespace {test_namespace}
             mockFs.AddFile(test_file_name, contents);
         }
 
-        private void checkResult(string inner)
+        private async Task checkResult(string inner)
         {
             var sb = new StringBuilder();
 
@@ -201,7 +202,7 @@ namespace {test_namespace}
     }
 }");
 
-            Assert.Equal(sb.ToString().Trim(), mockFs.File.ReadAllText(test_file_name));
+            Assert.Equal(sb.ToString().Trim(), await mockFs.File.ReadAllTextAsync(test_file_name, CancellationToken.None));
         }
     }
 }

@@ -6,11 +6,12 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LocalisationAnalyser.Abstractions.IO;
+using LocalisationAnalyser.Abstractions.IO.Default;
 using LocalisationAnalyser.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -199,7 +200,7 @@ namespace LocalisationAnalyser.CodeFixes
             return generator;
         }
 
-        protected virtual IFileSystem GetFileSystem() => new FileSystem();
+        protected virtual IFileSystem GetFileSystem() => new DefaultFileSystem();
 
         private static SyntaxNode create_syntax_transformation(MemberAccessExpressionSyntax memberAccess, IEnumerable<ExpressionSyntax> parameterValues)
         {
