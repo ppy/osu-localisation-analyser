@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
@@ -148,15 +149,16 @@ namespace LocalisationAnalyser.CodeFixes
         private async Task<Solution> addMember(Document document, SyntaxNode nodeToReplace, string text, IEnumerable<LocalisationParameter> parameters, IEnumerable<ExpressionSyntax> parameterValues,
                                                CancellationToken cancellationToken)
         {
-            var generator = await createGenerator(document.Project, nodeToReplace);
+            var project = document.Project;
+            var solution = project.Solution;
+
+            var generator = await createGenerator(project, nodeToReplace);
 
             var name = createMemberName(generator, text);
             var key = char.ToLower(name[0]) + name[1..];
 
             var memberAccess = generator.AddMember(new LocalisationMember(name, key, text, parameters.ToArray()));
             await generator.Save();
-
-            var solution = document.Project.Solution;
 
             // Replace the syntax node (the localised string) in the target document.
             var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
@@ -165,7 +167,17 @@ namespace LocalisationAnalyser.CodeFixes
 
             // Todo: Check for and add a new using directive to the document if required.
 
-            // Todo: Check for and add the new class file to the project if required.
+            // Check for and add the new class file to the project if required.
+            if (project.Documents.All(d => d.FilePath != generator.ClassFile.FullName))
+            {
+                var classDocument = project.AddDocument(Path.GetFileName(generator.ClassFile.FullName),
+                    await generator.ClassFile.FileSystem.File.ReadAllTextAsync(generator.ClassFile.FullName, cancellationToken),
+                    Enumerable.Empty<string>(),
+                    generator.ClassFile.FullName);
+
+                project = classDocument.Project;
+                solution = project.Solution;
+            }
 
             return solution;
         }
@@ -179,16 +191,19 @@ namespace LocalisationAnalyser.CodeFixes
             if (containingClass == null)
                 throw new InvalidOperationException("String is not within a class.");
 
+            var fileSystem = GetFileSystem();
+
             var className = $"{((ClassDeclarationSyntax)containingClass).Identifier.Text}{class_suffix}";
 
-            var fileSystem = GetFileSystem();
-            var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath);
-            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory! }.Concat(localisation_path.Split('/')).ToArray());
+            var solutionDirectory = fileSystem.Path.GetDirectoryName(project.Solution.FilePath)!;
+            var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath)!;
+            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(localisation_path.Split('/')).ToArray());
 
-            var filename = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(className, "cs"));
-            var file = fileSystem.FileInfo.FromFileName(filename);
+            var classFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(className, "cs"));
+            var classFile = fileSystem.FileInfo.FromFileName(classFileName);
+            var classNamespace = localisationDirectory.Replace(solutionDirectory, string.Empty).Replace('/', '.');
 
-            var generator = new LocalisationClassGenerator(project.Solution.Workspace, file, "a", className);
+            var generator = new LocalisationClassGenerator(project.Solution.Workspace, classFile, classNamespace, className);
             await generator.Open();
 
             return generator;

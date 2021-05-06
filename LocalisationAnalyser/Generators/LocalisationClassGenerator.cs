@@ -23,10 +23,10 @@ namespace LocalisationAnalyser.Generators
 
         private readonly ImmutableArray<LocalisationMember>.Builder members = ImmutableArray.CreateBuilder<LocalisationMember>();
 
+        public readonly IFileInfo ClassFile;
+        public readonly string ClassNamespace;
+        public readonly string ClassName;
         private readonly Workspace workspace;
-        private readonly IFileInfo classFile;
-        private readonly string classNamespace;
-        private readonly string className;
 
         private ClassDeclarationSyntax? classSyntax;
 
@@ -40,9 +40,9 @@ namespace LocalisationAnalyser.Generators
         public LocalisationClassGenerator(Workspace workspace, IFileInfo classFile, string classNamespace, string className)
         {
             this.workspace = workspace;
-            this.className = className;
-            this.classFile = classFile;
-            this.classNamespace = classNamespace;
+            ClassName = className;
+            ClassFile = classFile;
+            ClassNamespace = classNamespace;
         }
 
         /// <summary>
@@ -50,17 +50,17 @@ namespace LocalisationAnalyser.Generators
         /// </summary>
         public async Task Open()
         {
-            if (classFile.Exists)
+            if (ClassFile.Exists)
             {
-                using (var sr = new StreamReader(classFile.OpenRead()))
+                using (var sr = new StreamReader(ClassFile.OpenRead()))
                 {
                     var syntaxTree = CSharpSyntaxTree.ParseText(await sr.ReadToEndAsync());
                     var syntaxRoot = await syntaxTree.GetRootAsync();
-                    classSyntax = syntaxRoot.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().SingleOrDefault(c => c.Identifier.ToString() == className);
+                    classSyntax = syntaxRoot.DescendantNodesAndSelf().OfType<ClassDeclarationSyntax>().SingleOrDefault(c => c.Identifier.ToString() == ClassName);
                 }
             }
 
-            classSyntax ??= SyntaxFactory.ClassDeclaration(className)
+            classSyntax ??= SyntaxFactory.ClassDeclaration(ClassName)
                                          .WithMembers(SyntaxFactory.List(new[]
                                          {
                                              generatePrefixSyntax(),
@@ -80,9 +80,9 @@ namespace LocalisationAnalyser.Generators
             if (classSyntax == null)
                 throw new InvalidOperationException("Class not opened.");
 
-            classFile.FileSystem.Directory.CreateDirectory(classFile.DirectoryName);
+            ClassFile.FileSystem.Directory.CreateDirectory(ClassFile.DirectoryName);
 
-            using (var sw = new StreamWriter(classFile.OpenWrite()))
+            using (var sw = new StreamWriter(ClassFile.OpenWrite()))
                 await sw.WriteAsync(Formatter.Format(generateClassSyntax(), workspace).ToFullString());
         }
 
@@ -118,7 +118,7 @@ namespace LocalisationAnalyser.Generators
         /// <returns>The syntax.</returns>
         private SyntaxNode generateClassSyntax()
             => SyntaxFactory.NamespaceDeclaration(
-                                SyntaxFactory.IdentifierName(classNamespace))
+                                SyntaxFactory.IdentifierName(ClassNamespace))
                             .WithMembers(
                                 SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
                                     classSyntax!.WithMembers(
@@ -171,14 +171,14 @@ namespace LocalisationAnalyser.Generators
         private MemberAccessExpressionSyntax generateMemberAccessSyntax(LocalisationMember member)
             => SyntaxFactory.MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
-                SyntaxFactory.IdentifierName(className),
+                SyntaxFactory.IdentifierName(ClassName),
                 SyntaxFactory.IdentifierName(member.Name));
 
         /// <summary>
         /// Generates the syntax for the prefix constant.
         /// </summary>
         private MemberDeclarationSyntax generatePrefixSyntax()
-            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationClassTemplates.PREFIX_SIGNATURE, $"{classNamespace}.{className}"))!;
+            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationClassTemplates.PREFIX_SIGNATURE, $"{ClassNamespace}.{ClassName}"))!;
 
         /// <summary>
         /// Generates the syntax for the getKey() method.
