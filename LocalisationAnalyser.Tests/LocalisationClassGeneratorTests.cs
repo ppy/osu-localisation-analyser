@@ -54,16 +54,49 @@ namespace LocalisationAnalyser.Tests
         [Fact]
         public async Task PropertyIsGeneratedFromNoParameters()
         {
+            const string prop_name = "TestProperty";
+            const string key_name = "TestKey";
+            const string english_text = "TestEnglish";
+
             await generator.Open();
-            var memberAccess = generator.AddMember(new LocalisationMember("TestProperty", "TestKey", "TestEnglish"));
+            var memberAccess = generator.AddMember(new LocalisationMember(prop_name, key_name, english_text));
             await generator.Save();
 
             checkResult($@"
         /// <summary>
-        /// ""TestEnglish""
+        /// ""{english_text}""
         /// </summary>
-        public static LocalisableString TestProperty => new TranslatableString(getKey(""TestKey""), ""TestEnglish"");
+        public static LocalisableString {prop_name} => new TranslatableString(getKey(""{key_name}""), ""{english_text}"");
 ");
+
+            Assert.Equal(test_class_name, memberAccess.Expression.ToString());
+            Assert.Equal(prop_name, memberAccess.Name.ToString());
+        }
+
+        [Fact]
+        public async Task MethodIsGeneratedFromParameters()
+        {
+            const string method_name = "TestMethod";
+            const string key_name = "TestKey";
+            const string english_text = "TestEnglish{0}{1}{2}";
+
+            var param1 = new LocalisationParameter("int", "first");
+            var param2 = new LocalisationParameter("string", "second");
+            var param3 = new LocalisationParameter("customobj", "third");
+
+            await generator.Open();
+            var memberAccess = generator.AddMember(new LocalisationMember(method_name, key_name, english_text, new[] { param1, param2, param3 }));
+            await generator.Save();
+
+            checkResult($@"
+        /// <summary>
+        /// ""{english_text}""
+        /// </summary>
+        public static LocalisableString {method_name}({param1.Type} {param1.Name}, {param2.Type} {param2.Name}, {param3.Type} {param3.Name}) => new TranslatableString(getKey(""{key_name}""), ""{english_text}"", {param1.Name}, {param2.Name}, {param3.Name});
+");
+
+            Assert.Equal(test_class_name, memberAccess.Expression.ToString());
+            Assert.Equal(method_name, memberAccess.Name.ToString());
         }
 
         private void setupFile(string contents)
@@ -83,6 +116,8 @@ namespace LocalisationAnalyser.Tests
 
             if (!string.IsNullOrEmpty(inner))
                 sb.Append(inner);
+            else
+                sb.AppendLine();
 
             sb.Append(@"        private static string getKey(string key) => $""{prefix}:{key}"";
     }
