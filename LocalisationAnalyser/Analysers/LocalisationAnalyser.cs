@@ -14,7 +14,7 @@ namespace LocalisationAnalyser.Analysers
     public class LocalisationAnalyser : DiagnosticAnalyzer
     {
         public const string DIAGNOSTIC_ID = "OLOC001";
-        private const string category = "Usage";
+        private const string category = "Globalization";
 
         // Disable's roslyn analyser release tracking. Todo: Temporary? The analyser doesn't behave well with Rider :/
         // Read more: https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
