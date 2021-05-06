@@ -159,7 +159,7 @@ namespace LocalisationAnalyser.Generators
                     Formatter.Format(paramList, workspace).ToFullString(),
                     member.Key,
                     member.EnglishText,
-                    Formatter.Format(argList, workspace).ToFullString()[1..^1],
+                    Formatter.Format(argList, workspace).ToFullString()[1..^1], // The entire string minus the parens
                     member.EnglishText))!; // Todo: Improve xmldoc
         }
 
