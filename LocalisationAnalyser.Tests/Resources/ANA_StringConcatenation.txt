@@ -2,14 +2,14 @@ namespace Test
 {
     class Program
     {
-        private static string y = "01234" + [|"hello world!"|] + [|"another"|];
-        
+        private static string y = "01234" + [|"hello world!"|] + [|"another"|] + @"and another";
+
         static void Main()
         {
-            string x = "01234" + [|"hello world!"|] + [|"another"|];
-            method("01234" + [|"hello world!"|] + [|"another"|]);
+            string x = "01234" + [|"hello world!"|] + [|"another"|] + @"and another";
+            method("01234" + [|"hello world!"|] + [|"another"|] + @"and another");
         }
-        
+
         private static void method(string input) { }
     }
 }
