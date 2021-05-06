@@ -37,7 +37,9 @@ namespace LocalisationAnalyser.Tests.Generators
         [Fact]
         public async Task EmptyFileContainsNoMembers()
         {
-            setupFile($@"namespace {test_namespace}
+            setupFile($@"using osu.Framework.Localisation;
+
+namespace {test_namespace}
 {{
     class TestClass
     {{
@@ -80,7 +82,9 @@ namespace LocalisationAnalyser.Tests.Generators
             const string key_name = "TestKey";
             const string english_text = "TestEnglish";
 
-            setupFile($@"namespace {test_namespace}
+            setupFile($@"using osu.Framework.Localisation;
+
+namespace {test_namespace}
 {{
     class TestClass
     {{
@@ -141,7 +145,9 @@ namespace LocalisationAnalyser.Tests.Generators
             var param2 = new LocalisationParameter("string", "second");
             var param3 = new LocalisationParameter("customobj", "third");
 
-            setupFile($@"namespace {test_namespace}
+            setupFile($@"using osu.Framework.Localisation;
+
+namespace {test_namespace}
 {{
     class TestClass
     {{
@@ -178,7 +184,9 @@ namespace LocalisationAnalyser.Tests.Generators
         {
             var sb = new StringBuilder();
 
-            sb.Append($@"namespace {test_namespace}
+            sb.Append($@"using osu.Framework.Localisation;
+
+namespace {test_namespace}
 {{
     class {test_class_name}
     {{

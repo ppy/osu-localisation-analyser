@@ -117,15 +117,22 @@ namespace LocalisationAnalyser.Generators
         /// </summary>
         /// <returns>The syntax.</returns>
         private SyntaxNode generateClassSyntax()
-            => SyntaxFactory.NamespaceDeclaration(
-                                SyntaxFactory.IdentifierName(ClassNamespace))
-                            .WithMembers(
-                                SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                    classSyntax!.WithMembers(
-                                        SyntaxFactory.List(
-                                            Members.Select(m => m.Parameters.Length == 0 ? generatePropertySyntax(m) : generateMethodSyntax(m))
-                                                   .Prepend(generatePrefixSyntax())
-                                                   .Append(generateGetKeySyntax())))));
+            => SyntaxFactory.CompilationUnit()
+                            .AddUsings(SyntaxFactory.UsingDirective(
+                                SyntaxFactory.QualifiedName(
+                                    SyntaxFactory.QualifiedName(
+                                        SyntaxFactory.IdentifierName("osu"),
+                                        SyntaxFactory.IdentifierName("Framework")),
+                                    SyntaxFactory.IdentifierName("Localisation"))))
+                            .AddMembers(SyntaxFactory.NamespaceDeclaration(
+                                                         SyntaxFactory.IdentifierName(ClassNamespace))
+                                                     .WithMembers(
+                                                         SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                                                             classSyntax!.WithMembers(
+                                                                 SyntaxFactory.List(
+                                                                     Members.Select(m => m.Parameters.Length == 0 ? generatePropertySyntax(m) : generateMethodSyntax(m))
+                                                                            .Prepend(generatePrefixSyntax())
+                                                                            .Append(generateGetKeySyntax()))))));
 
         /// <summary>
         /// Generates the syntax for a property member.
