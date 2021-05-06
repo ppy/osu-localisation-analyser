@@ -4,7 +4,19 @@
         <TargetFrameworks>netstandard2.1;net5.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <LangVersion>9</LangVersion>
+
+        <!-- Suppress build output, since it isn't added in the correct path (see below). -->
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
     </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Add the dll to the correct path in the package. -->
+        <None Include="$(OutputPath)\netstandard2.1\$(AssemblyName).dll">
+            <Pack>true</Pack>
+            <PackagePath>analyzers/dotnet/cs</PackagePath>
+        </None>
+    </ItemGroup>
     
     <ItemGroup>
       <PackageReference Include="Microsoft.CodeAnalysis" Version="3.9.0" />
