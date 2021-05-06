@@ -1,7 +1,13 @@
+// Minimal template code for LocalisableString to be used in analysis.
+
 namespace osu.Framework.Localisation
 {
     public readonly struct LocalisableString
     {
         public static implicit operator LocalisableString(TranslatableString translatable) => new LocalisableString();
+        
+        // This doesn't exist in the original code, but is required to avoid a compile error during analysis.
+        // Normally, this will cause a compile error which the programmer is then expected to resolve.
+        public static implicit operator string(LocalisableString localisable) => string.Empty;
     }
 }

@@ -1,3 +1,5 @@
+// Minimal template code for TranslatableString to be used in analysis.
+
 namespace osu.Framework.Localisation
 {
     public class TranslatableString
