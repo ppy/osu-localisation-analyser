@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Operations;
 
 namespace LocalisationAnalyser.Analysers
 {
@@ -33,28 +32,11 @@ namespace LocalisationAnalyser.Analysers
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
-            context.RegisterOperationAction(analyseOperation, OperationKind.BinaryOperator);
             context.RegisterSyntaxNodeAction(analyseString, SyntaxKind.StringLiteralExpression, SyntaxKind.InterpolatedStringExpression);
-        }
-
-        private void analyseOperation(OperationAnalysisContext context)
-        {
-            if (IsAddOperationOnString((IBinaryOperation)context.Operation))
-            {
-                context.ReportDiagnostic(Diagnostic.Create(rule, context.Operation.Syntax.GetLocation(), ""));
-            }
         }
 
         private void analyseString(SyntaxNodeAnalysisContext context)
         {
-            // SyntaxNode? parentNode = context.Node;
-            //
-            // while ((parentNode = parentNode.Parent) != null)
-            // {
-            //     if (parentNode.Kind() == SyntaxKind.AddExpression)
-            //         return;
-            // }
-
             switch (context.Node)
             {
                 case LiteralExpressionSyntax literal:
@@ -67,20 +49,6 @@ namespace LocalisationAnalyser.Analysers
                         context.ReportDiagnostic(Diagnostic.Create(rule, context.Node.GetLocation(), context.Node));
                     break;
             }
-        }
-
-        public static bool IsAddOperationOnString(IBinaryOperation operation)
-        {
-            if (operation.OperatorKind != BinaryOperatorKind.Add)
-                return false;
-
-            if (operation.LeftOperand.Type?.SpecialType == SpecialType.System_String
-                || operation.RightOperand.Type?.SpecialType == SpecialType.System_String)
-            {
-                return true;
-            }
-
-            return operation.Children.OfType<IBinaryOperation>().Any(IsAddOperationOnString);
         }
     }
 }

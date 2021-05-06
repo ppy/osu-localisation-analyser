@@ -12,9 +12,6 @@ namespace LocalisationAnalyser.Tests.Analysers
 {
     public class LocalisationAnalyserTests
     {
-        private static int i = 5;
-        private static string x = $"{i}";
-
         [Theory]
         [InlineData("BasicString")]
         [InlineData("EmptyString")]
