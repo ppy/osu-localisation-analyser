@@ -192,7 +192,7 @@ namespace LocalisationAnalyser.CodeFixes
 
             var classFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(className, "cs"));
             var classFile = fileSystem.FileInfo.FromFileName(classFileName);
-            var classNamespace = localisationDirectory.Replace(solutionDirectory, string.Empty).Replace('/', '.');
+            var classNamespace = localisationDirectory.Replace(solutionDirectory, string.Empty).Replace('/', '.').Trim('.');
 
             var generator = new LocalisationClassGenerator(project.Solution.Workspace, classFile, classNamespace, className);
             await generator.Open();
