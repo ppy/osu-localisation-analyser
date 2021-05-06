@@ -4,8 +4,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalisationAnalyser", "Loc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalisationAnalyser.Tests", "LocalisationAnalyser.Tests\LocalisationAnalyser.Tests.csproj", "{ECE29E6F-9619-49B4-9C06-32F2DFC72240}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalisationAnalyser.CodeFixes", "LocalisationAnalyser.CodeFixes\LocalisationAnalyser.CodeFixes.csproj", "{4CCB33B5-4AF9-4DA3-872A-1C3A29A76290}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,9 +18,5 @@ Global
 		{ECE29E6F-9619-49B4-9C06-32F2DFC72240}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ECE29E6F-9619-49B4-9C06-32F2DFC72240}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ECE29E6F-9619-49B4-9C06-32F2DFC72240}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4CCB33B5-4AF9-4DA3-872A-1C3A29A76290}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4CCB33B5-4AF9-4DA3-872A-1C3A29A76290}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4CCB33B5-4AF9-4DA3-872A-1C3A29A76290}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4CCB33B5-4AF9-4DA3-872A-1C3A29A76290}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

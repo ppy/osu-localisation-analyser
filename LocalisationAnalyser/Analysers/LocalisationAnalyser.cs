@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace LocalisationAnalyser
+namespace LocalisationAnalyser.Analysers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class LocalisationAnalyser : DiagnosticAnalyzer

@@ -26,7 +26,7 @@ namespace LocalisationAnalyser.CodeFixes
         private const string localisation_path = "Localisation";
         private const string class_suffix = "Strings";
 
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(LocalisationAnalyser.DIAGNOSTIC_ID);
+        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(Analysers.LocalisationAnalyser.DIAGNOSTIC_ID);
 
         public override FixAllProvider? GetFixAllProvider() => null;
 

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
-using Verify = LocalisationAnalyser.Tests.Verifiers.CSharpCodeFixVerifier<LocalisationAnalyser.LocalisationAnalyser, LocalisationAnalyser.Tests.CodeFixes.MockLocalisationCodeFixProvider>;
+using Verify = LocalisationAnalyser.Tests.Verifiers.CSharpCodeFixVerifier<LocalisationAnalyser.Analysers.LocalisationAnalyser, LocalisationAnalyser.Tests.CodeFixes.MockLocalisationCodeFixProvider>;
 
 namespace LocalisationAnalyser.Tests.CodeFixes
 {
