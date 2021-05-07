@@ -20,7 +20,7 @@ namespace LocalisationAnalyser.CodeFixes
         }
 
         public LocaliseCommonStringCodeFixProvider(IFileSystem fileSystem)
-            : base(fileSystem, " (common)")
+            : base(fileSystem, "common")
         {
         }
 

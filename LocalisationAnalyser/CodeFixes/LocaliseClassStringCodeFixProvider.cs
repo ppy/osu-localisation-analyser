@@ -20,7 +20,7 @@ namespace LocalisationAnalyser.CodeFixes
         }
 
         public LocaliseClassStringCodeFixProvider(IFileSystem fileSystem)
-            : base(fileSystem)
+            : base(fileSystem, "class")
         {
         }
 

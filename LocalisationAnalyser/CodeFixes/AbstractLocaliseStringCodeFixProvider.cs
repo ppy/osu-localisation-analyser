@@ -22,14 +22,14 @@ namespace LocalisationAnalyser.CodeFixes
     {
         private const string relative_localisation_path = "Localisation";
         private readonly IFileSystem fileSystem;
-        private readonly string? codeFixSuffix;
+        private readonly string friendlyLocalisationTarget;
 
         public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED.Id);
 
-        protected AbstractLocaliseStringCodeFixProvider(IFileSystem fileSystem, string? codeFixSuffix = null)
+        protected AbstractLocaliseStringCodeFixProvider(IFileSystem fileSystem, string friendlyLocalisationTarget)
         {
             this.fileSystem = fileSystem;
-            this.codeFixSuffix = codeFixSuffix;
+            this.friendlyLocalisationTarget = friendlyLocalisationTarget;
         }
 
         public override FixAllProvider? GetFixAllProvider() => null;
@@ -47,7 +47,7 @@ namespace LocalisationAnalyser.CodeFixes
             {
                 context.RegisterCodeFix(
                     CodeAction.Create(
-                        $"Localise literal string {literal}{codeFixSuffix}",
+                        $"Add new {friendlyLocalisationTarget} localisation for: {literal}",
                         c => localiseLiteralAsync(context.Document, literal, c),
                         nameof(LocaliseClassStringCodeFixProvider)),
                     diagnostic);
@@ -57,7 +57,7 @@ namespace LocalisationAnalyser.CodeFixes
             {
                 context.RegisterCodeFix(
                     CodeAction.Create(
-                        $"Localise interpolated string {interpolated}{codeFixSuffix}",
+                        $"Add new {friendlyLocalisationTarget} localisation for: {interpolated}",
                         c => localiseInterpolatedStringAsync(context.Document, interpolated, c),
                         nameof(LocaliseClassStringCodeFixProvider)),
                     diagnostic);
