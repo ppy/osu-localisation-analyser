@@ -38,7 +38,10 @@ namespace LocalisationAnalyser.Tests.Generators
         [Fact]
         public async Task EmptyFileContainsNoMembers()
         {
-            setupFile($@"using osu.Framework.Localisation;
+            setupFile($@"// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text.
+
+using osu.Framework.Localisation;
 
 namespace {test_namespace}
 {{
@@ -84,7 +87,10 @@ namespace {test_namespace}
             const string key_name = "TestKey";
             const string english_text = "TestEnglish";
 
-            setupFile($@"using osu.Framework.Localisation;
+            setupFile($@"// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text.
+
+using osu.Framework.Localisation;
 
 namespace {test_namespace}
 {{
@@ -147,7 +153,10 @@ namespace {test_namespace}
             var param2 = new LocalisationParameter("string", "second");
             var param3 = new LocalisationParameter("customobj", "third");
 
-            setupFile($@"using osu.Framework.Localisation;
+            setupFile($@"// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text.
+
+using osu.Framework.Localisation;
 
 namespace {test_namespace}
 {{
@@ -183,7 +192,10 @@ namespace {test_namespace}
             const string prop_name = "TestProperty";
             const string key_name = "TestKey";
 
-            setupFile($@"using osu.Framework.Localisation;
+            setupFile($@"// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text.
+
+using osu.Framework.Localisation;
 
 namespace {test_namespace}
 {{
@@ -218,7 +230,10 @@ namespace {test_namespace}
         {
             var sb = new StringBuilder();
 
-            sb.Append($@"using osu.Framework.Localisation;
+            sb.Append($@"// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text.
+
+using osu.Framework.Localisation;
 
 namespace {test_namespace}
 {{
