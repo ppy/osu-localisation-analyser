@@ -1,0 +1,16 @@
+using osu.Framework.Localisation;
+
+namespace TestProject.Localisation
+{
+    public static class ProgramStrings
+    {
+        private const string prefix = @"TestProject.Localisation.ProgramStrings";
+
+        /// <summary>
+        /// "this is an "escaped" string"
+        /// </summary>
+        public static LocalisableString Thisisanes => new TranslatableString(getKey(@"thisisanes"), @"this is an ""escaped"" string");
+
+        private static string getKey(string key) => $@"{prefix}:{key}";
+    }
+}

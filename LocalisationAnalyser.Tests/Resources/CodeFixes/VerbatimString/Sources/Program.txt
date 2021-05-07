@@ -1,0 +1,10 @@
+namespace Test
+{
+    class Program
+    {
+        static void Main()
+        {
+            string x = [|"this is an \"escaped\" string"|];
+        }
+    }
+}

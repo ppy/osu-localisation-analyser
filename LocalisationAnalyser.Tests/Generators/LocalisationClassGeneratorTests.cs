@@ -177,6 +177,38 @@ namespace {test_namespace}
             Assert.Equal(param3, generator.Members[0].Parameters[2]);
         }
 
+        [Fact]
+        public async Task CheckVerbatimStringIsConvertedToLiteral()
+        {
+            const string prop_name = "TestProperty";
+            const string key_name = "TestKey";
+
+            setupFile($@"using osu.Framework.Localisation;
+
+namespace {test_namespace}
+{{
+    public static class TestClass
+    {{
+        private const string prefix = @""{test_namespace}.{test_class_name}"";
+
+        /// <summary>
+        /// ""this is a ""verbatim"" string""
+        /// </summary>
+        public static LocalisableString {prop_name} => new TranslatableString(getKey(@""{key_name}""), @""this is a """"verbatim"""" string"");
+
+        private static string getKey(string key) => $@""{{prefix}}:{{key}}"";
+    }}
+}}");
+
+            await generator.Open();
+
+            Assert.Single(generator.Members);
+            Assert.Equal(prop_name, generator.Members[0].Name);
+            Assert.Equal(key_name, generator.Members[0].Key);
+            Assert.Equal("this is a \"verbatim\" string", generator.Members[0].EnglishText);
+            Assert.Empty(generator.Members[0].Parameters);
+        }
+
         private void setupFile(string contents)
         {
             mockFs.AddFile(test_file_name, contents);

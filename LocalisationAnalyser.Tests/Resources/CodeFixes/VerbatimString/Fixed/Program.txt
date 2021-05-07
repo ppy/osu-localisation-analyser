@@ -1,0 +1,12 @@
+using TestProject.Localisation;
+
+namespace Test
+{
+    class Program
+    {
+        static void Main()
+        {
+            string x = ProgramStrings.Thisisanes;
+        }
+    }
+}
