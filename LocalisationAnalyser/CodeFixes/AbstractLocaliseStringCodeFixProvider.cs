@@ -232,11 +232,11 @@ namespace LocalisationAnalyser.CodeFixes
             var incomingClassName = ((ClassDeclarationSyntax)containingClass).Identifier.Text;
 
             // The class being localised
-            var className = GetClassName(((ClassDeclarationSyntax)containingClass).Identifier.Text);
+            var className = GetLocalisationClassName(((ClassDeclarationSyntax)containingClass).Identifier.Text);
             var classFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(className, "cs"));
             var classFile = fileSystem.FileInfo.FromFileName(classFileName);
             var classNamespace = $"{project.AssemblyName}.{relative_localisation_path.Replace('/', '.')}";
-            var prefix = GetPrefix(incomingClassName);
+            var prefix = GetLocalisationPrefix(incomingClassName);
 
             var generator = new LocalisationClassGenerator(project.Solution.Workspace, classFile, classNamespace, className, prefix);
             await generator.Open();
@@ -244,9 +244,19 @@ namespace LocalisationAnalyser.CodeFixes
             return generator;
         }
 
-        protected virtual string GetPrefix(string className) => className;
+        /// <summary>
+        /// Retrieves un-namespaced prefix for the localisation class corresponding to a given class name.
+        /// </summary>
+        /// <param name="className">The name of the original class.</param>
+        /// <returns>The un-namespaced prefix.</returns>
+        protected virtual string GetLocalisationPrefix(string className) => className;
 
-        protected virtual string GetClassName(string className) => className;
+        /// <summary>
+        /// Retrieves the name of the localisation class corresponding to a given class name.
+        /// </summary>
+        /// <param name="className">The name of the original class.</param>
+        /// <returns>The name of the localisation class corresponding to <paramref name="className"/>.</returns>
+        protected virtual string GetLocalisationClassName(string className) => className;
 
         private static SyntaxNode create_syntax_transformation(MemberAccessExpressionSyntax memberAccess, IEnumerable<ExpressionSyntax> parameterValues)
         {
