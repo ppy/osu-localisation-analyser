@@ -109,26 +109,22 @@ namespace LocalisationAnalyser.Generators
         /// </summary>
         /// <returns>The syntax.</returns>
         private SyntaxNode generateClassSyntax()
-            => SyntaxFactory.CompilationUnit()
-                            .AddUsings(SyntaxFactory.UsingDirective(
-                                SyntaxFactory.QualifiedName(
-                                    SyntaxFactory.QualifiedName(
-                                        SyntaxFactory.IdentifierName("osu"),
-                                        SyntaxFactory.IdentifierName("Framework")),
-                                    SyntaxFactory.IdentifierName("Localisation"))))
-                            .AddMembers(SyntaxFactory.NamespaceDeclaration(
-                                                         SyntaxFactory.IdentifierName(ClassNamespace))
-                                                     .WithMembers(
-                                                         SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                                             SyntaxFactory.ClassDeclaration(ClassName)
-                                                                          .WithMembers(SyntaxFactory.List(
-                                                                              Members.Select(m => m.Parameters.Length == 0 ? generatePropertySyntax(m) : generateMethodSyntax(m))
-                                                                                     .Prepend(generatePrefixSyntax())
-                                                                                     .Append(generateGetKeySyntax())))
-                                                                          .WithModifiers(
-                                                                              new SyntaxTokenList(
-                                                                                  SyntaxFactory.Token(SyntaxKind.PublicKeyword),
-                                                                                  SyntaxFactory.Token(SyntaxKind.StaticKeyword))))));
+            => SyntaxFactory.ParseCompilationUnit(LocalisationClassTemplates.FILE_HEADER_SIGNATURE)
+                            .AddMembers(
+                                SyntaxFactory.NamespaceDeclaration(
+                                                 SyntaxFactory.IdentifierName(ClassNamespace))
+                                             .WithMembers(
+                                                 SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                                                     SyntaxFactory.ClassDeclaration(ClassName)
+                                                                  .WithMembers(SyntaxFactory.List(
+                                                                      Members
+                                                                          .Select(m => m.Parameters.Length == 0 ? generatePropertySyntax(m) : generateMethodSyntax(m))
+                                                                          .Prepend(generatePrefixSyntax())
+                                                                          .Append(generateGetKeySyntax())))
+                                                                  .WithModifiers(
+                                                                      new SyntaxTokenList(
+                                                                          SyntaxFactory.Token(SyntaxKind.PublicKeyword),
+                                                                          SyntaxFactory.Token(SyntaxKind.StaticKeyword))))));
 
         /// <summary>
         /// Generates the syntax for a property member.

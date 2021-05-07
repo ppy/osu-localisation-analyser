@@ -68,5 +68,14 @@ public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}(
         public static readonly string GET_KEY_SIGNATURE =
             $@"
 private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}}"";";
+
+        public const string LICENSE_HEADER =
+            @"// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text.";
+
+        public static readonly string FILE_HEADER_SIGNATURE =
+            @$"{LICENSE_HEADER}
+
+using osu.Framework.Localisation;";
     }
 }
