@@ -1,0 +1,11 @@
+namespace Test
+{
+    class Program
+    {
+        static void Main()
+        {
+            int i = 5;
+            string x = [|$"this is an interpolated string (i = {i})"|];
+        }
+    }
+}

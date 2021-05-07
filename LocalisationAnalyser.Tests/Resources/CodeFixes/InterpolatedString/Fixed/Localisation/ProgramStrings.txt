@@ -1,0 +1,16 @@
+using osu.Framework.Localisation;
+
+namespace TestProject.Localisation
+{
+    public static class ProgramStrings
+    {
+        private const string prefix = @"TestProject.Localisation.ProgramStrings";
+
+        /// <summary>
+        /// "this is an interpolated string (i = {0})""
+        /// </summary>
+        public static LocalisableString Thisisanin(int i) => new TranslatableString(getKey(@"thisisanin"), @"this is an interpolated string (i = {0})", i);
+
+        private static string getKey(string key) => $@"{prefix}:{key}";
+    }
+}
