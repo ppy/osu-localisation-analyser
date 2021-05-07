@@ -151,13 +151,6 @@ namespace LocalisationAnalyser.CodeFixes
             var memberAccess = generator.AddMember(new LocalisationMember(name, key, text, parameters.ToArray()));
             await generator.Save();
 
-            // Replace the syntax node (the localised string) in the target document.
-            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            var newRoot = oldRoot!.ReplaceNode(nodeToReplace, create_syntax_transformation(memberAccess, parameterValues));
-            solution = solution.WithDocumentSyntaxRoot(document.Id, newRoot);
-
-            // Todo: Check for and add a new using directive to the document if required.
-
             // Check for and add the new class file to the project if required.
             if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != generator.ClassFile.FullName))
             {
@@ -170,7 +163,19 @@ namespace LocalisationAnalyser.CodeFixes
                 solution = project.Solution;
             }
 
-            return solution;
+            // Replace the syntax node (the localised string) in the target document.
+            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false)!;
+            var newRoot = oldRoot!.ReplaceNode(nodeToReplace, create_syntax_transformation(memberAccess, parameterValues));
+
+            // Check for and add a new using directive to the document if required.
+            if (newRoot.DescendantNodes().OfType<UsingDirectiveSyntax>().Select(convertUsingDirectiveToString).All(ud => ud != generator.ClassNamespace))
+            {
+                newRoot = ((CompilationUnitSyntax)newRoot)
+                    .AddUsings(SyntaxFactory.UsingDirective(
+                        SyntaxFactory.ParseName(generator.ClassNamespace)));
+            }
+
+            return solution.WithDocumentSyntaxRoot(document.Id, newRoot);
         }
 
         private async Task<LocalisationClassGenerator> createGenerator(Project project, SyntaxNode sourceNode)
@@ -228,6 +233,21 @@ namespace LocalisationAnalyser.CodeFixes
 
             static bool containsMember(LocalisationClassGenerator generator, string memberName)
                 => generator.Members.Any(m => m.Name == memberName);
+        }
+
+        private static string convertUsingDirectiveToString(UsingDirectiveSyntax directive)
+        {
+            return getName(directive.Name);
+
+            static string getName(NameSyntax name)
+            {
+                return name switch
+                {
+                    IdentifierNameSyntax identifierNameSyntax => identifierNameSyntax.ToString(),
+                    QualifiedNameSyntax qualifiedNameSyntax => $"{getName(qualifiedNameSyntax.Left)}.{getName(qualifiedNameSyntax.Right)}",
+                    _ => string.Empty
+                };
+            }
         }
     }
 }
