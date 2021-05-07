@@ -11,6 +11,19 @@
         <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     </PropertyGroup>
 
+    <PropertyGroup Label="NuGet">
+        <Title>osu! Localisation Analyser</Title>
+        <Authors>ppy Pty Ltd</Authors>
+        <Company>ppy Pty Ltd</Company>
+        <Copyright>Copyright (c) 2021 ppy Pty Ltd</Copyright>
+        <Product>osu! Localisation Analyser</Product>
+        <PackageTags>osu analysers</PackageTags>
+        <PackageReleaseNotes>Automated release.</PackageReleaseNotes>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/smoogipoo/osu-localisation-analyser</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/smoogipoo/osu-localisation-analyser</RepositoryUrl>
+    </PropertyGroup>
+
     <ItemGroup>
         <!-- Add the dll to the correct path in the package. -->
         <None Include="$(OutputPath)\$(AssemblyName).dll">
