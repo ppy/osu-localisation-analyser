@@ -1,0 +1,38 @@
+on: [push, pull_request]
+name: Continuous Integration
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{matrix.os.fullname}}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - { prettyname: Windows, fullname: windows-latest }
+          - { prettyname: macOS, fullname: macos-latest }
+          - { prettyname: Linux, fullname: ubuntu-latest }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install .NET 5.0.x
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "5.0.x"
+
+      - name: Test
+        run: dotnet test --logger "trx;LogFileName=TestResults-${{matrix.os.prettyname}}.trx"
+        shell: pwsh
+
+
+      # Attempt to upload results even if test fails.
+      # https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#always
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-results-${{matrix.os.prettyname}}
+          path: ${{github.workspace}}/LocalisationAnalyser.Tests/TestResults/TestResults-${{matrix.os.prettyname}}.trx
