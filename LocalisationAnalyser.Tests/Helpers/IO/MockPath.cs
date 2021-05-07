@@ -19,5 +19,7 @@ namespace LocalisationAnalyser.Tests.Helpers.IO
         public string Combine(params string[] paths) => mockFs.Path.Combine(paths);
 
         public string ChangeExtension(string path, string newExtension) => mockFs.Path.ChangeExtension(path, newExtension);
+
+        public string? GetFileName(string path) => mockFs.Path.GetFileName(path);
     }
 }

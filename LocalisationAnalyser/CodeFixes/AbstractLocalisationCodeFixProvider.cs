@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -158,7 +157,8 @@ namespace LocalisationAnalyser.CodeFixes
             // Check for and add the new class file to the project if required.
             if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != generator.ClassFile.FullName))
             {
-                var classDocument = project.AddDocument(Path.GetFileName(generator.ClassFile.FullName),
+                var classDocument = project.AddDocument(
+                    fileSystem.Path.GetFileName(generator.ClassFile.FullName)!,
                     await generator.ClassFile.FileSystem.File.ReadAllTextAsync(generator.ClassFile.FullName, cancellationToken),
                     Enumerable.Empty<string>(),
                     generator.ClassFile.FullName);

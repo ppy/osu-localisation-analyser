@@ -12,5 +12,7 @@ namespace LocalisationAnalyser.Abstractions.IO.Default
         public string Combine(params string[] paths) => Path.Combine(paths);
 
         public string ChangeExtension(string path, string newExtension) => Path.ChangeExtension(path, newExtension);
+
+        public string? GetFileName(string path) => Path.GetFileName(path);
     }
 }
