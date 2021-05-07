@@ -1,4 +1,4 @@
-using Localisation;
+using TestProject.Localisation;
 
 namespace Test
 {

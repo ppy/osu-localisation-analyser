@@ -13,13 +13,13 @@ namespace LocalisationAnalyser.Tests.Verifiers
         where TAnalyzer : DiagnosticAnalyzer, new()
         where TCodeFix : CodeFixProvider, new()
     {
-        public static async Task VerifyCodeFixAsync(string[] sources, string[] fixedSources)
+        public static async Task VerifyCodeFixAsync((string filename, string contents)[] sources, (string filename, string contents)[] fixedSources)
             => await VerifyCodeFixAsync(sources, DiagnosticResult.EmptyDiagnosticResults, fixedSources);
 
-        public static async Task VerifyCodeFixAsync(string[] sources, DiagnosticResult expected, string[] fixedSources)
+        public static async Task VerifyCodeFixAsync((string filename, string contents)[] sources, DiagnosticResult expected, (string filename, string contents)[] fixedSources)
             => await VerifyCodeFixAsync(sources, new[] { expected }, fixedSources);
 
-        public static async Task VerifyCodeFixAsync(string[] sources, DiagnosticResult[] expected, string[] fixedSources)
+        public static async Task VerifyCodeFixAsync((string filename, string contents)[] sources, DiagnosticResult[] expected, (string filename, string contents)[] fixedSources)
         {
             var test = new Test();
 
