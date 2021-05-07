@@ -24,25 +24,32 @@ namespace LocalisationAnalyser.Tests.CodeFixes
                 ("TranslatableString.cs", readResourceStream(assembly, $"{resources_namespace}.TranslatableString.txt"))
             };
 
-            string sourcesNamespace = $"{resources_namespace}.CodeFixes.{name}.Sources";
             var sourceFiles = new List<(string filename, string content)>(requiredFiles);
-
-            foreach (var file in resourceNames.Where(n => n.StartsWith(sourcesNamespace)))
-            {
-                string filename = file.Replace(sourcesNamespace, string.Empty).Replace(".txt", ".cs")[1..];
-                sourceFiles.Add((filename, readResourceStream(assembly, file)));
-            }
-
-            string fixedNamespace = $"{resources_namespace}.CodeFixes.{name}.Fixed";
             var fixedFiles = new List<(string filename, string content)>(requiredFiles);
 
+            string sourcesNamespace = $"{resources_namespace}.CodeFixes.{name}.Sources";
+            string fixedNamespace = $"{resources_namespace}.CodeFixes.{name}.Fixed";
+
+            foreach (var file in resourceNames.Where(n => n.StartsWith(sourcesNamespace)))
+                sourceFiles.Add((getFileNameFromResourceName(sourcesNamespace, file), readResourceStream(assembly, file)));
             foreach (var file in resourceNames.Where(n => n.StartsWith(fixedNamespace)))
-            {
-                string filename = file.Replace(fixedNamespace, string.Empty).Replace(".txt", ".cs")[1..];
-                fixedFiles.Add((filename, readResourceStream(assembly, file)));
-            }
+                fixedFiles.Add((getFileNameFromResourceName(fixedNamespace, file), readResourceStream(assembly, file)));
+
+            // Files added to the solution via the codefix are always appended to the end. This is always going to be the localisation file.
+            // We need ot maintain a consistent order for roslyn to assert correctly.
+            sourceFiles = sourceFiles.OrderBy(f => f.filename == "Program.cs" ? -1 : 1).ToList();
+            fixedFiles = fixedFiles.OrderBy(f => f.filename == "Program.cs" ? -1 : 1).ToList();
 
             await Verify(sourceFiles.ToArray(), fixedFiles.ToArray());
+        }
+
+        private string getFileNameFromResourceName(string resourceNamespace, string resourceName)
+        {
+            resourceName = resourceName.Replace(resourceNamespace, string.Empty)[1..]
+                                       .Replace(".txt", string.Empty)
+                                       .Replace('.', '/');
+
+            return $"{Path.GetFileName(resourceName)}.cs";
         }
 
         protected abstract Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources);
