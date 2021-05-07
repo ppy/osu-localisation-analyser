@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +13,8 @@ namespace LocalisationAnalyser.Tests.Analysers
 {
     public class LocalisationAnalyserTests
     {
+        private const string resources_namespace = "LocalisationAnalyser.Tests.Resources";
+
         [Theory]
         [InlineData("BasicString")]
         [InlineData("EmptyString")]
@@ -25,13 +28,14 @@ namespace LocalisationAnalyser.Tests.Analysers
             var assembly = Assembly.GetExecutingAssembly();
             var resourceNames = assembly.GetManifestResourceNames();
 
-            var requiredFiles = new[]
+            var sourceFiles = new List<string>
             {
-                resourceNames.Single(n => n.Contains("LocalisableString.txt")),
-                resourceNames.Single(n => n.Contains("TranslatableString.txt"))
+                $"{resources_namespace}.LocalisableString.txt",
+                $"{resources_namespace}.TranslatableString.txt",
             };
 
-            var sourceFiles = requiredFiles.Append(resourceNames.Single(n => n.Contains($"ANA_{name}")));
+            foreach (var f in resourceNames.Where(n => n.StartsWith($"{resources_namespace}.Analysers.{name}")))
+                sourceFiles.Add(f);
 
             await Verify.VerifyAnalyzerAsync(sourceFiles.Select(f => readResourceStream(assembly, f)).ToArray());
         }
