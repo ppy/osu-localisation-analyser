@@ -86,7 +86,7 @@ namespace LocalisationAnalyser.Generators
         public MemberAccessExpressionSyntax AddMember(LocalisationMember member)
         {
             members.Add(member);
-            return generateMemberAccessSyntax(member);
+            return GenerateMemberAccessSyntax(member);
         }
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace LocalisationAnalyser.Generators
         /// <summary>
         /// Generates the syntax for accessing the member.
         /// </summary>
-        private MemberAccessExpressionSyntax generateMemberAccessSyntax(LocalisationMember member)
+        public MemberAccessExpressionSyntax GenerateMemberAccessSyntax(LocalisationMember member)
             => SyntaxFactory.MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
                 SyntaxFactory.IdentifierName(ClassName),

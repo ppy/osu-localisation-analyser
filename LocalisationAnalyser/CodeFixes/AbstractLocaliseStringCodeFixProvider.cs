@@ -45,12 +45,27 @@ namespace LocalisationAnalyser.CodeFixes
 
             foreach (var literal in nodes.OfType<LiteralExpressionSyntax>())
             {
-                context.RegisterCodeFix(
-                    CodeAction.Create(
-                        $"Add new {friendlyLocalisationTarget} localisation for: {literal}",
-                        c => localiseLiteralAsync(context.Document, literal, c),
-                        nameof(LocaliseClassStringCodeFixProvider)),
-                    diagnostic);
+                var generator = await createGenerator(context.Document.Project, literal);
+                var matchingMember = generator.Members.FirstOrDefault(m => m.EnglishText == literal.Token.ValueText);
+
+                if (matchingMember != null)
+                {
+                    context.RegisterCodeFix(
+                        CodeAction.Create(
+                            $"Use existing {friendlyLocalisationTarget} localisation: {matchingMember.Name}",
+                            c => localiseLiteralAsync(context.Document, literal, c, true),
+                            nameof(LocaliseClassStringCodeFixProvider)),
+                        diagnostic);
+                }
+                else
+                {
+                    context.RegisterCodeFix(
+                        CodeAction.Create(
+                            $"Add new {friendlyLocalisationTarget} localisation for: {literal}",
+                            c => localiseLiteralAsync(context.Document, literal, c, false),
+                            nameof(LocaliseClassStringCodeFixProvider)),
+                        diagnostic);
+                }
             }
 
             foreach (var interpolated in nodes.OfType<InterpolatedStringExpressionSyntax>())
@@ -64,9 +79,16 @@ namespace LocalisationAnalyser.CodeFixes
             }
         }
 
-        private async Task<Solution> localiseLiteralAsync(Document document, LiteralExpressionSyntax literal, CancellationToken cancellationToken)
+        private async Task<Solution> localiseLiteralAsync(Document document, LiteralExpressionSyntax literal, CancellationToken cancellationToken, bool useExisting)
         {
-            return await addMember(document, literal, literal.Token.ValueText, Enumerable.Empty<LocalisationParameter>(), Enumerable.Empty<ExpressionSyntax>(), cancellationToken);
+            return await addMember(
+                document,
+                literal,
+                literal.Token.ValueText,
+                Enumerable.Empty<LocalisationParameter>(),
+                Enumerable.Empty<ExpressionSyntax>(),
+                cancellationToken,
+                useExisting);
         }
 
         private async Task<Solution> localiseInterpolatedStringAsync(Document document, InterpolatedStringExpressionSyntax interpolated, CancellationToken cancellationToken)
@@ -137,35 +159,48 @@ namespace LocalisationAnalyser.CodeFixes
                 }
             }
 
-            return await addMember(document, interpolated, formatString.ToString(), paramNames.Select((name, i) => new LocalisationParameter(paramTypes[i], name)), paramValues, cancellationToken);
+            return await addMember(document,
+                interpolated,
+                formatString.ToString(),
+                paramNames.Select((name, i) => new LocalisationParameter(paramTypes[i], name)),
+                paramValues,
+                cancellationToken,
+                false);
         }
 
         private async Task<Solution> addMember(Document document, SyntaxNode nodeToReplace, string text, IEnumerable<LocalisationParameter> parameters, IEnumerable<ExpressionSyntax> parameterValues,
-                                               CancellationToken cancellationToken)
+                                               CancellationToken cancellationToken, bool useExisting)
         {
             var project = document.Project;
             var solution = project.Solution;
 
             var generator = await createGenerator(project, nodeToReplace);
 
-            var name = createMemberName(generator, text);
-            var key = name.ToLowerInvariant();
+            MemberAccessExpressionSyntax memberAccess;
 
-            var memberAccess = generator.AddMember(new LocalisationMember(name, key, text, parameters.ToArray()));
-            await generator.Save();
-
-            // Check for and add the new class file to the project if required.
-            if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != generator.ClassFile.FullName))
+            if (!useExisting || !generator.Members.Any(m => m.EnglishText == text))
             {
-                var classDocument = project.AddDocument(
-                    fileSystem.Path.GetFileName(generator.ClassFile.FullName)!,
-                    await generator.ClassFile.FileSystem.File.ReadAllTextAsync(generator.ClassFile.FullName, cancellationToken),
-                    Enumerable.Empty<string>(),
-                    generator.ClassFile.FullName);
+                var name = createMemberName(generator, text);
+                var key = name.ToLowerInvariant();
 
-                project = classDocument.Project;
-                solution = project.Solution;
+                memberAccess = generator.AddMember(new LocalisationMember(name, key, text, parameters.ToArray()));
+                await generator.Save();
+
+                // Check for and add the new class file to the project if required.
+                if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != generator.ClassFile.FullName))
+                {
+                    var classDocument = project.AddDocument(
+                        fileSystem.Path.GetFileName(generator.ClassFile.FullName)!,
+                        await generator.ClassFile.FileSystem.File.ReadAllTextAsync(generator.ClassFile.FullName, cancellationToken),
+                        Enumerable.Empty<string>(),
+                        generator.ClassFile.FullName);
+
+                    project = classDocument.Project;
+                    solution = project.Solution;
+                }
             }
+            else
+                memberAccess = generator.GenerateMemberAccessSyntax(generator.Members.First(m => m.EnglishText == text));
 
             // Replace the syntax node (the localised string) in the target document.
             var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false)!;
