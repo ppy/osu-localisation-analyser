@@ -6,18 +6,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Xunit;
-using Verify = LocalisationAnalyser.Tests.Verifiers.CSharpCodeFixVerifier<LocalisationAnalyser.Analysers.LocalisationAnalyser, LocalisationAnalyser.Tests.CodeFixes.MockLocalisationCodeFixProvider>;
 
 namespace LocalisationAnalyser.Tests.CodeFixes
 {
-    public class LocalisationCodeFixTests
+    public abstract class AbstractLocalisationCodeFixTests
     {
         private const string resources_namespace = "LocalisationAnalyser.Tests.Resources";
 
-        [Theory]
-        [InlineData("BasicString")]
-        public async Task Check(string name)
+        public async Task RunTest(string name)
         {
             var assembly = Assembly.GetExecutingAssembly();
             var resourceNames = assembly.GetManifestResourceNames();
@@ -46,8 +42,10 @@ namespace LocalisationAnalyser.Tests.CodeFixes
                 fixedFiles.Add((filename, readResourceStream(assembly, file)));
             }
 
-            await Verify.VerifyCodeFixAsync(sourceFiles.ToArray(), fixedFiles.ToArray());
+            await Verify(sourceFiles.ToArray(), fixedFiles.ToArray());
         }
+
+        protected abstract Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources);
 
         private string readResourceStream(Assembly asm, string resource)
         {

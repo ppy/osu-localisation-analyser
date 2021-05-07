@@ -1,14 +1,16 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using LocalisationAnalyser.Abstractions.IO;
 using LocalisationAnalyser.CodeFixes;
 using LocalisationAnalyser.Tests.Helpers.IO;
 
 namespace LocalisationAnalyser.Tests.CodeFixes
 {
-    public class MockLocalisationCodeFixProvider : LocalisationCodeFixProvider
+    public class MockCommonLocalisationCodeFixProvider : CommonLocalisationCodeFixProvider
     {
-        protected override IFileSystem GetFileSystem() => new MockFileSystem();
+        public MockCommonLocalisationCodeFixProvider()
+            : base(new MockFileSystem())
+        {
+        }
     }
 }

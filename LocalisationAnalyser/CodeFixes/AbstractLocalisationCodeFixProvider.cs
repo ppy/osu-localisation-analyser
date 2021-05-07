@@ -4,14 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Composition;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LocalisationAnalyser.Abstractions.IO;
-using LocalisationAnalyser.Abstractions.IO.Default;
 using LocalisationAnalyser.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -21,13 +19,19 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace LocalisationAnalyser.CodeFixes
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LocalisationCodeFixProvider)), Shared]
-    public class LocalisationCodeFixProvider : CodeFixProvider
+    public abstract class AbstractLocalisationCodeFixProvider : CodeFixProvider
     {
         private const string relative_localisation_path = "Localisation";
-        private const string class_suffix = "Strings";
+        private readonly IFileSystem fileSystem;
+        private readonly string? codeFixSuffix;
 
         public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(Analysers.LocalisationAnalyser.DIAGNOSTIC_ID);
+
+        protected AbstractLocalisationCodeFixProvider(IFileSystem fileSystem, string? codeFixSuffix = null)
+        {
+            this.fileSystem = fileSystem;
+            this.codeFixSuffix = codeFixSuffix;
+        }
 
         public override FixAllProvider? GetFixAllProvider() => null;
 
@@ -44,9 +48,9 @@ namespace LocalisationAnalyser.CodeFixes
             {
                 context.RegisterCodeFix(
                     CodeAction.Create(
-                        $"Localise literal string {literal}",
+                        $"Localise literal string {literal}{codeFixSuffix}",
                         c => localiseLiteralAsync(context.Document, literal, c),
-                        nameof(LocalisationCodeFixProvider)),
+                        nameof(ClassSuffixedLocalisationCodeFixProvider)),
                     diagnostic);
             }
 
@@ -54,9 +58,9 @@ namespace LocalisationAnalyser.CodeFixes
             {
                 context.RegisterCodeFix(
                     CodeAction.Create(
-                        $"Localise interpolated string {interpolated}",
+                        $"Localise interpolated string {interpolated}{codeFixSuffix}",
                         c => localiseInterpolatedStringAsync(context.Document, interpolated, c),
-                        nameof(LocalisationCodeFixProvider)),
+                        nameof(ClassSuffixedLocalisationCodeFixProvider)),
                     diagnostic);
             }
         }
@@ -187,12 +191,10 @@ namespace LocalisationAnalyser.CodeFixes
             if (containingClass == null)
                 throw new InvalidOperationException("String is not within a class.");
 
-            var fileSystem = GetFileSystem();
-
             var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath)!;
             var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(relative_localisation_path.Split('/')).ToArray());
 
-            var className = $"{((ClassDeclarationSyntax)containingClass).Identifier.Text}{class_suffix}";
+            var className = GetClassName($"{((ClassDeclarationSyntax)containingClass).Identifier.Text}");
             var classFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(className, "cs"));
             var classFile = fileSystem.FileInfo.FromFileName(classFileName);
             var classNamespace = $"{project.AssemblyName}.{relative_localisation_path.Replace('/', '.')}";
@@ -203,7 +205,7 @@ namespace LocalisationAnalyser.CodeFixes
             return generator;
         }
 
-        protected virtual IFileSystem GetFileSystem() => new DefaultFileSystem();
+        protected virtual string GetClassName(string defaultName) => defaultName;
 
         private static SyntaxNode create_syntax_transformation(MemberAccessExpressionSyntax memberAccess, IEnumerable<ExpressionSyntax> parameterValues)
         {
