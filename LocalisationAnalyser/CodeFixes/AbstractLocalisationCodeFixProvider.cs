@@ -24,7 +24,7 @@ namespace LocalisationAnalyser.CodeFixes
         private readonly IFileSystem fileSystem;
         private readonly string? codeFixSuffix;
 
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(Analysers.LocalisationAnalyser.DIAGNOSTIC_ID);
+        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED.Id);
 
         protected AbstractLocalisationCodeFixProvider(IFileSystem fileSystem, string? codeFixSuffix = null)
         {

@@ -13,26 +13,7 @@ namespace LocalisationAnalyser.Analysers
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class LocalisationAnalyser : DiagnosticAnalyzer
     {
-        public const string DIAGNOSTIC_ID = "OLOC001";
-        private const string category = "Globalization";
-
-        // Disable's roslyn analyser release tracking. Todo: Temporary? The analyser doesn't behave well with Rider :/
-        // Read more: https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
-
-#pragma warning disable RS2008
-
-        private static readonly DiagnosticDescriptor rule = new DiagnosticDescriptor(
-            DIAGNOSTIC_ID,
-            "String can be localised",
-            "'{0}' can be localised",
-            category,
-            DiagnosticSeverity.Info,
-            true,
-            "Localise string.");
-
-#pragma warning restore RS2008
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -51,7 +32,7 @@ namespace LocalisationAnalyser.Analysers
                         break;
 
                     if (literal.Token.ValueText.Where(char.IsLetter).Any())
-                        context.ReportDiagnostic(Diagnostic.Create(rule, context.Node.GetLocation(), context.Node));
+                        context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED, context.Node.GetLocation(), context.Node));
                     break;
 
                 case InterpolatedStringExpressionSyntax interpolated:
@@ -59,7 +40,7 @@ namespace LocalisationAnalyser.Analysers
                         break;
 
                     if (interpolated.Contents.Any(c => c is InterpolatedStringTextSyntax text && text.TextToken.ValueText.Where(char.IsLetter).Any()))
-                        context.ReportDiagnostic(Diagnostic.Create(rule, context.Node.GetLocation(), context.Node));
+                        context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED, context.Node.GetLocation(), context.Node));
                     break;
             }
         }
