@@ -24,6 +24,8 @@ namespace LocalisationAnalyser.CodeFixes
         {
         }
 
-        protected override string GetClassName(string defaultName) => common_class_name;
+        protected override string GetPrefix(string className) => common_class_name;
+
+        protected override string GetClassName(string className) => common_class_name;
     }
 }

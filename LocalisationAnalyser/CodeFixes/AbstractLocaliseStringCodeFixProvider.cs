@@ -229,18 +229,24 @@ namespace LocalisationAnalyser.CodeFixes
             var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath)!;
             var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(relative_localisation_path.Split('/')).ToArray());
 
-            var className = GetClassName($"{((ClassDeclarationSyntax)containingClass).Identifier.Text}");
+            var incomingClassName = ((ClassDeclarationSyntax)containingClass).Identifier.Text;
+
+            // The class being localised
+            var className = GetClassName(((ClassDeclarationSyntax)containingClass).Identifier.Text);
             var classFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(className, "cs"));
             var classFile = fileSystem.FileInfo.FromFileName(classFileName);
             var classNamespace = $"{project.AssemblyName}.{relative_localisation_path.Replace('/', '.')}";
+            var prefix = GetPrefix(incomingClassName);
 
-            var generator = new LocalisationClassGenerator(project.Solution.Workspace, classFile, classNamespace, className);
+            var generator = new LocalisationClassGenerator(project.Solution.Workspace, classFile, classNamespace, className, prefix);
             await generator.Open();
 
             return generator;
         }
 
-        protected virtual string GetClassName(string defaultName) => defaultName;
+        protected virtual string GetPrefix(string className) => className;
+
+        protected virtual string GetClassName(string className) => className;
 
         private static SyntaxNode create_syntax_transformation(MemberAccessExpressionSyntax memberAccess, IEnumerable<ExpressionSyntax> parameterValues)
         {
