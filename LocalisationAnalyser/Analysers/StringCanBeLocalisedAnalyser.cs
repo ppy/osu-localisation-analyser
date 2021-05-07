@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace LocalisationAnalyser.Analysers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class LocalisationAnalyser : DiagnosticAnalyzer
+    public class StringCanBeLocalisedAnalyser : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED);
 

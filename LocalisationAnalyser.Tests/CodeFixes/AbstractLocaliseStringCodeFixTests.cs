@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace LocalisationAnalyser.Tests.CodeFixes
 {
-    public abstract class AbstractLocalisationCodeFixTests
+    public abstract class AbstractLocaliseStringCodeFixTests
     {
         private const string resources_namespace = "LocalisationAnalyser.Tests.Resources";
 

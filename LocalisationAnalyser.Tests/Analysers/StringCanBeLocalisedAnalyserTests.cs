@@ -7,11 +7,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
-using Verify = LocalisationAnalyser.Tests.Verifiers.CSharpAnalyzerVerifier<LocalisationAnalyser.Analysers.LocalisationAnalyser>;
+using Verify = LocalisationAnalyser.Tests.Verifiers.CSharpAnalyzerVerifier<LocalisationAnalyser.Analysers.StringCanBeLocalisedAnalyser>;
 
 namespace LocalisationAnalyser.Tests.Analysers
 {
-    public class LocalisationAnalyserTests
+    public class StringCanBeLocalisedAnalyserTests
     {
         private const string resources_namespace = "LocalisationAnalyser.Tests.Resources";
 

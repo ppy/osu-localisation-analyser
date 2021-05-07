@@ -18,7 +18,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace LocalisationAnalyser.CodeFixes
 {
-    public abstract class AbstractLocalisationCodeFixProvider : CodeFixProvider
+    public abstract class AbstractLocaliseStringCodeFixProvider : CodeFixProvider
     {
         private const string relative_localisation_path = "Localisation";
         private readonly IFileSystem fileSystem;
@@ -26,7 +26,7 @@ namespace LocalisationAnalyser.CodeFixes
 
         public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED.Id);
 
-        protected AbstractLocalisationCodeFixProvider(IFileSystem fileSystem, string? codeFixSuffix = null)
+        protected AbstractLocaliseStringCodeFixProvider(IFileSystem fileSystem, string? codeFixSuffix = null)
         {
             this.fileSystem = fileSystem;
             this.codeFixSuffix = codeFixSuffix;
@@ -49,7 +49,7 @@ namespace LocalisationAnalyser.CodeFixes
                     CodeAction.Create(
                         $"Localise literal string {literal}{codeFixSuffix}",
                         c => localiseLiteralAsync(context.Document, literal, c),
-                        nameof(ClassSuffixedLocalisationCodeFixProvider)),
+                        nameof(LocaliseClassStringCodeFixProvider)),
                     diagnostic);
             }
 
@@ -59,7 +59,7 @@ namespace LocalisationAnalyser.CodeFixes
                     CodeAction.Create(
                         $"Localise interpolated string {interpolated}{codeFixSuffix}",
                         c => localiseInterpolatedStringAsync(context.Document, interpolated, c),
-                        nameof(ClassSuffixedLocalisationCodeFixProvider)),
+                        nameof(LocaliseClassStringCodeFixProvider)),
                     diagnostic);
             }
         }

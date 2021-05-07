@@ -9,17 +9,17 @@ using Microsoft.CodeAnalysis.CodeFixes;
 
 namespace LocalisationAnalyser.CodeFixes
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(CommonLocalisationCodeFixProvider)), Shared]
-    public class CommonLocalisationCodeFixProvider : AbstractLocalisationCodeFixProvider
+    [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LocaliseCommonStringCodeFixProvider)), Shared]
+    public class LocaliseCommonStringCodeFixProvider : AbstractLocaliseStringCodeFixProvider
     {
         private const string common_class_name = "Common";
 
-        public CommonLocalisationCodeFixProvider()
+        public LocaliseCommonStringCodeFixProvider()
             : this(new DefaultFileSystem())
         {
         }
 
-        public CommonLocalisationCodeFixProvider(IFileSystem fileSystem)
+        public LocaliseCommonStringCodeFixProvider(IFileSystem fileSystem)
             : base(fileSystem, " (common)")
         {
         }

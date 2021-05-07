@@ -4,11 +4,11 @@
 using LocalisationAnalyser.CodeFixes;
 using LocalisationAnalyser.Tests.Helpers.IO;
 
-namespace LocalisationAnalyser.Tests.CodeFixes
+namespace LocalisationAnalyser.Tests.CodeFixes.Providers
 {
-    public class MockCommonLocalisationCodeFixProvider : CommonLocalisationCodeFixProvider
+    public class LocaliseClassStringCodeFixMockProvider : LocaliseClassStringCodeFixProvider
     {
-        public MockCommonLocalisationCodeFixProvider()
+        public LocaliseClassStringCodeFixMockProvider()
             : base(new MockFileSystem())
         {
         }

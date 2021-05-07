@@ -4,16 +4,15 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = LocalisationAnalyser.Tests.Verifiers.CSharpCodeFixVerifier<
-    LocalisationAnalyser.Analysers.LocalisationAnalyser,
-    LocalisationAnalyser.Tests.CodeFixes.MockClassSuffixedLocalisationCodeFixProvider>;
+    LocalisationAnalyser.Analysers.StringCanBeLocalisedAnalyser,
+    LocalisationAnalyser.Tests.CodeFixes.Providers.LocaliseCommonStringCodeFixMockProvider>;
 
 namespace LocalisationAnalyser.Tests.CodeFixes
 {
-    public class ClassSuffixedLocalisationCodeFixTests : AbstractLocalisationCodeFixTests
+    public class LocaliseCommonStringCodeFixTests : AbstractLocaliseStringCodeFixTests
     {
         [Theory]
-        [InlineData("BasicString")]
-        [InlineData("VerbatimString")]
+        [InlineData("CommonBasicString")]
         public async Task Check(string name) => await RunTest(name);
 
         protected override Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources)
