@@ -51,7 +51,7 @@ jobs:
         with:
           dotnet-version: "5.0.x"
 
-      - name: Build NativeLibs
+      - name: Pack
         run: dotnet pack -c Release LocalisationAnalyser /p:Configuration=Release /p:Version=${{needs.check-if-tag.outputs.version}} /p:GenerateDocumentationFile=true -o ${{steps.artifactsPath.outputs.nuget_artifacts}}
 
       - name: Upload Artifacts
@@ -62,5 +62,4 @@ jobs:
 
       - name: Deploy
         run: |
-            dotnet nuget add source https://api.nuget.org/v3/index.json -n authed-nuget -u ${{secrets.NUGET_USER_NAME}} -p ${{secrets.NUGET_AUTH_TOKEN}}
-            dotnet nuget push ${{github.workspace}}/artifacts/*.nupkg --skip-duplicate --source authed-nuget
+            dotnet nuget push ${{github.workspace}}/artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key ${{secrets.NUGET_AUTH_TOKEN}}
