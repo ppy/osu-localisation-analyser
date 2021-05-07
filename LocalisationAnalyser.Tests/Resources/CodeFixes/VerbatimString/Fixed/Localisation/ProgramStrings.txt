@@ -4,7 +4,7 @@ namespace TestProject.Localisation
 {
     public static class ProgramStrings
     {
-        private const string prefix = @"TestProject.Localisation.ProgramStrings";
+        private const string prefix = @"TestProject.Localisation.Program";
 
         /// <summary>
         /// "this is an "escaped" string"

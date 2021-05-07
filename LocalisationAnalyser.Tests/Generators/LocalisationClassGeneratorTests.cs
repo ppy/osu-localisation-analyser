@@ -23,7 +23,7 @@ namespace LocalisationAnalyser.Tests.Generators
         public LocalisationClassGeneratorTests()
         {
             mockFs = new MockFileSystem();
-            generator = new LocalisationClassGenerator(new AdhocWorkspace(), mockFs.FileInfo.FromFileName(test_file_name), test_namespace, test_class_name);
+            generator = new LocalisationClassGenerator(new AdhocWorkspace(), mockFs.FileInfo.FromFileName(test_file_name), test_namespace, test_class_name, test_class_name);
         }
 
         [Fact]

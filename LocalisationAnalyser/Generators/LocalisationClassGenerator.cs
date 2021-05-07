@@ -30,6 +30,7 @@ namespace LocalisationAnalyser.Generators
         public readonly string ClassNamespace;
         public readonly string ClassName;
         private readonly Workspace workspace;
+        private readonly string prefix;
 
         /// <summary>
         /// Creates a new localisation class generator.
@@ -38,12 +39,14 @@ namespace LocalisationAnalyser.Generators
         /// <param name="classFile">The localisation class file.</param>
         /// <param name="classNamespace">The localisation class namespace.</param>
         /// <param name="className">The localisation class name.</param>
-        public LocalisationClassGenerator(Workspace workspace, IFileInfo classFile, string classNamespace, string className)
+        /// <param name="prefix">The localisation prefix.</param>
+        public LocalisationClassGenerator(Workspace workspace, IFileInfo classFile, string classNamespace, string className, string prefix)
         {
             this.workspace = workspace;
-            ClassName = className;
             ClassFile = classFile;
             ClassNamespace = classNamespace;
+            ClassName = className;
+            this.prefix = prefix;
         }
 
         /// <summary>
@@ -178,7 +181,7 @@ namespace LocalisationAnalyser.Generators
         /// Generates the syntax for the prefix constant.
         /// </summary>
         private MemberDeclarationSyntax generatePrefixSyntax()
-            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationClassTemplates.PREFIX_SIGNATURE, $"{ClassNamespace}.{ClassName}"))!;
+            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationClassTemplates.PREFIX_SIGNATURE, $"{ClassNamespace}.{prefix}"))!;
 
         /// <summary>
         /// Generates the syntax for the getKey() method.
