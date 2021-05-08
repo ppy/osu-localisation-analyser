@@ -50,7 +50,7 @@ namespace LocalisationAnalyser.Localisation
             {
                 base.VisitVariableDeclarator(node);
 
-                if (node.Identifier.ValueText == LocalisationSyntaxTemplates.PREFIX_CONST_NAME)
+                if (node.Identifier.ValueText == SyntaxTemplates.PREFIX_CONST_NAME)
                 {
                     Prefix = node.DescendantNodes()
                                  .OfType<LiteralExpressionSyntax>()
@@ -128,7 +128,7 @@ namespace LocalisationAnalyser.Localisation
                     return false;
 
                 // Validate return type and member definition.
-                if (returnType.ToString() != LocalisationSyntaxTemplates.MEMBER_RETURN_TYPE
+                if (returnType.ToString() != SyntaxTemplates.MEMBER_RETURN_TYPE
                     || body == null)
                 {
                     return false;
@@ -147,7 +147,7 @@ namespace LocalisationAnalyser.Localisation
                     return false;
 
                 // Validate creation expression.
-                if (creationSyntax.Type.ToString() != LocalisationSyntaxTemplates.MEMBER_CONSTRUCTION_TYPE
+                if (creationSyntax.Type.ToString() != SyntaxTemplates.MEMBER_CONSTRUCTION_TYPE
                     || creationSyntax.ArgumentList == null
                     || creationSyntax.ArgumentList.Arguments.Count < 2)
                 {
@@ -156,7 +156,7 @@ namespace LocalisationAnalyser.Localisation
 
                 // Validate key argument.
                 if (creationSyntax.ArgumentList.Arguments[0].Expression is not InvocationExpressionSyntax getKeyInvocation
-                    || getKeyInvocation.Expression.ToString() != LocalisationSyntaxTemplates.GET_KEY_METHOD_NAME
+                    || getKeyInvocation.Expression.ToString() != SyntaxTemplates.GET_KEY_METHOD_NAME
                     || getKeyInvocation.ArgumentList.Arguments.Count == 0
                     || getKeyInvocation.ArgumentList.Arguments[0].Expression is not LiteralExpressionSyntax keyLiteral
                     || keyLiteral.Kind() != SyntaxKind.StringLiteralExpression)

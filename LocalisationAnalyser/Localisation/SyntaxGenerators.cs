@@ -13,14 +13,14 @@ namespace LocalisationAnalyser.Localisation
     /// <summary>
     /// <see cref="SyntaxNode"/> generators for use with a <see cref="LocalisationFile"/>.
     /// </summary>
-    internal static class LocalisationSyntaxGenerators
+    internal static class SyntaxGenerators
     {
         /// <summary>
         /// Generates the full class syntax, including the namespace, all leading/trailing members, and the localisation members.
         /// </summary>
         /// <returns>The syntax.</returns>
         public static SyntaxNode GenerateClassSyntax(Workspace workspace, LocalisationFile localisationFile)
-            => SyntaxFactory.ParseCompilationUnit(LocalisationSyntaxTemplates.FILE_HEADER_SIGNATURE)
+            => SyntaxFactory.ParseCompilationUnit(SyntaxTemplates.FILE_HEADER_SIGNATURE)
                             .AddMembers(
                                 SyntaxFactory.NamespaceDeclaration(
                                                  SyntaxFactory.IdentifierName(localisationFile.Namespace))
@@ -42,7 +42,7 @@ namespace LocalisationAnalyser.Localisation
         /// </summary>
         public static MemberDeclarationSyntax GeneratePropertySyntax(LocalisationMember member)
             => SyntaxFactory.ParseMemberDeclaration(
-                string.Format(LocalisationSyntaxTemplates.PROPERTY_MEMBER_TEMPLATE,
+                string.Format(SyntaxTemplates.PROPERTY_MEMBER_TEMPLATE,
                     member.Name,
                     member.Key,
                     convertToVerbatim(member.EnglishText),
@@ -66,7 +66,7 @@ namespace LocalisationAnalyser.Localisation
                         SyntaxFactory.IdentifierName(param.Name)))));
 
             return SyntaxFactory.ParseMemberDeclaration(
-                string.Format(LocalisationSyntaxTemplates.METHOD_MEMBER_TEMPLATE,
+                string.Format(SyntaxTemplates.METHOD_MEMBER_TEMPLATE,
                     member.Name,
                     Formatter.Format(paramList, workspace).ToFullString(),
                     member.Key,
@@ -88,13 +88,13 @@ namespace LocalisationAnalyser.Localisation
         /// Generates the syntax for the prefix constant.
         /// </summary>
         public static MemberDeclarationSyntax GeneratePrefixSyntax(LocalisationFile localisationFile)
-            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationSyntaxTemplates.CONST_PREFIX_TEMPLATE, $"{localisationFile.Namespace}.{localisationFile.Prefix}"))!;
+            => SyntaxFactory.ParseMemberDeclaration(string.Format(SyntaxTemplates.CONST_PREFIX_TEMPLATE, $"{localisationFile.Namespace}.{localisationFile.Prefix}"))!;
 
         /// <summary>
         /// Generates the syntax for the getKey() method.
         /// </summary>
         public static MemberDeclarationSyntax GenerateGetKeySyntax()
-            => SyntaxFactory.ParseMemberDeclaration(LocalisationSyntaxTemplates.GET_KEY_METHOD_TEMPLATE)!;
+            => SyntaxFactory.ParseMemberDeclaration(SyntaxTemplates.GET_KEY_METHOD_TEMPLATE)!;
 
         /// <summary>
         /// Converts a string literal to its verbatim representation. Assumes that the string is already non-verbatim.

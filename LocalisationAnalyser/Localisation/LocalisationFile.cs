@@ -60,7 +60,7 @@ namespace LocalisationAnalyser.Localisation
         public async Task WriteAsync(Stream stream, Workspace workspace)
         {
             using (var sw = new StreamWriter(stream))
-                await sw.WriteAsync(Formatter.Format(LocalisationSyntaxGenerators.GenerateClassSyntax(workspace, this), workspace).ToFullString());
+                await sw.WriteAsync(Formatter.Format(SyntaxGenerators.GenerateClassSyntax(workspace, this), workspace).ToFullString());
         }
 
         /// <summary>

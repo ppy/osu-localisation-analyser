@@ -193,7 +193,7 @@ namespace LocalisationAnalyser.CodeFixes
                 using (var stream = file.OpenWrite())
                     await localisation.WriteAsync(stream, document.Project.Solution.Workspace);
 
-                memberAccess = LocalisationSyntaxGenerators.GenerateMemberAccessSyntax(localisation, newMember);
+                memberAccess = SyntaxGenerators.GenerateMemberAccessSyntax(localisation, newMember);
 
                 // Check for and add the new class file to the project if required.
                 if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != file.FullName))
@@ -209,7 +209,7 @@ namespace LocalisationAnalyser.CodeFixes
                 }
             }
             else
-                memberAccess = LocalisationSyntaxGenerators.GenerateMemberAccessSyntax(localisation, localisation.Members.First(m => m.EnglishText == text));
+                memberAccess = SyntaxGenerators.GenerateMemberAccessSyntax(localisation, localisation.Members.First(m => m.EnglishText == text));
 
             // Replace the syntax node (the localised string) in the target document.
             var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false)!;
@@ -239,13 +239,13 @@ namespace LocalisationAnalyser.CodeFixes
                 throw new InvalidOperationException("String is not within a class.");
 
             var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath!);
-            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(LocalisationSyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Split('/')).ToArray());
+            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Split('/')).ToArray());
 
             // The class being localised.
             var incomingClassName = ((ClassDeclarationSyntax)containingClass).Identifier.Text;
 
             // The localisation class.
-            var localisationNamespace = $"{project.AssemblyName}.{LocalisationSyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Replace('/', '.')}";
+            var localisationNamespace = $"{project.AssemblyName}.{SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Replace('/', '.')}";
             var localisationName = GetLocalisationFileName(((ClassDeclarationSyntax)containingClass).Identifier.Text);
             var localisationFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(localisationName, "cs"));
             var localisationFile = fileSystem.FileInfo.FromFileName(localisationFileName);

@@ -3,7 +3,7 @@
 
 namespace LocalisationAnalyser.Localisation
 {
-    public static class LocalisationSyntaxTemplates
+    public static class SyntaxTemplates
     {
         /// <summary>
         /// The return type of either property or method members (see: <see cref="PROPERTY_MEMBER_TEMPLATE"/> and <see cref="METHOD_MEMBER_TEMPLATE"/>).
