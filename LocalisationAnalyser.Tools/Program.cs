@@ -1,4 +1,5 @@
-﻿using System.CommandLine;
+﻿using System;
+using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
@@ -34,6 +35,8 @@ namespace LocalisationAnalyser.Tools
 
         private static async Task convertToResX(string projectFile)
         {
+            Console.WriteLine($"Converting all localisation files in {projectFile}...");
+
             MSBuildLocator.RegisterDefaults();
 
             var workspace = MSBuildWorkspace.Create();
@@ -41,13 +44,23 @@ namespace LocalisationAnalyser.Tools
 
             var classFiles = project.Documents.Where(d => d.Folders.FirstOrDefault() == AbstractLocaliseStringCodeFixProvider.RELATIVE_LOCALISATION_PATH)
                                     .Where(d => d.Name.EndsWith(".cs"))
-                                    .Where(d => d.Name[..^3].Count(c => c == '.') == 0);
+                                    .Where(d => d.Name[..^3].Count(c => c == '.') == 0)
+                                    .ToArray();
+
+            if (classFiles.Length == 0)
+            {
+                Console.WriteLine("No localisation files found in project.");
+                return;
+            }
 
             foreach (var classFile in classFiles)
             {
+                Console.WriteLine($"Processing {classFile.Name}...");
+
                 string className = Path.GetFileNameWithoutExtension(classFile.Name)!;
                 string classNamespace = $"{project.AssemblyName}.{AbstractLocaliseStringCodeFixProvider.RELATIVE_LOCALISATION_PATH}";
                 string classPrefix = $"{classNamespace}.{className}";
+                string resxFile = Path.ChangeExtension(classFile.FilePath, "resx");
 
                 var generator = new LocalisationClassGenerator(
                     workspace,
@@ -65,9 +78,11 @@ namespace LocalisationAnalyser.Tools
                         resWriter.AddResource($"{classPrefix}:{member.Key}", member.EnglishText);
                     resWriter.Generate();
 
-                    using (var fs = File.Open(Path.ChangeExtension(classFile.FilePath, "resx"), FileMode.Create, FileAccess.ReadWrite))
+                    using (var fs = File.Open(resxFile, FileMode.Create, FileAccess.ReadWrite))
                         ms.WriteTo(fs);
                 }
+
+                Console.WriteLine($"  -> {resxFile}");
             }
         }
     }
