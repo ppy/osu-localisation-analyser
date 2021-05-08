@@ -40,32 +40,36 @@ namespace LocalisationAnalyser.Tools
             var workspace = MSBuildWorkspace.Create();
             var project = await workspace.OpenProjectAsync(projectFile);
 
-            var classFiles = project.Documents.Where(d => d.Folders.FirstOrDefault() == SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH)
-                                    .Where(d => d.Name.EndsWith(".cs"))
-                                    .Where(d => d.Name[..^3].Count(c => c == '.') == 0)
-                                    .ToArray();
+            var localisationFiles = project.Documents.Where(d => d.Folders.SequenceEqual(SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Split('/')))
+                                           .Where(d => d.Name.EndsWith(".cs"))
+                                           .Where(d =>
+                                           {
+                                               string filename = Path.GetFileNameWithoutExtension(d.Name);
+                                               return filename.EndsWith(SyntaxTemplates.CLASS_STRINGS_FILE_SUFFIX) || filename == SyntaxTemplates.COMMON_STRINGS_FILE_NAME;
+                                           })
+                                           .ToArray();
 
-            if (classFiles.Length == 0)
+            if (localisationFiles.Length == 0)
             {
                 Console.WriteLine("No localisation files found in project.");
                 return;
             }
 
-            foreach (var file in classFiles)
+            foreach (var file in localisationFiles)
             {
                 Console.WriteLine($"Processing {file.Name}...");
-
-                string resxFile = Path.ChangeExtension(file.FilePath, "resx");
 
                 LocalisationFile localisationFile;
                 using (var stream = File.OpenRead(file.FilePath))
                     localisationFile = await LocalisationFile.ReadAsync(stream);
 
+                string resxFile = Path.Combine(Path.GetDirectoryName(file.FilePath)!, $"{localisationFile.Prefix}.resx");
+
                 using (var fs = File.Open(resxFile, FileMode.Create, FileAccess.ReadWrite))
                 using (var resWriter = new ResXResourceWriter(fs))
                 {
                     foreach (var member in localisationFile.Members)
-                        resWriter.AddResource($"{localisationFile.Prefix}:{member.Key}", member.EnglishText);
+                        resWriter.AddResource(member.Key, member.EnglishText);
                     resWriter.Generate();
                 }
 

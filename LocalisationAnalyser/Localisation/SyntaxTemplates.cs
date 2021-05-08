@@ -96,5 +96,15 @@ private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}
             @$"{LICENSE_HEADER}
 
 using osu.Framework.Localisation;";
+
+        /// <summary>
+        /// The suffix attached to a class-specific localisation file name.
+        /// </summary>
+        public const string CLASS_STRINGS_FILE_SUFFIX = "Strings";
+
+        /// <summary>
+        /// The the common localisation file name.
+        /// </summary>
+        public const string COMMON_STRINGS_FILE_NAME = "Common";
     }
 }
