@@ -4,6 +4,7 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LocalisationAnalyser.Abstractions.IO;
 using LocalisationAnalyser.Localisation;
 using LocalisationAnalyser.Tests.Helpers.IO;
 using Microsoft.CodeAnalysis;
@@ -190,6 +191,28 @@ namespace {test_namespace}
             Assert.Equal(key_name, localisation.Members[0].Key);
             Assert.Equal("this is a \"verbatim\" string", localisation.Members[0].EnglishText);
             Assert.Empty(localisation.Members[0].Parameters);
+        }
+
+        [Fact]
+        public async Task FileIsNotChangedAfterReSaving()
+        {
+            await setupLocalisation(
+                new LocalisationMember("prop", "property", "property"),
+                new LocalisationMember("method", "method", "method",
+                    new LocalisationParameter("int", "i")));
+
+            IFileInfo file = mockFs.FileInfo.FromFileName(test_file_name);
+            string initial = await mockFs.File.ReadAllTextAsync(file.FullName, CancellationToken.None);
+
+            // Read and re-save via LocalisationFile.
+            LocalisationFile localisation;
+            using (var stream = file.OpenRead())
+                localisation = await LocalisationFile.ReadAsync(stream);
+            using (var stream = file.OpenWrite())
+                await localisation.WriteAsync(stream, workspace);
+
+            string updated = await mockFs.File.ReadAllTextAsync(file.FullName, CancellationToken.None);
+            Assert.Equal(initial, updated);
         }
 
         private async Task<LocalisationFile> setupFile(string contents)
