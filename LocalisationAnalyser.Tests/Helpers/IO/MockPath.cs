@@ -5,7 +5,7 @@ using LocalisationAnalyser.Abstractions.IO;
 
 namespace LocalisationAnalyser.Tests.Helpers.IO
 {
-    public class MockPath : IPath
+    internal class MockPath : IPath
     {
         private readonly System.IO.Abstractions.TestingHelpers.MockFileSystem mockFs;
 
@@ -14,12 +14,12 @@ namespace LocalisationAnalyser.Tests.Helpers.IO
             this.mockFs = mockFs;
         }
 
-        public string? GetDirectoryName(string? path) => mockFs.Path.GetDirectoryName(path);
+        public string GetDirectoryName(string path) => mockFs.Path.GetDirectoryName(path);
 
         public string Combine(params string[] paths) => mockFs.Path.Combine(paths);
 
         public string ChangeExtension(string path, string newExtension) => mockFs.Path.ChangeExtension(path, newExtension);
 
-        public string? GetFileName(string path) => mockFs.Path.GetFileName(path);
+        public string GetFileName(string path) => mockFs.Path.GetFileName(path);
     }
 }

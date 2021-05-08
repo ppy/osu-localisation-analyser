@@ -9,8 +9,11 @@ using Microsoft.CodeAnalysis.CodeFixes;
 
 namespace LocalisationAnalyser.CodeFixes
 {
+    /// <summary>
+    /// Code-fix provider for <see cref="DiagnosticRules.STRING_CAN_BE_LOCALISED"/> inspections to replace strings with a localisation from the common localisation class.
+    /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LocaliseCommonStringCodeFixProvider)), Shared]
-    public class LocaliseCommonStringCodeFixProvider : AbstractLocaliseStringCodeFixProvider
+    internal class LocaliseCommonStringCodeFixProvider : AbstractLocaliseStringCodeFixProvider
     {
         private const string common_class_name = "Common";
 
@@ -26,6 +29,6 @@ namespace LocalisationAnalyser.CodeFixes
 
         protected override string GetLocalisationPrefix(string className) => common_class_name;
 
-        protected override string GetLocalisationClassName(string className) => common_class_name;
+        protected override string GetLocalisationFileName(string className) => common_class_name;
     }
 }

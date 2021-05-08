@@ -5,14 +5,14 @@ using System.IO;
 
 namespace LocalisationAnalyser.Abstractions.IO.Default
 {
-    public class DefaultPath : IPath
+    internal class DefaultPath : IPath
     {
-        public string? GetDirectoryName(string? path) => Path.GetDirectoryName(path);
+        public string GetDirectoryName(string path) => Path.GetDirectoryName(path)!;
 
         public string Combine(params string[] paths) => Path.Combine(paths);
 
         public string ChangeExtension(string path, string newExtension) => Path.ChangeExtension(path, newExtension);
 
-        public string? GetFileName(string path) => Path.GetFileName(path);
+        public string GetFileName(string path) => Path.GetFileName(path);
     }
 }

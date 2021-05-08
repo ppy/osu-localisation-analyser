@@ -3,13 +3,28 @@
 
 using System;
 
-namespace LocalisationAnalyser.Generators
+namespace LocalisationAnalyser.Localisation
 {
+    /// <summary>
+    /// A method parameter of <see cref="LocalisationMember"/>s that represent methods.
+    /// </summary>
     public class LocalisationParameter : IEquatable<LocalisationParameter>
     {
+        /// <summary>
+        /// The type.
+        /// </summary>
         public readonly string Type;
+
+        /// <summary>
+        /// The name.
+        /// </summary>
         public readonly string Name;
 
+        /// <summary>
+        /// Creates a new <see cref="LocalisationParameter"/>.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="name">The name.</param>
         public LocalisationParameter(string type, string name)
         {
             Type = type;

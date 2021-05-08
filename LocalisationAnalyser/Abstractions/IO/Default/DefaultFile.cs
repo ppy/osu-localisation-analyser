@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LocalisationAnalyser.Abstractions.IO.Default
 {
-    public class DefaultFile : IFile
+    internal class DefaultFile : IFile
     {
         public Task<string> ReadAllTextAsync(string fullname, CancellationToken cancellationToken) => File.ReadAllTextAsync(fullname, cancellationToken);
     }

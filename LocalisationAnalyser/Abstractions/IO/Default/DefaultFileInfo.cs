@@ -5,7 +5,7 @@ using System.IO;
 
 namespace LocalisationAnalyser.Abstractions.IO.Default
 {
-    public class DefaultFileInfo : IFileInfo
+    internal class DefaultFileInfo : IFileInfo
     {
         public DefaultFileInfo(IFileSystem fileSystem, string fullname)
         {
@@ -17,7 +17,7 @@ namespace LocalisationAnalyser.Abstractions.IO.Default
 
         public string FullName { get; }
 
-        public string? DirectoryName => Path.GetDirectoryName(FullName);
+        public string DirectoryName => Path.GetDirectoryName(FullName)!;
 
         public IFileSystem FileSystem { get; }
 

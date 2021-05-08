@@ -5,13 +5,13 @@ using System.IO;
 
 namespace LocalisationAnalyser.Abstractions.IO
 {
-    public interface IFileInfo
+    internal interface IFileInfo
     {
         bool Exists { get; }
 
         string FullName { get; }
 
-        string? DirectoryName { get; }
+        string DirectoryName { get; }
 
         IFileSystem FileSystem { get; }
 

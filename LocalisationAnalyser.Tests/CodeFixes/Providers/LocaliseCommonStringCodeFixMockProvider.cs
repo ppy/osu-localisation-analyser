@@ -6,7 +6,7 @@ using LocalisationAnalyser.Tests.Helpers.IO;
 
 namespace LocalisationAnalyser.Tests.CodeFixes.Providers
 {
-    public class LocaliseCommonStringCodeFixMockProvider : LocaliseCommonStringCodeFixProvider
+    internal class LocaliseCommonStringCodeFixMockProvider : LocaliseCommonStringCodeFixProvider
     {
         public LocaliseCommonStringCodeFixMockProvider()
             : base(new MockFileSystem())

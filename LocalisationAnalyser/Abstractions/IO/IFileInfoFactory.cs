@@ -3,7 +3,7 @@
 
 namespace LocalisationAnalyser.Abstractions.IO
 {
-    public interface IFileInfoFactory
+    internal interface IFileInfoFactory
     {
         IFileInfo FromFileName(string filename);
     }

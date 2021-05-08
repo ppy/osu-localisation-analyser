@@ -3,7 +3,7 @@
 
 namespace LocalisationAnalyser.Abstractions.IO.Default
 {
-    public class DefaultFileInfoFactory : IFileInfoFactory
+    internal class DefaultFileInfoFactory : IFileInfoFactory
     {
         private readonly IFileSystem fileSystem;
 
