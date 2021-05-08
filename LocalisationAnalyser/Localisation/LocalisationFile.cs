@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Immutable;
 using System.IO;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace LocalisationAnalyser.Localisation
     /// <summary>
     /// A localisation file.
     /// </summary>
-    public partial class LocalisationFile
+    public partial class LocalisationFile : IEquatable<LocalisationFile>
     {
         /// <summary>
         /// The namespace of the localisation class in this file.
@@ -90,5 +91,24 @@ namespace LocalisationAnalyser.Localisation
                 return new LocalisationFile(walker.Namespace, walker.Name, walker.Prefix.Replace($"{walker.Namespace}.", string.Empty), walker.Members.ToArray());
             }
         }
+
+        public bool Equals(LocalisationFile? other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+
+            return Namespace == other.Namespace && Name == other.Name && Prefix == other.Prefix && Members.Equals(other.Members);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+
+            return Equals((LocalisationFile)obj);
+        }
+
+        public override int GetHashCode() => HashCode.Combine(Namespace, Name, Prefix, Members);
     }
 }

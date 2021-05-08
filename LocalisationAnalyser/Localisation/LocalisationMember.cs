@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Immutable;
 
 namespace LocalisationAnalyser.Localisation
@@ -8,7 +9,7 @@ namespace LocalisationAnalyser.Localisation
     /// <summary>
     /// Represents a localisation method or member within a <see cref="LocalisationFile"/>.
     /// </summary>
-    public class LocalisationMember
+    public class LocalisationMember : IEquatable<LocalisationMember>
     {
         /// <summary>
         /// The name.
@@ -44,5 +45,24 @@ namespace LocalisationAnalyser.Localisation
             EnglishText = englishText;
             Parameters = parameters.ToImmutableArray();
         }
+
+        public bool Equals(LocalisationMember? other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+
+            return Name == other.Name && Key == other.Key && EnglishText == other.EnglishText && Parameters.Equals(other.Parameters);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+
+            return Equals((LocalisationMember)obj);
+        }
+
+        public override int GetHashCode() => HashCode.Combine(Name, Key, EnglishText, Parameters);
     }
 }
