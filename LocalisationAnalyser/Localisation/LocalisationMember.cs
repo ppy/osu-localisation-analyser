@@ -3,7 +3,7 @@
 
 using System.Collections.Immutable;
 
-namespace LocalisationAnalyser.Generators
+namespace LocalisationAnalyser.Localisation
 {
     public class LocalisationMember
     {

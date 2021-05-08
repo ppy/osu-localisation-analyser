@@ -8,9 +8,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace LocalisationAnalyser.Generators
+namespace LocalisationAnalyser.Localisation
 {
-    public partial class LocalisationClass
+    public partial class LocalisationFile
     {
         /// <summary>
         /// A syntax walker to discover all localisation members of a localisation class.
@@ -38,7 +38,7 @@ namespace LocalisationAnalyser.Generators
             {
                 base.VisitVariableDeclarator(node);
 
-                if (node.Identifier.ValueText == LocalisationClassTemplates.PREFIX_CONST_NAME)
+                if (node.Identifier.ValueText == LocalisationSyntaxTemplates.PREFIX_CONST_NAME)
                 {
                     Prefix = node.ChildNodes()
                                  .OfType<LiteralExpressionSyntax>()
@@ -116,7 +116,7 @@ namespace LocalisationAnalyser.Generators
                     return false;
 
                 // Validate return type and member definition.
-                if (returnType.ToString() != LocalisationClassTemplates.MEMBER_RETURN_TYPE
+                if (returnType.ToString() != LocalisationSyntaxTemplates.MEMBER_RETURN_TYPE
                     || body == null)
                 {
                     return false;
@@ -135,7 +135,7 @@ namespace LocalisationAnalyser.Generators
                     return false;
 
                 // Validate creation expression.
-                if (creationSyntax.Type.ToString() != LocalisationClassTemplates.MEMBER_CONSTRUCTION_TYPE
+                if (creationSyntax.Type.ToString() != LocalisationSyntaxTemplates.MEMBER_CONSTRUCTION_TYPE
                     || creationSyntax.ArgumentList == null
                     || creationSyntax.ArgumentList.Arguments.Count < 2)
                 {
@@ -144,7 +144,7 @@ namespace LocalisationAnalyser.Generators
 
                 // Validate key argument.
                 if (creationSyntax.ArgumentList.Arguments[0].Expression is not InvocationExpressionSyntax getKeyInvocation
-                    || getKeyInvocation.Expression.ToString() != LocalisationClassTemplates.GET_KEY_METHOD_NAME
+                    || getKeyInvocation.Expression.ToString() != LocalisationSyntaxTemplates.GET_KEY_METHOD_NAME
                     || getKeyInvocation.ArgumentList.Arguments.Count == 0
                     || getKeyInvocation.ArgumentList.Arguments[0].Expression is not LiteralExpressionSyntax keyLiteral
                     || keyLiteral.Kind() != SyntaxKind.StringLiteralExpression)

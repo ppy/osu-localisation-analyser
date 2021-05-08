@@ -3,7 +3,7 @@
 
 using System;
 
-namespace LocalisationAnalyser.Generators
+namespace LocalisationAnalyser.Localisation
 {
     public class LocalisationParameter : IEquatable<LocalisationParameter>
     {

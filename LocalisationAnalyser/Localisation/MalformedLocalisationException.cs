@@ -3,11 +3,11 @@
 
 using System;
 
-namespace LocalisationAnalyser.Generators
+namespace LocalisationAnalyser.Localisation
 {
-    public class LocalisationClassMalformedException : Exception
+    public class MalformedLocalisationException : Exception
     {
-        public LocalisationClassMalformedException(string message)
+        public MalformedLocalisationException(string message)
             : base(message)
         {
         }

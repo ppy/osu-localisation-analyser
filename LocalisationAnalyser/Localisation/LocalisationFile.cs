@@ -8,16 +8,16 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Formatting;
 
-namespace LocalisationAnalyser.Generators
+namespace LocalisationAnalyser.Localisation
 {
-    public partial class LocalisationClass
+    public partial class LocalisationFile
     {
         public readonly ImmutableArray<LocalisationMember> Members;
         public readonly string Namespace;
         public readonly string Name;
         public readonly string Prefix;
 
-        public LocalisationClass(string @namespace, string name, string prefix, params LocalisationMember[] members)
+        public LocalisationFile(string @namespace, string name, string prefix, params LocalisationMember[] members)
         {
             Namespace = @namespace;
             Name = name;
@@ -25,22 +25,22 @@ namespace LocalisationAnalyser.Generators
             Members = members.ToImmutableArray();
         }
 
-        public LocalisationClass WithMembers(params LocalisationMember[] members)
-            => new LocalisationClass(Namespace, Name, Prefix, members);
+        public LocalisationFile WithMembers(params LocalisationMember[] members)
+            => new LocalisationFile(Namespace, Name, Prefix, members);
 
         public async Task WriteAsync(Stream stream, Workspace workspace)
         {
             using (var sw = new StreamWriter(stream))
-                await sw.WriteAsync(Formatter.Format(SyntaxHelpers.GenerateClassSyntax(workspace, this), workspace).ToFullString());
+                await sw.WriteAsync(Formatter.Format(LocalisationSyntaxGenerators.GenerateClassSyntax(workspace, this), workspace).ToFullString());
         }
 
         /// <summary>
-        /// Reads a <see cref="LocalisationClass"/> from a file.
+        /// Reads a <see cref="LocalisationFile"/> from a file.
         /// </summary>
         /// <param name="stream">The stream to read.</param>
-        /// <returns>The <see cref="LocalisationClass"/>.</returns>
-        /// <exception cref="LocalisationClassMalformedException">If the file doesn't contain a valid <see cref="LocalisationClass"/>.</exception>
-        public static async Task<LocalisationClass> ReadAsync(Stream stream)
+        /// <returns>The <see cref="LocalisationFile"/>.</returns>
+        /// <exception cref="MalformedLocalisationException">If the file doesn't contain a valid <see cref="LocalisationFile"/>.</exception>
+        public static async Task<LocalisationFile> ReadAsync(Stream stream)
         {
             using (var sr = new StreamReader(stream))
             {
@@ -51,15 +51,15 @@ namespace LocalisationAnalyser.Generators
                 walker.Visit(syntaxRoot);
 
                 if (string.IsNullOrEmpty(walker.Namespace))
-                    throw new LocalisationClassMalformedException("The localisation file contains no namespace.");
+                    throw new MalformedLocalisationException("The localisation file contains no namespace.");
 
                 if (string.IsNullOrEmpty(walker.Name))
-                    throw new LocalisationClassMalformedException("The localisation file contains no class.");
+                    throw new MalformedLocalisationException("The localisation file contains no class.");
 
                 if (string.IsNullOrEmpty(walker.Prefix))
-                    throw new LocalisationClassMalformedException("The localisation file contains no prefix identifier");
+                    throw new MalformedLocalisationException("The localisation file contains no prefix identifier");
 
-                return new LocalisationClass(walker.Namespace, walker.Name, walker.Prefix, walker.Members.ToArray());
+                return new LocalisationFile(walker.Namespace, walker.Name, walker.Prefix, walker.Members.ToArray());
             }
         }
     }

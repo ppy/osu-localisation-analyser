@@ -1,9 +1,9 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-namespace LocalisationAnalyser.Generators
+namespace LocalisationAnalyser.Localisation
 {
-    public static class LocalisationClassTemplates
+    public static class LocalisationSyntaxTemplates
     {
         public const string GET_KEY_METHOD_NAME = "getKey";
 

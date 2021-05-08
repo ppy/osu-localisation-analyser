@@ -6,7 +6,7 @@ using System.Linq;
 using System.Resources.NetStandard;
 using System.Threading.Tasks;
 using LocalisationAnalyser.CodeFixes;
-using LocalisationAnalyser.Generators;
+using LocalisationAnalyser.Localisation;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis.MSBuild;
 
@@ -58,15 +58,15 @@ namespace LocalisationAnalyser.Tools
 
                 string resxFile = Path.ChangeExtension(file.FilePath, "resx");
 
-                LocalisationClass localisationClass;
+                LocalisationFile localisationFile;
                 using (var stream = File.OpenRead(file.FilePath))
-                    localisationClass = await LocalisationClass.ReadAsync(stream);
+                    localisationFile = await LocalisationFile.ReadAsync(stream);
 
                 using (var fs = File.Open(resxFile, FileMode.Create, FileAccess.ReadWrite))
                 using (var resWriter = new ResXResourceWriter(fs))
                 {
-                    foreach (var member in localisationClass.Members)
-                        resWriter.AddResource($"{localisationClass.Prefix}:{member.Key}", member.EnglishText);
+                    foreach (var member in localisationFile.Members)
+                        resWriter.AddResource($"{localisationFile.Prefix}:{member.Key}", member.EnglishText);
                     resWriter.Generate();
                 }
 

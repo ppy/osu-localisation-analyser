@@ -8,27 +8,27 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Formatting;
 
-namespace LocalisationAnalyser.Generators
+namespace LocalisationAnalyser.Localisation
 {
-    public static class SyntaxHelpers
+    public static class LocalisationSyntaxGenerators
     {
         /// <summary>
         /// Generates the full class syntax, including the namespace, all leading/trailing members, and the localisation members.
         /// </summary>
         /// <returns>The syntax.</returns>
-        public static SyntaxNode GenerateClassSyntax(Workspace workspace, LocalisationClass localisationClass)
-            => SyntaxFactory.ParseCompilationUnit(LocalisationClassTemplates.FILE_HEADER_SIGNATURE)
+        public static SyntaxNode GenerateClassSyntax(Workspace workspace, LocalisationFile localisationFile)
+            => SyntaxFactory.ParseCompilationUnit(LocalisationSyntaxTemplates.FILE_HEADER_SIGNATURE)
                             .AddMembers(
                                 SyntaxFactory.NamespaceDeclaration(
-                                                 SyntaxFactory.IdentifierName(localisationClass.Namespace))
+                                                 SyntaxFactory.IdentifierName(localisationFile.Namespace))
                                              .WithMembers(
                                                  SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                                     SyntaxFactory.ClassDeclaration(localisationClass.Name)
+                                                     SyntaxFactory.ClassDeclaration(localisationFile.Name)
                                                                   .WithMembers(SyntaxFactory.List(
-                                                                      localisationClass.Members
-                                                                                       .Select(m => m.Parameters.Length == 0 ? GeneratePropertySyntax(m) : GenerateMethodSyntax(workspace, m))
-                                                                                       .Prepend(GeneratePrefixSyntax(localisationClass))
-                                                                                       .Append(GenerateGetKeySyntax())))
+                                                                      localisationFile.Members
+                                                                                      .Select(m => m.Parameters.Length == 0 ? GeneratePropertySyntax(m) : GenerateMethodSyntax(workspace, m))
+                                                                                      .Prepend(GeneratePrefixSyntax(localisationFile))
+                                                                                      .Append(GenerateGetKeySyntax())))
                                                                   .WithModifiers(
                                                                       new SyntaxTokenList(
                                                                           SyntaxFactory.Token(SyntaxKind.PublicKeyword),
@@ -39,7 +39,7 @@ namespace LocalisationAnalyser.Generators
         /// </summary>
         public static MemberDeclarationSyntax GeneratePropertySyntax(LocalisationMember member)
             => SyntaxFactory.ParseMemberDeclaration(
-                string.Format(LocalisationClassTemplates.PROPERTY_SIGNATURE,
+                string.Format(LocalisationSyntaxTemplates.PROPERTY_SIGNATURE,
                     member.Name,
                     member.Key,
                     ConvertToVerbatim(member.EnglishText),
@@ -63,7 +63,7 @@ namespace LocalisationAnalyser.Generators
                         SyntaxFactory.IdentifierName(param.Name)))));
 
             return SyntaxFactory.ParseMemberDeclaration(
-                string.Format(LocalisationClassTemplates.METHOD_SIGNATURE,
+                string.Format(LocalisationSyntaxTemplates.METHOD_SIGNATURE,
                     member.Name,
                     Formatter.Format(paramList, workspace).ToFullString(),
                     member.Key,
@@ -75,23 +75,23 @@ namespace LocalisationAnalyser.Generators
         /// <summary>
         /// Generates the syntax for accessing the member.
         /// </summary>
-        public static MemberAccessExpressionSyntax GenerateMemberAccessSyntax(LocalisationClass localisationClass, LocalisationMember member)
+        public static MemberAccessExpressionSyntax GenerateMemberAccessSyntax(LocalisationFile localisationFile, LocalisationMember member)
             => SyntaxFactory.MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
-                SyntaxFactory.IdentifierName(localisationClass.Name),
+                SyntaxFactory.IdentifierName(localisationFile.Name),
                 SyntaxFactory.IdentifierName(member.Name));
 
         /// <summary>
         /// Generates the syntax for the prefix constant.
         /// </summary>
-        public static MemberDeclarationSyntax GeneratePrefixSyntax(LocalisationClass localisationClass)
-            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationClassTemplates.PREFIX_SIGNATURE, $"{localisationClass.Namespace}.{localisationClass.Prefix}"))!;
+        public static MemberDeclarationSyntax GeneratePrefixSyntax(LocalisationFile localisationFile)
+            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationSyntaxTemplates.PREFIX_SIGNATURE, $"{localisationFile.Namespace}.{localisationFile.Prefix}"))!;
 
         /// <summary>
         /// Generates the syntax for the getKey() method.
         /// </summary>
         public static MemberDeclarationSyntax GenerateGetKeySyntax()
-            => SyntaxFactory.ParseMemberDeclaration(LocalisationClassTemplates.GET_KEY_SIGNATURE)!;
+            => SyntaxFactory.ParseMemberDeclaration(LocalisationSyntaxTemplates.GET_KEY_SIGNATURE)!;
 
         /// <summary>
         /// Converts a string literal to its verbatim representation. Assumes that the string is already non-verbatim.
