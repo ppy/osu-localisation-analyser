@@ -56,13 +56,6 @@ jobs:
           dotnet pack -c Release LocalisationAnalyser /p:Version=${{needs.check-if-tag.outputs.version}} /p:GenerateDocumentationFile=true -o ${{steps.artifactsPath.outputs.nuget_artifacts}}
           dotnet pack -c Release LocalisationAnalyser.Tools /p:Version=${{needs.check-if-tag.outputs.version}} /p:GenerateDocumentationFile=true -o ${{steps.artifactsPath.outputs.nuget_artifacts}}
 
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: package
-          path: ${{steps.artifactsPath.outputs.nuget_artifacts}}/*.nupkg
-
       - name: Deploy
         run: |
             dotnet nuget push ${{github.workspace}}/artifacts/*.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key ${{secrets.NUGET_AUTH_TOKEN}}
