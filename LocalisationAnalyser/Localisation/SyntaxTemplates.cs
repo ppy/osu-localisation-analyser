@@ -31,7 +31,7 @@ namespace LocalisationAnalyser.Localisation
         /// <remarks>
         /// {0} : Value
         /// </remarks>
-        public static readonly string CONST_PREFIX_TEMPLATE = $@"
+        public static readonly string PREFIX_CONST_TEMPLATE = $@"
 private const string {PREFIX_CONST_NAME} = @""{{0}}"";
 ";
 
