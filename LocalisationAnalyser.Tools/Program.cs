@@ -5,6 +5,7 @@ using System.Linq;
 using System.Resources.NetStandard;
 using System.Threading.Tasks;
 using LocalisationAnalyser.Abstractions.IO.Default;
+using LocalisationAnalyser.CodeFixes;
 using LocalisationAnalyser.Generators;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis.MSBuild;
@@ -15,7 +16,7 @@ namespace LocalisationAnalyser.Tools
     {
         public static async Task Main(string[] args)
         {
-            Command toResx = new Command("to-resx")
+            var toResx = new Command("to-resx", "Generates resource (.resx) files from all localisations in the target project.")
             {
                 new Argument("project-file")
                 {
@@ -25,7 +26,7 @@ namespace LocalisationAnalyser.Tools
 
             toResx.Handler = CommandHandler.Create<string>(convertToResX);
 
-            await new RootCommand
+            await new RootCommand("osu! Localisation Tools")
             {
                 toResx
             }.InvokeAsync(args);
@@ -38,14 +39,14 @@ namespace LocalisationAnalyser.Tools
             var workspace = MSBuildWorkspace.Create();
             var project = await workspace.OpenProjectAsync(projectFile);
 
-            var classFiles = project.Documents.Where(d => d.Folders.FirstOrDefault() == "Localisation")
+            var classFiles = project.Documents.Where(d => d.Folders.FirstOrDefault() == AbstractLocaliseStringCodeFixProvider.RELATIVE_LOCALISATION_PATH)
                                     .Where(d => d.Name.EndsWith(".cs"))
                                     .Where(d => d.Name[..^3].Count(c => c == '.') == 0);
 
             foreach (var classFile in classFiles)
             {
                 string className = Path.GetFileNameWithoutExtension(classFile.Name)!;
-                string classNamespace = $"{project.AssemblyName}.Localisation";
+                string classNamespace = $"{project.AssemblyName}.{AbstractLocaliseStringCodeFixProvider.RELATIVE_LOCALISATION_PATH}";
                 string classPrefix = $"{classNamespace}.{className}";
 
                 var generator = new LocalisationClassGenerator(
