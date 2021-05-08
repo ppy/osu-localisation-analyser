@@ -4,6 +4,7 @@
 using System.Composition;
 using LocalisationAnalyser.Abstractions.IO;
 using LocalisationAnalyser.Abstractions.IO.Default;
+using LocalisationAnalyser.Localisation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 
@@ -15,8 +16,6 @@ namespace LocalisationAnalyser.CodeFixes
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LocaliseClassStringCodeFixProvider)), Shared]
     internal class LocaliseClassStringCodeFixProvider : AbstractLocaliseStringCodeFixProvider
     {
-        private const string class_suffix = "Strings";
-
         public LocaliseClassStringCodeFixProvider()
             : this(new DefaultFileSystem())
         {
@@ -27,6 +26,6 @@ namespace LocalisationAnalyser.CodeFixes
         {
         }
 
-        protected override string GetLocalisationFileName(string className) => $"{base.GetLocalisationFileName(className)}{class_suffix}";
+        protected override string GetLocalisationFileName(string className) => $"{base.GetLocalisationFileName(className)}{SyntaxTemplates.CLASS_STRINGS_FILE_SUFFIX}";
     }
 }
