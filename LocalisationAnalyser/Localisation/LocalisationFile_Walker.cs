@@ -40,7 +40,7 @@ namespace LocalisationAnalyser.Localisation
 
                 if (node.Identifier.ValueText == LocalisationSyntaxTemplates.PREFIX_CONST_NAME)
                 {
-                    Prefix = node.ChildNodes()
+                    Prefix = node.DescendantNodes()
                                  .OfType<LiteralExpressionSyntax>()
                                  .FirstOrDefault()?
                                  .Token.ValueText;

@@ -48,6 +48,9 @@ namespace {test_namespace}
     }}
 }}");
 
+            Assert.Equal(localisation.Namespace, test_namespace);
+            Assert.Equal(localisation.Name, test_class_name);
+            Assert.Equal(localisation.Prefix, test_class_name);
             Assert.Empty(localisation.Members);
         }
 

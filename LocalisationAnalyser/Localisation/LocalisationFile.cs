@@ -59,7 +59,7 @@ namespace LocalisationAnalyser.Localisation
                 if (string.IsNullOrEmpty(walker.Prefix))
                     throw new MalformedLocalisationException("The localisation file contains no prefix identifier");
 
-                return new LocalisationFile(walker.Namespace, walker.Name, walker.Prefix, walker.Members.ToArray());
+                return new LocalisationFile(walker.Namespace, walker.Name, walker.Prefix.Replace($"{walker.Namespace}.", string.Empty), walker.Members.ToArray());
             }
         }
     }
