@@ -5,7 +5,7 @@ using System.IO;
 
 namespace LocalisationAnalyser.Abstractions.IO.Default
 {
-    public class DefaultPath : IPath
+    internal class DefaultPath : IPath
     {
         public string GetDirectoryName(string path) => Path.GetDirectoryName(path)!;
 

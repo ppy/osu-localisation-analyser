@@ -3,7 +3,7 @@
 
 namespace LocalisationAnalyser.Abstractions.IO
 {
-    public interface IFileSystem
+    internal interface IFileSystem
     {
         IPath Path { get; }
 

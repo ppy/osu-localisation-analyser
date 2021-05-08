@@ -3,7 +3,7 @@
 
 namespace LocalisationAnalyser.Abstractions.IO.Default
 {
-    public class DefaultFileSystem : IFileSystem
+    internal class DefaultFileSystem : IFileSystem
     {
         public IPath Path { get; } = new DefaultPath();
 

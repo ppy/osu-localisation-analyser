@@ -5,7 +5,7 @@ using System.IO;
 
 namespace LocalisationAnalyser.Abstractions.IO.Default
 {
-    public class DefaultDirectory : IDirectory
+    internal class DefaultDirectory : IDirectory
     {
         public void CreateDirectory(string name) => Directory.CreateDirectory(name);
     }

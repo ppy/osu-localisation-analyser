@@ -17,6 +17,11 @@ namespace LocalisationAnalyser.Localisation
         /// </summary>
         public const string MEMBER_CONSTRUCTION_TYPE = "TranslatableString";
 
+        /// <summary>
+        /// The path to localisations relative to the project directory.
+        /// </summary>
+        public const string RELATIVE_LOCALISATION_PATH = "Localisation";
+
         public const string PREFIX_CONST_NAME = "prefix";
 
         /// <summary>

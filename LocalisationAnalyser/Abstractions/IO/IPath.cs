@@ -3,7 +3,7 @@
 
 namespace LocalisationAnalyser.Abstractions.IO
 {
-    public interface IPath
+    internal interface IPath
     {
         string GetDirectoryName(string path);
 

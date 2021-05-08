@@ -6,7 +6,7 @@ using LocalisationAnalyser.Abstractions.IO;
 
 namespace LocalisationAnalyser.Tests.Helpers.IO
 {
-    public class MockFileInfo : IFileInfo
+    internal class MockFileInfo : IFileInfo
     {
         private readonly System.IO.Abstractions.IFileInfo fileInfo;
 

@@ -7,7 +7,7 @@ using LocalisationAnalyser.Abstractions.IO;
 
 namespace LocalisationAnalyser.Tests.Helpers.IO
 {
-    public class MockFile : IFile
+    internal class MockFile : IFile
     {
         private readonly System.IO.Abstractions.TestingHelpers.MockFileSystem mockFs;
 

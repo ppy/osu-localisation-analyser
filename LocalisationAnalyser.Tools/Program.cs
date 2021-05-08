@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Resources.NetStandard;
 using System.Threading.Tasks;
-using LocalisationAnalyser.CodeFixes;
 using LocalisationAnalyser.Localisation;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis.MSBuild;
@@ -41,7 +40,7 @@ namespace LocalisationAnalyser.Tools
             var workspace = MSBuildWorkspace.Create();
             var project = await workspace.OpenProjectAsync(projectFile);
 
-            var classFiles = project.Documents.Where(d => d.Folders.FirstOrDefault() == AbstractLocaliseStringCodeFixProvider.RELATIVE_LOCALISATION_PATH)
+            var classFiles = project.Documents.Where(d => d.Folders.FirstOrDefault() == LocalisationSyntaxTemplates.RELATIVE_LOCALISATION_PATH)
                                     .Where(d => d.Name.EndsWith(".cs"))
                                     .Where(d => d.Name[..^3].Count(c => c == '.') == 0)
                                     .ToArray();

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LocalisationAnalyser.Abstractions.IO
 {
-    public interface IFile
+    internal interface IFile
     {
         Task<string> ReadAllTextAsync(string fullname, CancellationToken cancellationToken);
     }

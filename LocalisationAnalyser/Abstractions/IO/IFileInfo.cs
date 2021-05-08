@@ -5,7 +5,7 @@ using System.IO;
 
 namespace LocalisationAnalyser.Abstractions.IO
 {
-    public interface IFileInfo
+    internal interface IFileInfo
     {
         bool Exists { get; }
 

@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 namespace LocalisationAnalyser.CodeFixes
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LocaliseCommonStringCodeFixProvider)), Shared]
-    public class LocaliseCommonStringCodeFixProvider : AbstractLocaliseStringCodeFixProvider
+    internal class LocaliseCommonStringCodeFixProvider : AbstractLocaliseStringCodeFixProvider
     {
         private const string common_class_name = "Common";
 
