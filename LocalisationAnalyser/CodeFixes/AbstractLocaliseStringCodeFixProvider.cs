@@ -20,7 +20,11 @@ namespace LocalisationAnalyser.CodeFixes
 {
     public abstract class AbstractLocaliseStringCodeFixProvider : CodeFixProvider
     {
-        private const string relative_localisation_path = "Localisation";
+        /// <summary>
+        /// The path to localisations relative to the project directory.
+        /// </summary>
+        public const string RELATIVE_LOCALISATION_PATH = "Localisation";
+
         private readonly IFileSystem fileSystem;
         private readonly string friendlyLocalisationTarget;
 
@@ -227,7 +231,7 @@ namespace LocalisationAnalyser.CodeFixes
                 throw new InvalidOperationException("String is not within a class.");
 
             var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath)!;
-            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(relative_localisation_path.Split('/')).ToArray());
+            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(RELATIVE_LOCALISATION_PATH.Split('/')).ToArray());
 
             var incomingClassName = ((ClassDeclarationSyntax)containingClass).Identifier.Text;
 
@@ -235,7 +239,7 @@ namespace LocalisationAnalyser.CodeFixes
             var className = GetLocalisationClassName(((ClassDeclarationSyntax)containingClass).Identifier.Text);
             var classFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(className, "cs"));
             var classFile = fileSystem.FileInfo.FromFileName(classFileName);
-            var classNamespace = $"{project.AssemblyName}.{relative_localisation_path.Replace('/', '.')}";
+            var classNamespace = $"{project.AssemblyName}.{RELATIVE_LOCALISATION_PATH.Replace('/', '.')}";
             var prefix = GetLocalisationPrefix(incomingClassName);
 
             var generator = new LocalisationClassGenerator(project.Solution.Workspace, classFile, classNamespace, className, prefix);
