@@ -10,12 +10,30 @@ using Microsoft.CodeAnalysis.Formatting;
 
 namespace LocalisationAnalyser.Localisation
 {
+    /// <summary>
+    /// A localisation file.
+    /// </summary>
     public partial class LocalisationFile
     {
-        public readonly ImmutableArray<LocalisationMember> Members;
+        /// <summary>
+        /// The namespace of the localisation class in this file.
+        /// </summary>
         public readonly string Namespace;
+
+        /// <summary>
+        /// The name of the localisation class stored in this file.
+        /// </summary>
         public readonly string Name;
+
+        /// <summary>
+        /// The localisation prefix of the localisation class in this file.
+        /// </summary>
         public readonly string Prefix;
+
+        /// <summary>
+        /// All localisation members (properties and methodS) of the localisation class in this file.
+        /// </summary>
+        public readonly ImmutableArray<LocalisationMember> Members;
 
         public LocalisationFile(string @namespace, string name, string prefix, params LocalisationMember[] members)
         {
@@ -25,9 +43,19 @@ namespace LocalisationAnalyser.Localisation
             Members = members.ToImmutableArray();
         }
 
+        /// <summary>
+        /// Creates a new <see cref="LocalisationFile"/> with a new set of members.
+        /// </summary>
+        /// <param name="members">The new localisation members.</param>
+        /// <returns>The resultant <see cref="LocalisationFile"/>.</returns>
         public LocalisationFile WithMembers(params LocalisationMember[] members)
             => new LocalisationFile(Namespace, Name, Prefix, members);
 
+        /// <summary>
+        /// Writes this <see cref="LocalisationFile"/> to a stream.
+        /// </summary>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="workspace">The workspace to format with.</param>
         public async Task WriteAsync(Stream stream, Workspace workspace)
         {
             using (var sw = new StreamWriter(stream))

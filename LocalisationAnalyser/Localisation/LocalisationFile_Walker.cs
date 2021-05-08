@@ -17,9 +17,21 @@ namespace LocalisationAnalyser.Localisation
         /// </summary>
         private class Walker : CSharpSyntaxWalker
         {
+            /// <summary>
+            /// The discovered namespace.
+            /// </summary>
             public string? Namespace { get; private set; }
+
+            /// <summary>
+            /// The discovered class name.
+            /// </summary>
             public string? Name { get; private set; }
+
+            /// <summary>
+            /// The discovered prefix. This includes <see cref="Namespace"/>.
+            /// </summary>
             public string? Prefix { get; private set; }
+
             public readonly List<LocalisationMember> Members = new List<LocalisationMember>();
 
             public override void VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
