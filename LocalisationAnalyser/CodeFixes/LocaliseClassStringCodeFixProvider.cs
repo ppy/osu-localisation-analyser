@@ -9,6 +9,9 @@ using Microsoft.CodeAnalysis.CodeFixes;
 
 namespace LocalisationAnalyser.CodeFixes
 {
+    /// <summary>
+    /// Code-fix provider for <see cref="DiagnosticRules.STRING_CAN_BE_LOCALISED"/> inspections to replace strings with a localisation specific to the containing class.
+    /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LocaliseClassStringCodeFixProvider)), Shared]
     internal class LocaliseClassStringCodeFixProvider : AbstractLocaliseStringCodeFixProvider
     {

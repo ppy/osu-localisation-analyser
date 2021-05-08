@@ -5,6 +5,9 @@ using System;
 
 namespace LocalisationAnalyser.Localisation
 {
+    /// <summary>
+    /// The <see cref="LocalisationFile"/> has an invalid namespace, name, or prefix.
+    /// </summary>
     public class MalformedLocalisationException : Exception
     {
         public MalformedLocalisationException(string message)

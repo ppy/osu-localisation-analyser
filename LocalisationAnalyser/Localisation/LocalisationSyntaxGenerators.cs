@@ -10,7 +10,10 @@ using Microsoft.CodeAnalysis.Formatting;
 
 namespace LocalisationAnalyser.Localisation
 {
-    public static class LocalisationSyntaxGenerators
+    /// <summary>
+    /// <see cref="SyntaxNode"/> generators for use with a <see cref="LocalisationFile"/>.
+    /// </summary>
+    internal static class LocalisationSyntaxGenerators
     {
         /// <summary>
         /// Generates the full class syntax, including the namespace, all leading/trailing members, and the localisation members.
@@ -39,10 +42,10 @@ namespace LocalisationAnalyser.Localisation
         /// </summary>
         public static MemberDeclarationSyntax GeneratePropertySyntax(LocalisationMember member)
             => SyntaxFactory.ParseMemberDeclaration(
-                string.Format(LocalisationSyntaxTemplates.PROPERTY_SIGNATURE,
+                string.Format(LocalisationSyntaxTemplates.PROPERTY_MEMBER_TEMPLATE,
                     member.Name,
                     member.Key,
-                    ConvertToVerbatim(member.EnglishText),
+                    convertToVerbatim(member.EnglishText),
                     member.EnglishText))!;
 
         /// <summary>
@@ -63,11 +66,11 @@ namespace LocalisationAnalyser.Localisation
                         SyntaxFactory.IdentifierName(param.Name)))));
 
             return SyntaxFactory.ParseMemberDeclaration(
-                string.Format(LocalisationSyntaxTemplates.METHOD_SIGNATURE,
+                string.Format(LocalisationSyntaxTemplates.METHOD_MEMBER_TEMPLATE,
                     member.Name,
                     Formatter.Format(paramList, workspace).ToFullString(),
                     member.Key,
-                    ConvertToVerbatim(member.EnglishText),
+                    convertToVerbatim(member.EnglishText),
                     Formatter.Format(argList, workspace).ToFullString()[1..^1], // The entire string minus the parens
                     member.EnglishText))!; // Todo: Improve xmldoc
         }
@@ -85,20 +88,20 @@ namespace LocalisationAnalyser.Localisation
         /// Generates the syntax for the prefix constant.
         /// </summary>
         public static MemberDeclarationSyntax GeneratePrefixSyntax(LocalisationFile localisationFile)
-            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationSyntaxTemplates.PREFIX_SIGNATURE, $"{localisationFile.Namespace}.{localisationFile.Prefix}"))!;
+            => SyntaxFactory.ParseMemberDeclaration(string.Format(LocalisationSyntaxTemplates.CONST_PREFIX_TEMPLATE, $"{localisationFile.Namespace}.{localisationFile.Prefix}"))!;
 
         /// <summary>
         /// Generates the syntax for the getKey() method.
         /// </summary>
         public static MemberDeclarationSyntax GenerateGetKeySyntax()
-            => SyntaxFactory.ParseMemberDeclaration(LocalisationSyntaxTemplates.GET_KEY_SIGNATURE)!;
+            => SyntaxFactory.ParseMemberDeclaration(LocalisationSyntaxTemplates.GET_KEY_METHOD_TEMPLATE)!;
 
         /// <summary>
         /// Converts a string literal to its verbatim representation. Assumes that the string is already non-verbatim.
         /// </summary>
         /// <param name="input">The non-verbatim string.</param>
         /// <returns>The verbatim replacement.</returns>
-        public static string ConvertToVerbatim(string input)
+        private static string convertToVerbatim(string input)
         {
             var result = new StringBuilder();
 

@@ -5,37 +5,38 @@ namespace LocalisationAnalyser.Localisation
 {
     public static class LocalisationSyntaxTemplates
     {
-        public const string GET_KEY_METHOD_NAME = "getKey";
-
         /// <summary>
-        /// The return type of either property or method members (see: <see cref="PROPERTY_SIGNATURE"/> and <see cref="METHOD_SIGNATURE"/>).
+        /// The return type of either property or method members (see: <see cref="PROPERTY_MEMBER_TEMPLATE"/> and <see cref="METHOD_MEMBER_TEMPLATE"/>).
         /// </summary>
         public const string MEMBER_RETURN_TYPE = "LocalisableString";
 
         /// <summary>
-        /// The construction type of either property or method members (see: <see cref="PROPERTY_SIGNATURE"/> and <see cref="METHOD_SIGNATURE"/>).
+        /// The construction type of either property or method members (see: <see cref="PROPERTY_MEMBER_TEMPLATE"/> and <see cref="METHOD_MEMBER_TEMPLATE"/>).
         /// </summary>
         public const string MEMBER_CONSTRUCTION_TYPE = "TranslatableString";
 
         /// <summary>
         /// The path to localisations relative to the project directory.
         /// </summary>
-        public const string RELATIVE_LOCALISATION_PATH = "Localisation";
+        public const string PROJECT_RELATIVE_LOCALISATION_PATH = "Localisation";
 
+        /// <summary>
+        /// The name of the 'prefix' const used for building the lookup key.
+        /// </summary>
         public const string PREFIX_CONST_NAME = "prefix";
 
         /// <summary>
-        /// The template signature for the 'prefix' const.
+        /// The template for the 'prefix' const.
         /// </summary>
         /// <remarks>
         /// {0} : Value
         /// </remarks>
-        public static readonly string PREFIX_SIGNATURE = $@"
+        public static readonly string CONST_PREFIX_TEMPLATE = $@"
 private const string {PREFIX_CONST_NAME} = @""{{0}}"";
 ";
 
         /// <summary>
-        /// The template signature for a localisation property.
+        /// The template for a localisation property.
         /// </summary>
         /// <remarks>
         /// {0} : Name
@@ -43,7 +44,7 @@ private const string {PREFIX_CONST_NAME} = @""{{0}}"";
         /// {2} : Verbatim english text
         /// {3} : Xmldoc
         /// </remarks>
-        public static readonly string PROPERTY_SIGNATURE = $@"
+        public static readonly string PROPERTY_MEMBER_TEMPLATE = $@"
 /// <summary>
 /// ""{{3}}""
 /// </summary>
@@ -51,7 +52,7 @@ public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_
 ";
 
         /// <summary>
-        /// The template signature for a localisation method.
+        /// The template for a localisation method.
         /// </summary>
         /// <remarks>
         /// {0} : Name
@@ -61,7 +62,7 @@ public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_
         /// {4} : Localisation parameters
         /// {5} : Xmldoc
         /// </remarks>
-        public static readonly string METHOD_SIGNATURE = $@"
+        public static readonly string METHOD_MEMBER_TEMPLATE = $@"
 /// <summary>
 /// ""{{5}}""
 /// </summary>
@@ -69,17 +70,28 @@ public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}(
 ";
 
         /// <summary>
-        /// The template signature for the 'getKey' method.
+        /// The name of the 'getKey' method used for localisation lookups.
         /// </summary>
-        // Todo: Ignore the extra newline here - somehow this format messes up R#.
-        public static readonly string GET_KEY_SIGNATURE =
+        public const string GET_KEY_METHOD_NAME = "getKey";
+
+        /// <summary>
+        /// The template for the 'getKey' method.
+        /// </summary>
+        public static readonly string GET_KEY_METHOD_TEMPLATE =
+            // Ignore the extra newline here - somehow this format messes up R#.
             $@"
 private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}}"";";
 
+        /// <summary>
+        /// The license header.
+        /// </summary>
         public const string LICENSE_HEADER =
             @"// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.";
 
+        /// <summary>
+        /// The template for the localisation file header.
+        /// </summary>
         public static readonly string FILE_HEADER_SIGNATURE =
             @$"{LICENSE_HEADER}
 
