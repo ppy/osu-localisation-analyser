@@ -49,8 +49,8 @@ namespace LocalisationAnalyser.CodeFixes
 
             foreach (var literal in nodes.OfType<LiteralExpressionSyntax>())
             {
-                var generator = await createGenerator(context.Document.Project, literal);
-                var matchingMember = generator.Members.FirstOrDefault(m => m.EnglishText == literal.Token.ValueText);
+                var (_, localisationClass) = await openOrCreateLocalisationClass(context.Document.Project, literal);
+                var matchingMember = localisationClass.Members.FirstOrDefault(m => m.EnglishText == literal.Token.ValueText);
 
                 if (matchingMember != null)
                 {
@@ -178,51 +178,61 @@ namespace LocalisationAnalyser.CodeFixes
             var project = document.Project;
             var solution = project.Solution;
 
-            var generator = await createGenerator(project, nodeToReplace);
+            var (file, localisationClass) = await openOrCreateLocalisationClass(project, nodeToReplace);
 
             MemberAccessExpressionSyntax memberAccess;
 
-            if (!useExisting || !generator.Members.Any(m => m.EnglishText == text))
+            if (!useExisting || !localisationClass.Members.Any(m => m.EnglishText == text))
             {
-                var name = createMemberName(generator, text);
+                var name = createMemberName(localisationClass, text);
                 var key = name.ToLowerInvariant();
+                var newMember = new LocalisationMember(name, key, text, parameters.ToArray());
 
-                memberAccess = generator.AddMember(new LocalisationMember(name, key, text, parameters.ToArray()));
-                await generator.Save();
+                localisationClass = localisationClass.WithMembers(localisationClass.Members.Append(newMember).ToArray());
+
+                // Write the resultant localisation class.
+                file.FileSystem.Directory.CreateDirectory(file.DirectoryName);
+                using (var stream = file.OpenWrite())
+                    await localisationClass.WriteAsync(stream, document.Project.Solution.Workspace);
+
+                memberAccess = SyntaxHelpers.GenerateMemberAccessSyntax(localisationClass, newMember);
 
                 // Check for and add the new class file to the project if required.
-                if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != generator.ClassFile.FullName))
+                if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != file.FullName))
                 {
                     var classDocument = project.AddDocument(
-                        fileSystem.Path.GetFileName(generator.ClassFile.FullName)!,
-                        await generator.ClassFile.FileSystem.File.ReadAllTextAsync(generator.ClassFile.FullName, cancellationToken),
+                        fileSystem.Path.GetFileName(file.FullName),
+                        await file.FileSystem.File.ReadAllTextAsync(file.FullName, cancellationToken),
                         Enumerable.Empty<string>(),
-                        generator.ClassFile.FullName);
+                        file.FullName);
 
                     project = classDocument.Project;
                     solution = project.Solution;
                 }
             }
             else
-                memberAccess = generator.GenerateMemberAccessSyntax(generator.Members.First(m => m.EnglishText == text));
+                memberAccess = SyntaxHelpers.GenerateMemberAccessSyntax(localisationClass, localisationClass.Members.First(m => m.EnglishText == text));
 
             // Replace the syntax node (the localised string) in the target document.
             var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false)!;
             var newRoot = oldRoot!.ReplaceNode(nodeToReplace, create_syntax_transformation(memberAccess, parameterValues));
 
             // Check for and add a new using directive to the document if required.
-            if (newRoot.DescendantNodes().OfType<UsingDirectiveSyntax>().Select(convertUsingDirectiveToString).All(ud => ud != generator.ClassNamespace))
+            if (newRoot.DescendantNodes().OfType<UsingDirectiveSyntax>().Select(convertUsingDirectiveToString).All(ud => ud != localisationClass.Namespace))
             {
                 newRoot = ((CompilationUnitSyntax)newRoot)
                     .AddUsings(SyntaxFactory.UsingDirective(
-                        SyntaxFactory.ParseName(generator.ClassNamespace)));
+                        SyntaxFactory.ParseName(localisationClass.Namespace)));
             }
 
             return solution.WithDocumentSyntaxRoot(document.Id, newRoot);
         }
 
-        private async Task<LocalisationClassGenerator> createGenerator(Project project, SyntaxNode sourceNode)
+        private async Task<(IFileInfo, LocalisationClass)> openOrCreateLocalisationClass(Project project, SyntaxNode sourceNode)
         {
+            if (project.FilePath == null)
+                throw new ArgumentException("Project cannot have a null path.", nameof(project));
+
             // Search for the containing class.
             SyntaxNode? containingClass = sourceNode.Parent;
             while (containingClass != null && containingClass.Kind() != SyntaxKind.ClassDeclaration)
@@ -230,22 +240,32 @@ namespace LocalisationAnalyser.CodeFixes
             if (containingClass == null)
                 throw new InvalidOperationException("String is not within a class.");
 
-            var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath)!;
+            var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath!);
             var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(RELATIVE_LOCALISATION_PATH.Split('/')).ToArray());
 
+            // The class being localised.
             var incomingClassName = ((ClassDeclarationSyntax)containingClass).Identifier.Text;
 
-            // The class being localised
+            // The localisation class.
             var className = GetLocalisationClassName(((ClassDeclarationSyntax)containingClass).Identifier.Text);
             var classFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(className, "cs"));
             var classFile = fileSystem.FileInfo.FromFileName(classFileName);
             var classNamespace = $"{project.AssemblyName}.{RELATIVE_LOCALISATION_PATH.Replace('/', '.')}";
             var prefix = GetLocalisationPrefix(incomingClassName);
 
-            var generator = new LocalisationClassGenerator(project.Solution.Workspace, classFile, classNamespace, className, prefix);
-            await generator.Open();
+            if (classFile.Exists)
+            {
+                try
+                {
+                    using (var stream = classFile.OpenRead())
+                        return (classFile, await LocalisationClass.ReadAsync(stream));
+                }
+                catch
+                {
+                }
+            }
 
-            return generator;
+            return (classFile, new LocalisationClass(classNamespace, className, prefix));
         }
 
         /// <summary>
@@ -275,7 +295,7 @@ namespace LocalisationAnalyser.CodeFixes
                                             valueArray.Select(SyntaxFactory.Argument))));
         }
 
-        private static string createMemberName(LocalisationClassGenerator generator, string englishText)
+        private static string createMemberName(LocalisationClass localisationClass, string englishText)
         {
             var basePropertyName = new string(englishText.Where(char.IsLetter).Take(10).ToArray());
             basePropertyName = char.ToUpperInvariant(basePropertyName[0]) + basePropertyName[1..];
@@ -283,13 +303,13 @@ namespace LocalisationAnalyser.CodeFixes
             var finalPropertyName = basePropertyName;
             int propertyNameSuffix = 0;
 
-            while (containsMember(generator, finalPropertyName))
+            while (containsMember(localisationClass, finalPropertyName))
                 finalPropertyName = $"{basePropertyName}{++propertyNameSuffix}";
 
             return finalPropertyName;
 
-            static bool containsMember(LocalisationClassGenerator generator, string memberName)
-                => generator.Members.Any(m => m.Name == memberName);
+            static bool containsMember(LocalisationClass localisationClass, string memberName)
+                => localisationClass.Members.Any(m => m.Name == memberName);
         }
 
         private static string convertUsingDirectiveToString(UsingDirectiveSyntax directive)

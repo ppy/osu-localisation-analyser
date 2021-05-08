@@ -12,12 +12,12 @@ namespace LocalisationAnalyser.Generators
         public readonly string EnglishText;
         public readonly ImmutableArray<LocalisationParameter> Parameters;
 
-        public LocalisationMember(string name, string key, string englishText, LocalisationParameter[]? parameters = null)
+        public LocalisationMember(string name, string key, string englishText, params LocalisationParameter[] parameters)
         {
             Name = name;
             Key = key;
             EnglishText = englishText;
-            Parameters = parameters?.ToImmutableArray() ?? ImmutableArray<LocalisationParameter>.Empty;
+            Parameters = parameters.ToImmutableArray();
         }
     }
 }

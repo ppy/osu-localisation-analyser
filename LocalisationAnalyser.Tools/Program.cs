@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Resources.NetStandard;
 using System.Threading.Tasks;
-using LocalisationAnalyser.Abstractions.IO.Default;
 using LocalisationAnalyser.CodeFixes;
 using LocalisationAnalyser.Generators;
 using Microsoft.Build.Locator;
@@ -53,33 +52,22 @@ namespace LocalisationAnalyser.Tools
                 return;
             }
 
-            foreach (var classFile in classFiles)
+            foreach (var file in classFiles)
             {
-                Console.WriteLine($"Processing {classFile.Name}...");
+                Console.WriteLine($"Processing {file.Name}...");
 
-                string className = Path.GetFileNameWithoutExtension(classFile.Name)!;
-                string classNamespace = $"{project.AssemblyName}.{AbstractLocaliseStringCodeFixProvider.RELATIVE_LOCALISATION_PATH}";
-                string classPrefix = $"{classNamespace}.{className}";
-                string resxFile = Path.ChangeExtension(classFile.FilePath, "resx");
+                string resxFile = Path.ChangeExtension(file.FilePath, "resx");
 
-                var generator = new LocalisationClassGenerator(
-                    workspace,
-                    new DefaultFileSystem().FileInfo.FromFileName(classFile.FilePath),
-                    classNamespace,
-                    className,
-                    classPrefix);
+                LocalisationClass localisationClass;
+                using (var stream = File.OpenRead(file.FilePath))
+                    localisationClass = await LocalisationClass.ReadAsync(stream);
 
-                await generator.Open();
-
-                using (var ms = new MemoryStream())
-                using (var resWriter = new ResXResourceWriter(ms))
+                using (var fs = File.Open(resxFile, FileMode.Create, FileAccess.ReadWrite))
+                using (var resWriter = new ResXResourceWriter(fs))
                 {
-                    foreach (var member in generator.Members)
-                        resWriter.AddResource($"{classPrefix}:{member.Key}", member.EnglishText);
+                    foreach (var member in localisationClass.Members)
+                        resWriter.AddResource($"{localisationClass.Prefix}:{member.Key}", member.EnglishText);
                     resWriter.Generate();
-
-                    using (var fs = File.Open(resxFile, FileMode.Create, FileAccess.ReadWrite))
-                        ms.WriteTo(fs);
                 }
 
                 Console.WriteLine($"  -> {resxFile}");

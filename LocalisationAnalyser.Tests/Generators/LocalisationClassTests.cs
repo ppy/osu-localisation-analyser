@@ -11,34 +11,32 @@ using Xunit;
 
 namespace LocalisationAnalyser.Tests.Generators
 {
-    public class LocalisationClassGeneratorTests
+    public class LocalisationClassTests
     {
         private const string test_class_name = "TestClass";
         private const string test_file_name = "TestFile";
         private const string test_namespace = "TestNamespace";
 
         private readonly MockFileSystem mockFs;
-        private readonly LocalisationClassGenerator generator;
+        private readonly Workspace workspace;
 
-        public LocalisationClassGeneratorTests()
+        public LocalisationClassTests()
         {
             mockFs = new MockFileSystem();
-            generator = new LocalisationClassGenerator(new AdhocWorkspace(), mockFs.FileInfo.FromFileName(test_file_name), test_namespace, test_class_name, test_class_name);
+            workspace = new AdhocWorkspace();
         }
 
         [Fact]
         public async Task ClassGeneratedForNoFile()
         {
-            await generator.Open();
-            await generator.Save();
-
+            await setupClass();
             await checkResult(string.Empty);
         }
 
         [Fact]
         public async Task EmptyFileContainsNoMembers()
         {
-            setupFile($@"{LocalisationClassTemplates.FILE_HEADER_SIGNATURE}
+            var localisationClass = await setupFile($@"{LocalisationClassTemplates.FILE_HEADER_SIGNATURE}
 
 namespace {test_namespace}
 {{
@@ -50,9 +48,7 @@ namespace {test_namespace}
     }}
 }}");
 
-            await generator.Open();
-
-            Assert.Empty(generator.Members);
+            Assert.Empty(localisationClass.Members);
         }
 
         [Fact]
@@ -62,9 +58,7 @@ namespace {test_namespace}
             const string key_name = "TestKey";
             const string english_text = "TestEnglish";
 
-            await generator.Open();
-            var memberAccess = generator.AddMember(new LocalisationMember(prop_name, key_name, english_text));
-            await generator.Save();
+            await setupClass(new LocalisationMember(prop_name, key_name, english_text));
 
             await checkResult($@"
         /// <summary>
@@ -72,9 +66,6 @@ namespace {test_namespace}
         /// </summary>
         public static LocalisableString {prop_name} => new TranslatableString(getKey(@""{key_name}""), @""{english_text}"");
 ");
-
-            Assert.Equal(test_class_name, memberAccess.Expression.ToString());
-            Assert.Equal(prop_name, memberAccess.Name.ToString());
         }
 
         [Fact]
@@ -84,7 +75,7 @@ namespace {test_namespace}
             const string key_name = "TestKey";
             const string english_text = "TestEnglish";
 
-            setupFile($@"{LocalisationClassTemplates.FILE_HEADER_SIGNATURE}
+            var localisationClass = await setupFile($@"{LocalisationClassTemplates.FILE_HEADER_SIGNATURE}
 
 namespace {test_namespace}
 {{
@@ -101,13 +92,11 @@ namespace {test_namespace}
     }}
 }}");
 
-            await generator.Open();
-
-            Assert.Single(generator.Members);
-            Assert.Equal(prop_name, generator.Members[0].Name);
-            Assert.Equal(key_name, generator.Members[0].Key);
-            Assert.Equal(english_text, generator.Members[0].EnglishText);
-            Assert.Empty(generator.Members[0].Parameters);
+            Assert.Single(localisationClass.Members);
+            Assert.Equal(prop_name, localisationClass.Members[0].Name);
+            Assert.Equal(key_name, localisationClass.Members[0].Key);
+            Assert.Equal(english_text, localisationClass.Members[0].EnglishText);
+            Assert.Empty(localisationClass.Members[0].Parameters);
         }
 
         [Fact]
@@ -121,9 +110,7 @@ namespace {test_namespace}
             var param2 = new LocalisationParameter("string", "second");
             var param3 = new LocalisationParameter("customobj", "third");
 
-            await generator.Open();
-            var memberAccess = generator.AddMember(new LocalisationMember(method_name, key_name, english_text, new[] { param1, param2, param3 }));
-            await generator.Save();
+            await setupClass(new LocalisationMember(method_name, key_name, english_text, param1, param2, param3));
 
             await checkResult($@"
         /// <summary>
@@ -131,9 +118,6 @@ namespace {test_namespace}
         /// </summary>
         public static LocalisableString {method_name}({param1.Type} {param1.Name}, {param2.Type} {param2.Name}, {param3.Type} {param3.Name}) => new TranslatableString(getKey(@""{key_name}""), @""{english_text}"", {param1.Name}, {param2.Name}, {param3.Name});
 ");
-
-            Assert.Equal(test_class_name, memberAccess.Expression.ToString());
-            Assert.Equal(method_name, memberAccess.Name.ToString());
         }
 
         [Fact]
@@ -147,7 +131,7 @@ namespace {test_namespace}
             var param2 = new LocalisationParameter("string", "second");
             var param3 = new LocalisationParameter("customobj", "third");
 
-            setupFile($@"{LocalisationClassTemplates.FILE_HEADER_SIGNATURE}
+            var localisationClass = await setupFile($@"{LocalisationClassTemplates.FILE_HEADER_SIGNATURE}
 
 namespace {test_namespace}
 {{
@@ -164,17 +148,15 @@ namespace {test_namespace}
     }}
 }}");
 
-            await generator.Open();
+            Assert.Single(localisationClass.Members);
+            Assert.Equal(method_name, localisationClass.Members[0].Name);
+            Assert.Equal(key_name, localisationClass.Members[0].Key);
+            Assert.Equal(english_text, localisationClass.Members[0].EnglishText);
 
-            Assert.Single(generator.Members);
-            Assert.Equal(method_name, generator.Members[0].Name);
-            Assert.Equal(key_name, generator.Members[0].Key);
-            Assert.Equal(english_text, generator.Members[0].EnglishText);
-
-            Assert.Equal(3, generator.Members[0].Parameters.Length);
-            Assert.Equal(param1, generator.Members[0].Parameters[0]);
-            Assert.Equal(param2, generator.Members[0].Parameters[1]);
-            Assert.Equal(param3, generator.Members[0].Parameters[2]);
+            Assert.Equal(3, localisationClass.Members[0].Parameters.Length);
+            Assert.Equal(param1, localisationClass.Members[0].Parameters[0]);
+            Assert.Equal(param2, localisationClass.Members[0].Parameters[1]);
+            Assert.Equal(param3, localisationClass.Members[0].Parameters[2]);
         }
 
         [Fact]
@@ -183,7 +165,7 @@ namespace {test_namespace}
             const string prop_name = "TestProperty";
             const string key_name = "TestKey";
 
-            setupFile($@"{LocalisationClassTemplates.FILE_HEADER_SIGNATURE}
+            var localisationClass = await setupFile($@"{LocalisationClassTemplates.FILE_HEADER_SIGNATURE}
 
 namespace {test_namespace}
 {{
@@ -200,18 +182,24 @@ namespace {test_namespace}
     }}
 }}");
 
-            await generator.Open();
-
-            Assert.Single(generator.Members);
-            Assert.Equal(prop_name, generator.Members[0].Name);
-            Assert.Equal(key_name, generator.Members[0].Key);
-            Assert.Equal("this is a \"verbatim\" string", generator.Members[0].EnglishText);
-            Assert.Empty(generator.Members[0].Parameters);
+            Assert.Single(localisationClass.Members);
+            Assert.Equal(prop_name, localisationClass.Members[0].Name);
+            Assert.Equal(key_name, localisationClass.Members[0].Key);
+            Assert.Equal("this is a \"verbatim\" string", localisationClass.Members[0].EnglishText);
+            Assert.Empty(localisationClass.Members[0].Parameters);
         }
 
-        private void setupFile(string contents)
+        private async Task<LocalisationClass> setupFile(string contents)
         {
             mockFs.AddFile(test_file_name, contents);
+            using (var stream = mockFs.FileInfo.FromFileName(test_file_name).OpenRead())
+                return await LocalisationClass.ReadAsync(stream);
+        }
+
+        private async Task setupClass(params LocalisationMember[] members)
+        {
+            using (var stream = mockFs.FileInfo.FromFileName(test_file_name).OpenWrite())
+                await new LocalisationClass(test_namespace, test_class_name, test_class_name, members).WriteAsync(stream, workspace);
         }
 
         private async Task checkResult(string inner)

@@ -5,12 +5,12 @@ namespace LocalisationAnalyser.Abstractions.IO
 {
     public interface IPath
     {
-        string? GetDirectoryName(string? path);
+        string GetDirectoryName(string path);
 
         string Combine(params string[] paths);
 
         string ChangeExtension(string path, string newExtension);
 
-        string? GetFileName(string path);
+        string GetFileName(string path);
     }
 }

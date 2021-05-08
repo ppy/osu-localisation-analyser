@@ -17,14 +17,16 @@ namespace LocalisationAnalyser.Generators
         /// </summary>
         public const string MEMBER_CONSTRUCTION_TYPE = "TranslatableString";
 
+        public const string PREFIX_CONST_NAME = "prefix";
+
         /// <summary>
         /// The template signature for the 'prefix' const.
         /// </summary>
         /// <remarks>
         /// {0} : Value
         /// </remarks>
-        public const string PREFIX_SIGNATURE = @"
-private const string prefix = @""{0}"";
+        public static readonly string PREFIX_SIGNATURE = $@"
+private const string {PREFIX_CONST_NAME} = @""{{0}}"";
 ";
 
         /// <summary>

@@ -18,7 +18,7 @@ namespace LocalisationAnalyser.Tests.Helpers.IO
 
         public bool Exists => fileInfo.Exists;
         public string FullName => fileInfo.FullName;
-        public string? DirectoryName => fileInfo.DirectoryName;
+        public string DirectoryName => fileInfo.DirectoryName;
         public IFileSystem FileSystem { get; }
         public Stream OpenRead() => fileInfo.OpenRead();
         public Stream OpenWrite() => fileInfo.OpenWrite();

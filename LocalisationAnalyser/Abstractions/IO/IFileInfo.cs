@@ -11,7 +11,7 @@ namespace LocalisationAnalyser.Abstractions.IO
 
         string FullName { get; }
 
-        string? DirectoryName { get; }
+        string DirectoryName { get; }
 
         IFileSystem FileSystem { get; }
 
