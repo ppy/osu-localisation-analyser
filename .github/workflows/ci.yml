@@ -23,10 +23,12 @@ jobs:
         with:
           dotnet-version: "5.0.x"
 
+      - name: Build
+        run: dotnet build
+
       - name: Test
         run: dotnet test --logger "trx;LogFileName=TestResults-${{matrix.os.prettyname}}.trx"
         shell: pwsh
-
 
       # Attempt to upload results even if test fails.
       # https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#always

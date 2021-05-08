@@ -1,8 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFramework>net5.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <Nullable>enable</Nullable>
+        <LangVersion>9</LangVersion>
+
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>localisation</ToolCommandName>
+    </PropertyGroup>
+
+    <PropertyGroup Label="NuGet">
+        <Title>osu! Localisation Analyser Tools</Title>
+        <Authors>ppy Pty Ltd</Authors>
+        <Company>ppy Pty Ltd</Company>
+        <Copyright>Copyright (c) 2021 ppy Pty Ltd</Copyright>
+        <Product>osu! Localisation Analyser Tools</Product>
+        <PackageTags>osu analysers tools</PackageTags>
+        <PackageReleaseNotes>Automated release.</PackageReleaseNotes>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/smoogipoo/osu-localisation-analyser</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/smoogipoo/osu-localisation-analyser</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>

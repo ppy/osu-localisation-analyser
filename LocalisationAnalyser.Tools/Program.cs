@@ -23,20 +23,11 @@ namespace LocalisationAnalyser.Tools
                 },
             };
 
-            Command fromResx = new Command("from-resx")
-            {
-                new Argument("project-file")
-                {
-                    Description = "The C# project (.csproj) file."
-                },
-            };
-
             toResx.Handler = CommandHandler.Create<string>(convertToResX);
 
             await new RootCommand
             {
-                toResx,
-                fromResx,
+                toResx
             }.InvokeAsync(args);
         }
 
