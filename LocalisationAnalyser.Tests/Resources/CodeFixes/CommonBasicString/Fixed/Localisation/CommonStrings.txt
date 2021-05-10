@@ -5,7 +5,7 @@ using osu.Framework.Localisation;
 
 namespace TestProject.Localisation
 {
-    public static class Common
+    public static class CommonStrings
     {
         private const string prefix = @"TestProject.Localisation.Common";
 
