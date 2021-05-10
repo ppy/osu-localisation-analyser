@@ -6,7 +6,7 @@ namespace Test
     {
         static void Main()
         {
-            string x = Common.Abc;
+            string x = CommonStrings.Abc;
         }
     }
 }

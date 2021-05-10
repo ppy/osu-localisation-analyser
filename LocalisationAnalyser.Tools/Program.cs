@@ -42,11 +42,7 @@ namespace LocalisationAnalyser.Tools
 
             var localisationFiles = project.Documents.Where(d => d.Folders.SequenceEqual(SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Split('/')))
                                            .Where(d => d.Name.EndsWith(".cs"))
-                                           .Where(d =>
-                                           {
-                                               string filename = Path.GetFileNameWithoutExtension(d.Name);
-                                               return filename.EndsWith(SyntaxTemplates.CLASS_STRINGS_FILE_SUFFIX) || filename == SyntaxTemplates.COMMON_STRINGS_FILE_NAME;
-                                           })
+                                           .Where(d => Path.GetFileNameWithoutExtension(d.Name).EndsWith(SyntaxTemplates.STRINGS_FILE_SUFFIX))
                                            .ToArray();
 
             if (localisationFiles.Length == 0)
