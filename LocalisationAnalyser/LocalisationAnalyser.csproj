@@ -17,11 +17,12 @@
         <Company>ppy Pty Ltd</Company>
         <Copyright>Copyright (c) 2021 ppy Pty Ltd</Copyright>
         <Product>osu! Localisation Analyser</Product>
+        <PackageId>ppy.LocalisationAnalyser</PackageId>
         <PackageTags>osu analysers</PackageTags>
         <PackageReleaseNotes>Automated release.</PackageReleaseNotes>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageProjectUrl>https://github.com/smoogipoo/osu-localisation-analyser</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/smoogipoo/osu-localisation-analyser</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/ppy/osu-localisation-analyser</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/ppy/osu-localisation-analyser</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
