@@ -7,10 +7,10 @@ namespace TestProject.Localisation
 {
     public static class ProgramStrings
     {
-        private const string prefix = @"TestProject.Localisation.ProgramStrings";
+        private const string prefix = @"TestProject.Localisation.Program";
 
         /// <summary>
-        /// "this is an interpolated string (i = {0})""
+        /// "this is an interpolated string (i = {0})"
         /// </summary>
         public static LocalisableString Thisisanin(int i) => new TranslatableString(getKey(@"thisisanin"), @"this is an interpolated string (i = {0})", i);
 
