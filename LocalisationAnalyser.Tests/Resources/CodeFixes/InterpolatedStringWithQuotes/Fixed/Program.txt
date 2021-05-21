@@ -6,8 +6,8 @@ namespace Test
     {
         static void Main()
         {
-            int i = 5;
-            string x = ProgramStrings.Thisisanin(i);
+            string fullPath = string.Empty;
+            string x = ProgramStrings.Foldernota(fullPath);
         }
     }
 }

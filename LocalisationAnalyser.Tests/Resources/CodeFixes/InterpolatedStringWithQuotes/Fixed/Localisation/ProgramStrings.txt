@@ -10,9 +10,9 @@ namespace TestProject.Localisation
         private const string prefix = @"TestProject.Localisation.Program";
 
         /// <summary>
-        /// "this is an interpolated string (i = {0})"
+        /// "Folder "{0}" not available in the target osu!stable installation to import."
         /// </summary>
-        public static LocalisableString Thisisanin(int i) => new TranslatableString(getKey(@"thisisanin"), @"this is an interpolated string (i = {0})", i);
+        public static LocalisableString Foldernota(string fullPath) => new TranslatableString(getKey(@"foldernota"), @"Folder ""{0}"" not available in the target osu!stable installation to import.", fullPath);
 
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
