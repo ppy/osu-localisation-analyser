@@ -1,0 +1,13 @@
+using TestProject.Localisation;
+
+namespace Test
+{
+    class Program
+    {
+        static void Main()
+        {
+            string fullPath = string.Empty;
+            string x = ProgramStrings.Foldernota(fullPath);
+        }
+    }
+}

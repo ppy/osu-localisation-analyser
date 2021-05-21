@@ -1,0 +1,11 @@
+namespace Test
+{
+    class Program
+    {
+        static void Main()
+        {
+            string fullPath = string.Empty;
+            string x = [|$"Folder \"{fullPath}\" not available in the target osu!stable installation to import."|];
+        }
+    }
+}

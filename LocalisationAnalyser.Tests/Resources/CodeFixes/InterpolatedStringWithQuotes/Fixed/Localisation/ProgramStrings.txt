@@ -1,0 +1,19 @@
+// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
+// See the LICENCE file in the repository root for full licence text.
+
+using osu.Framework.Localisation;
+
+namespace TestProject.Localisation
+{
+    public static class ProgramStrings
+    {
+        private const string prefix = @"TestProject.Localisation.Program";
+
+        /// <summary>
+        /// "Folder "{0}" not available in the target osu!stable installation to import."
+        /// </summary>
+        public static LocalisableString Foldernota(string fullPath) => new TranslatableString(getKey(@"foldernota"), @"Folder ""{0}"" not available in the target osu!stable installation to import.", fullPath);
+
+        private static string getKey(string key) => $@"{prefix}:{key}";
+    }
+}
