@@ -63,6 +63,16 @@ namespace LocalisationAnalyser.Localisation
             return Equals((LocalisationMember)obj);
         }
 
-        public override int GetHashCode() => HashCode.Combine(Name, Key, EnglishText, Parameters);
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Name.GetHashCode();
+                hashCode = (hashCode * 397) ^ Key.GetHashCode();
+                hashCode = (hashCode * 397) ^ EnglishText.GetHashCode();
+                hashCode = (hashCode * 397) ^ Parameters.GetHashCode();
+                return hashCode;
+            }
+        }
     }
 }

@@ -88,7 +88,7 @@ namespace LocalisationAnalyser.Localisation
                 if (string.IsNullOrEmpty(walker.Prefix))
                     throw new MalformedLocalisationException("The localisation file contains no prefix identifier");
 
-                return new LocalisationFile(walker.Namespace, walker.Name, walker.Prefix.Replace($"{walker.Namespace}.", string.Empty), walker.Members.ToArray());
+                return new LocalisationFile(walker.Namespace!, walker.Name!, walker.Prefix!.Replace($"{walker.Namespace}.", string.Empty), walker.Members.ToArray());
             }
         }
 
@@ -109,6 +109,16 @@ namespace LocalisationAnalyser.Localisation
             return Equals((LocalisationFile)obj);
         }
 
-        public override int GetHashCode() => HashCode.Combine(Namespace, Name, Prefix, Members);
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Namespace.GetHashCode();
+                hashCode = (hashCode * 397) ^ Name.GetHashCode();
+                hashCode = (hashCode * 397) ^ Prefix.GetHashCode();
+                hashCode = (hashCode * 397) ^ Members.GetHashCode();
+                return hashCode;
+            }
+        }
     }
 }

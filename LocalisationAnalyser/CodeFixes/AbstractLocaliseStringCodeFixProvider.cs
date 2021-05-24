@@ -200,7 +200,7 @@ namespace LocalisationAnalyser.CodeFixes
                 {
                     var classDocument = project.AddDocument(
                         fileSystem.Path.GetFileName(file.FullName),
-                        await file.FileSystem.File.ReadAllTextAsync(file.FullName, cancellationToken),
+                        file.FileSystem.File.ReadAllText(file.FullName),
                         Enumerable.Empty<string>(),
                         file.FullName);
 
@@ -295,7 +295,7 @@ namespace LocalisationAnalyser.CodeFixes
         private static string createMemberName(LocalisationFile localisation, string englishText)
         {
             var basePropertyName = new string(englishText.Where(char.IsLetter).Take(10).ToArray());
-            basePropertyName = char.ToUpperInvariant(basePropertyName[0]) + basePropertyName[1..];
+            basePropertyName = char.ToUpperInvariant(basePropertyName[0]) + basePropertyName.Substring(1);
 
             var finalPropertyName = basePropertyName;
             int propertyNameSuffix = 0;

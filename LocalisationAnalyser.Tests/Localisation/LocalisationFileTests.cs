@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using LocalisationAnalyser.Abstractions.IO;
 using LocalisationAnalyser.Localisation;
@@ -31,7 +30,7 @@ namespace LocalisationAnalyser.Tests.Localisation
         public async Task ClassGeneratedForNoFile()
         {
             await setupLocalisation();
-            await checkResult(string.Empty);
+            checkResult(string.Empty);
         }
 
         [Fact]
@@ -64,7 +63,7 @@ namespace {test_namespace}
 
             await setupLocalisation(new LocalisationMember(prop_name, key_name, english_text));
 
-            await checkResult($@"
+            checkResult($@"
         /// <summary>
         /// ""{english_text}""
         /// </summary>
@@ -116,7 +115,7 @@ namespace {test_namespace}
 
             await setupLocalisation(new LocalisationMember(method_name, key_name, english_text, param1, param2, param3));
 
-            await checkResult($@"
+            checkResult($@"
         /// <summary>
         /// ""{english_text}""
         /// </summary>
@@ -202,7 +201,7 @@ namespace {test_namespace}
                     new LocalisationParameter("int", "i")));
 
             IFileInfo file = mockFs.FileInfo.FromFileName(test_file_name);
-            string initial = await mockFs.File.ReadAllTextAsync(file.FullName, CancellationToken.None);
+            string initial = mockFs.File.ReadAllText(file.FullName);
 
             // Read and re-save via LocalisationFile.
             LocalisationFile localisation;
@@ -211,7 +210,7 @@ namespace {test_namespace}
             using (var stream = file.OpenWrite())
                 await localisation.WriteAsync(stream, workspace);
 
-            string updated = await mockFs.File.ReadAllTextAsync(file.FullName, CancellationToken.None);
+            string updated = mockFs.File.ReadAllText(file.FullName);
             Assert.Equal(initial, updated);
         }
 
@@ -228,7 +227,7 @@ namespace {test_namespace}
                 await new LocalisationFile(test_namespace, test_class_name, test_class_name, members).WriteAsync(stream, workspace);
         }
 
-        private async Task checkResult(string inner)
+        private void checkResult(string inner)
         {
             var sb = new StringBuilder();
 
@@ -249,7 +248,7 @@ namespace {test_namespace}
     }
 }");
 
-            Assert.Equal(sb.ToString().Trim(), await mockFs.File.ReadAllTextAsync(test_file_name, CancellationToken.None));
+            Assert.Equal(sb.ToString().Trim(), mockFs.File.ReadAllText(test_file_name));
         }
     }
 }

@@ -71,8 +71,10 @@ namespace LocalisationAnalyser.Localisation
                     Formatter.Format(paramList, workspace).ToFullString(),
                     member.Key,
                     convertToVerbatim(member.EnglishText),
-                    Formatter.Format(argList, workspace).ToFullString()[1..^1], // The entire string minus the parens
+                    trimParens(Formatter.Format(argList, workspace).ToFullString()), // The entire string minus the parens
                     member.EnglishText))!; // Todo: Improve xmldoc
+
+            static string trimParens(string input) => input.Substring(1, input.Length - 2);
         }
 
         /// <summary>
