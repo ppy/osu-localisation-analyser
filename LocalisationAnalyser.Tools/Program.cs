@@ -13,6 +13,9 @@ namespace LocalisationAnalyser.Tools
 {
     internal class Program
     {
+        private const string reader_type = "System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089";
+        private const string writer_type = "System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089";
+
         public static async Task Main(string[] args)
         {
             var toResx = new Command("to-resx", "Generates resource (.resx) files from all localisations in the target project.")
@@ -62,7 +65,7 @@ namespace LocalisationAnalyser.Tools
                 string resxFile = Path.Combine(Path.GetDirectoryName(file.FilePath)!, $"{localisationFile.Prefix}.resx");
 
                 using (var fs = File.Open(resxFile, FileMode.Create, FileAccess.ReadWrite))
-                using (var resWriter = new ResXResourceWriter(fs))
+                using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
                 {
                     foreach (var member in localisationFile.Members)
                         resWriter.AddResource(member.Key, member.EnglishText);
@@ -71,6 +74,16 @@ namespace LocalisationAnalyser.Tools
 
                 Console.WriteLine($"  -> {resxFile}");
             }
+        }
+
+        private static string getResourceTypeName(Type type)
+        {
+            if (type == typeof(ResXResourceReader))
+                return reader_type;
+            if (type == typeof(ResXResourceWriter))
+                return writer_type;
+
+            throw new ArgumentException("Unexpected resource type.", nameof(type));
         }
     }
 }
