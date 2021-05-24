@@ -2,13 +2,11 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace LocalisationAnalyser.Abstractions.IO.Default
 {
     internal class DefaultFile : IFile
     {
-        public Task<string> ReadAllTextAsync(string fullname, CancellationToken cancellationToken) => File.ReadAllTextAsync(fullname, cancellationToken);
+        public string ReadAllText(string fullname) => File.ReadAllText(fullname);
     }
 }

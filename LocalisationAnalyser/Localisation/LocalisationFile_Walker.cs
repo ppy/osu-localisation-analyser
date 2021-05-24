@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -91,14 +90,14 @@ namespace LocalisationAnalyser.Localisation
                 if (!tryAnalyseMemberDefinition(node, out var name, out var parameters, out var body))
                     return;
 
-                if (!tryAnalyseMemberBody(body, out var key, out var englishText))
+                if (!tryAnalyseMemberBody(body!, out var key, out var englishText))
                     return;
 
                 Members.Add(new LocalisationMember(name, key, englishText, parameters));
             }
 
             private bool tryAnalyseMemberDefinition(MemberDeclarationSyntax member, out string name, out LocalisationParameter[] parameters,
-                                                    [NotNullWhen(true)] out ArrowExpressionClauseSyntax? body)
+                                                    out ArrowExpressionClauseSyntax? body)
             {
                 name = string.Empty;
                 parameters = Array.Empty<LocalisationParameter>();

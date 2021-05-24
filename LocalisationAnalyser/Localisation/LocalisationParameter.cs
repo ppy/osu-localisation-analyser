@@ -48,6 +48,12 @@ namespace LocalisationAnalyser.Localisation
             return Equals((LocalisationParameter)obj);
         }
 
-        public override int GetHashCode() => HashCode.Combine(Type, Name);
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (Type.GetHashCode() * 397) ^ Name.GetHashCode();
+            }
+        }
     }
 }
