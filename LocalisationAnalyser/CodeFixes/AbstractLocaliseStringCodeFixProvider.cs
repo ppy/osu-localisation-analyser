@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using LocalisationAnalyser.Abstractions.IO;
 using LocalisationAnalyser.Localisation;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -53,18 +52,18 @@ namespace LocalisationAnalyser.CodeFixes
                 if (matchingMember != null)
                 {
                     context.RegisterCodeFix(
-                        CodeAction.Create(
+                        new LocaliseStringCodeAction(
                             $"Use existing {friendlyLocalisationTarget} localisation: {matchingMember.Name}",
-                            c => localiseLiteralAsync(context.Document, literal, c, true),
+                            (preview, cancellationToken) => localiseLiteralAsync(context.Document, literal, preview, cancellationToken, true),
                             nameof(LocaliseClassStringCodeFixProvider)),
                         diagnostic);
                 }
                 else
                 {
                     context.RegisterCodeFix(
-                        CodeAction.Create(
+                        new LocaliseStringCodeAction(
                             $"Add new {friendlyLocalisationTarget} localisation for: {literal}",
-                            c => localiseLiteralAsync(context.Document, literal, c, false),
+                            (preview, cancellationToken) => localiseLiteralAsync(context.Document, literal, preview, cancellationToken, false),
                             nameof(LocaliseClassStringCodeFixProvider)),
                         diagnostic);
                 }
@@ -73,15 +72,15 @@ namespace LocalisationAnalyser.CodeFixes
             foreach (var interpolated in nodes.OfType<InterpolatedStringExpressionSyntax>())
             {
                 context.RegisterCodeFix(
-                    CodeAction.Create(
+                    new LocaliseStringCodeAction(
                         $"Add new {friendlyLocalisationTarget} localisation for: {interpolated}",
-                        c => localiseInterpolatedStringAsync(context.Document, interpolated, c),
+                        (preview, cancellationToken) => localiseInterpolatedStringAsync(context.Document, interpolated, preview, cancellationToken),
                         nameof(LocaliseClassStringCodeFixProvider)),
                     diagnostic);
             }
         }
 
-        private async Task<Solution> localiseLiteralAsync(Document document, LiteralExpressionSyntax literal, CancellationToken cancellationToken, bool useExisting)
+        private async Task<Solution> localiseLiteralAsync(Document document, LiteralExpressionSyntax literal, bool preview, CancellationToken cancellationToken, bool useExisting)
         {
             return await addMember(
                 document,
@@ -89,11 +88,12 @@ namespace LocalisationAnalyser.CodeFixes
                 literal.Token.ValueText,
                 Enumerable.Empty<LocalisationParameter>(),
                 Enumerable.Empty<ExpressionSyntax>(),
+                preview,
                 cancellationToken,
                 useExisting);
         }
 
-        private async Task<Solution> localiseInterpolatedStringAsync(Document document, InterpolatedStringExpressionSyntax interpolated, CancellationToken cancellationToken)
+        private async Task<Solution> localiseInterpolatedStringAsync(Document document, InterpolatedStringExpressionSyntax interpolated, bool preview, CancellationToken cancellationToken)
         {
             var formatString = new StringBuilder();
             var paramNames = new List<string>();
@@ -166,12 +166,13 @@ namespace LocalisationAnalyser.CodeFixes
                 formatString.ToString(),
                 paramNames.Select((name, i) => new LocalisationParameter(paramTypes[i], name)),
                 paramValues,
+                preview,
                 cancellationToken,
                 false);
         }
 
         private async Task<Solution> addMember(Document document, SyntaxNode nodeToReplace, string text, IEnumerable<LocalisationParameter> parameters, IEnumerable<ExpressionSyntax> parameterValues,
-                                               CancellationToken cancellationToken, bool useExisting)
+                                               bool preview, CancellationToken cancellationToken, bool useExisting)
         {
             var project = document.Project;
             var solution = project.Solution;
@@ -188,25 +189,28 @@ namespace LocalisationAnalyser.CodeFixes
 
                 localisation = localisation.WithMembers(localisation.Members.Append(newMember).ToArray());
 
-                // Write the resultant localisation class.
-                file.FileSystem.Directory.CreateDirectory(file.DirectoryName);
-                using (var stream = file.OpenWrite())
-                    await localisation.WriteAsync(stream, document.Project.Solution.Workspace);
+                if (!preview)
+                {
+                    // Write the resultant localisation class.
+                    file.FileSystem.Directory.CreateDirectory(file.DirectoryName);
+                    using (var stream = file.OpenWrite())
+                        await localisation.WriteAsync(stream, document.Project.Solution.Workspace);
+
+                    // Check for and add the new class file to the project if required.
+                    if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != file.FullName))
+                    {
+                        var classDocument = project.AddDocument(
+                            fileSystem.Path.GetFileName(file.FullName),
+                            file.FileSystem.File.ReadAllText(file.FullName),
+                            Enumerable.Empty<string>(),
+                            file.FullName);
+
+                        project = classDocument.Project;
+                        solution = project.Solution;
+                    }
+                }
 
                 memberAccess = SyntaxGenerators.GenerateMemberAccessSyntax(localisation, newMember);
-
-                // Check for and add the new class file to the project if required.
-                if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != file.FullName))
-                {
-                    var classDocument = project.AddDocument(
-                        fileSystem.Path.GetFileName(file.FullName),
-                        file.FileSystem.File.ReadAllText(file.FullName),
-                        Enumerable.Empty<string>(),
-                        file.FullName);
-
-                    project = classDocument.Project;
-                    solution = project.Solution;
-                }
             }
             else
                 memberAccess = SyntaxGenerators.GenerateMemberAccessSyntax(localisation, localisation.Members.First(m => m.EnglishText == text));
