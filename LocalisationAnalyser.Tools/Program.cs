@@ -29,7 +29,7 @@ namespace LocalisationAnalyser.Tools
                 },
             };
 
-            var phpToResx = new Command("from-php", "Generates resource (.resx) files from all PHP files in the target directory recursively.")
+            var phpToResx = new Command("from-php", "Generates side-by-side resource (.resx) files for all PHP files recursively in the target directory.")
             {
                 new Argument("directory")
                 {
@@ -37,7 +37,7 @@ namespace LocalisationAnalyser.Tools
                 }
             };
 
-            toResx.Handler = CommandHandler.Create<string>(convertToResX);
+            toResx.Handler = CommandHandler.Create<string>(projectToResX);
             phpToResx.Handler = CommandHandler.Create<string>(phpToResX);
 
             await new RootCommand("osu! Localisation Tools")
@@ -47,7 +47,7 @@ namespace LocalisationAnalyser.Tools
             }.InvokeAsync(args);
         }
 
-        private static async Task convertToResX(string projectFile)
+        private static async Task projectToResX(string projectFile)
         {
             Console.WriteLine($"Converting all localisation files in {projectFile}...");
 
