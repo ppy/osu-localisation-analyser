@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 using System.Resources.NetStandard;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using LocalisationAnalyser.Localisation;
+using LocalisationAnalyser.Tools.Php;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis.MSBuild;
 
@@ -26,11 +29,21 @@ namespace LocalisationAnalyser.Tools
                 },
             };
 
+            var phpToResx = new Command("from-php", "Generates resource (.resx) files from all PHP files in the target directory recursively.")
+            {
+                new Argument("directory")
+                {
+                    Description = "The directory to find all PHP files in."
+                }
+            };
+
             toResx.Handler = CommandHandler.Create<string>(convertToResX);
+            phpToResx.Handler = CommandHandler.Create<string>(phpToResX);
 
             await new RootCommand("osu! Localisation Tools")
             {
-                toResx
+                toResx,
+                phpToResx
             }.InvokeAsync(args);
         }
 
@@ -73,6 +86,80 @@ namespace LocalisationAnalyser.Tools
                 }
 
                 Console.WriteLine($"  -> {resxFile}");
+            }
+        }
+
+        private static async Task phpToResX(string directory)
+        {
+            var files = Directory.EnumerateFiles(directory, "*.php", SearchOption.AllDirectories).ToArray();
+
+            if (files.Length == 0)
+            {
+                Console.WriteLine("No PHP files found in the target directory.");
+                return;
+            }
+
+            foreach (var file in files)
+            {
+                Console.WriteLine($"Processing {file}...");
+
+                string fileContents = await File.ReadAllTextAsync(file);
+
+                // Get the first array.
+                int firstBracket = fileContents.IndexOf('[');
+                int lastBracket = fileContents.LastIndexOf(']') + 1;
+                fileContents = fileContents.Substring(firstBracket, lastBracket - firstBracket);
+
+                var arraySyntax = PhpArraySyntaxNode.Parse(new PhpTokeniser(fileContents));
+                string resxFile = Path.ChangeExtension(file, ".resx");
+
+                using (var fs = File.Open(resxFile, FileMode.Create, FileAccess.ReadWrite))
+                using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
+                {
+                    foreach (var (key, value) in getTokensAndValues(arraySyntax))
+                        resWriter.AddResource(key, value);
+                    resWriter.Generate();
+                }
+
+                Console.WriteLine($"  -> {resxFile}");
+            }
+        }
+
+        private static IEnumerable<(string key, string value)> getTokensAndValues(PhpArraySyntaxNode arraySyntax, string? currentKey = null)
+        {
+            currentKey ??= string.Empty;
+
+            foreach (var i in arraySyntax.Elements)
+            {
+                var key = i.Key.Text;
+
+                string elementKey = $"{currentKey}{key}";
+
+                switch (i.Value)
+                {
+                    case PhpArraySyntaxNode nestedArray:
+                        foreach (var nestedPair in getTokensAndValues(nestedArray, $"{elementKey}."))
+                            yield return nestedPair;
+
+                        break;
+
+                    case PhpStringLiteralSyntaxNode str:
+                        string stringValue = str.Text;
+
+                        var formatMatches = Regex.Matches(stringValue, @":[a-zA-Z\-_]+");
+                        int formatIndex = formatMatches.Count - 1;
+
+                        while (formatIndex >= 0)
+                        {
+                            var match = formatMatches[formatIndex];
+                            stringValue = $"{stringValue[..match.Index]}{{{formatIndex}}}{stringValue[(match.Index + match.Length)..]}";
+                            formatIndex--;
+                        }
+
+                        yield return (elementKey, stringValue);
+
+                        break;
+                }
             }
         }
 
