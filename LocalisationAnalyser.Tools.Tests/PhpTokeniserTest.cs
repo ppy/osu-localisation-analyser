@@ -51,6 +51,7 @@ $");
  * BLOCK COMMENT!!
  */
 /**/
+
 $");
 
             tokeniser.SkipWhitespace();
