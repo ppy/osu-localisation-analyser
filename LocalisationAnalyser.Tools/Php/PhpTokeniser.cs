@@ -117,33 +117,44 @@ namespace LocalisationAnalyser.Tools.Php
             if (TryGetTrivia(out trivia) && trivia != '/')
                 return;
 
-            // // comment pattern.
-            if (TryPeekNext(out trivia) && trivia == '/')
-            {
-                while (TryGetTrivia(out trivia) && trivia != '\n')
-                    TryAdvance();
-                TryAdvance();
+            // Try to peek the next one after a / character.
+            if (!TryPeekNext(out trivia))
                 return;
-            }
 
-            // /* comment pattern.
-            if (TryPeekNext(out trivia) && trivia == '*')
+            switch (trivia)
             {
-                TryAdvance();
-                TryAdvance();
+                case '/':
+                    // Line comment
+                    while (TryGetTrivia(out trivia) && trivia != '\n')
+                        TryAdvance();
+                    TryAdvance();
+                    break;
 
-                while (true)
-                {
-                    if (TryGetTrivia(out trivia) && trivia == '*' && TryPeekNext(out var nextTrivia) && nextTrivia == '/')
+                case '*':
+                    // Block comment.
+                    TryAdvance();
+                    TryAdvance();
+
+                    while (true)
                     {
+                        if (TryGetTrivia(out trivia) && trivia == '*' && TryPeekNext(out var nextTrivia) && nextTrivia == '/')
+                        {
+                            TryAdvance();
+                            TryAdvance();
+                            break;
+                        }
+
                         TryAdvance();
-                        TryAdvance();
-                        break;
                     }
 
-                    TryAdvance();
-                }
+                    break;
+
+                default:
+                    return;
             }
+
+            // Continue skipping any remaining whitespace.
+            SkipWhitespace();
         }
 
         /// <summary>
