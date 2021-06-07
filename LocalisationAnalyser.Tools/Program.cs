@@ -144,27 +144,26 @@ namespace LocalisationAnalyser.Tools
                 return;
             }
 
+            // Only create the .cs file for the english localisation.
             if (langName == en_lang_name)
             {
-                // Create the .cs file.
                 var localisationFile = new LocalisationFile(nameSpace, Path.GetFileNameWithoutExtension(targetLocalisationFile), name, members);
                 using (var fs = File.Open(targetLocalisationFile, FileMode.Create, FileAccess.ReadWrite))
                     await localisationFile.WriteAsync(fs, new AdhocWorkspace());
 
                 Console.WriteLine($"  -> {targetLocalisationFile}");
             }
-            else
-            {
-                using (var fs = File.Open(targetResourcesFile, FileMode.Create, FileAccess.ReadWrite))
-                using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
-                {
-                    foreach (var member in members)
-                        resWriter.AddResource(member.Key, member.EnglishText);
-                    resWriter.Generate();
-                }
 
-                Console.WriteLine($"  -> {targetResourcesFile}");
+            // Create the .resx file.
+            using (var fs = File.Open(targetResourcesFile, FileMode.Create, FileAccess.ReadWrite))
+            using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
+            {
+                foreach (var member in members)
+                    resWriter.AddResource(member.Key, member.EnglishText);
+                resWriter.Generate();
             }
+
+            Console.WriteLine($"  -> {targetResourcesFile}");
         }
 
         private static async Task<IEnumerable<LocalisationMember>> getMembersFromPhpFile(string file)
