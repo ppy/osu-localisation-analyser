@@ -138,6 +138,12 @@ namespace LocalisationAnalyser.Tools
             // The localisation members to generate files from.
             var members = (await getMembersFromPhpFile(file)).ToArray();
 
+            if (members.Length == 0)
+            {
+                Console.WriteLine("Skipped (empty).");
+                return;
+            }
+
             if (langName == en_lang_name)
             {
                 // Create the .cs file.
