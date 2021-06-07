@@ -117,7 +117,6 @@ namespace LocalisationAnalyser.Tools
 
                 string targetLocalisation = Path.Combine(projectLocalisationDirectory, Path.ChangeExtension($"{name}Strings", "cs"));
                 string targetResources = Path.Combine(projectLocalisationDirectory, Path.ChangeExtension(name, "resx"));
-                string targetPrefix = $"osu.Game.Localisation.Web.{name}";
 
                 // Get the first array from the PHP file.
                 string phpContents = await File.ReadAllTextAsync(file);
@@ -137,7 +136,7 @@ namespace LocalisationAnalyser.Tools
                 }
 
                 // Create the .cs file.
-                var localisationFile = new LocalisationFile("osu.Game.Localisation.Web", Path.GetFileNameWithoutExtension(targetLocalisation), targetPrefix, localisations);
+                var localisationFile = new LocalisationFile("osu.Game.Localisation.Web", Path.GetFileNameWithoutExtension(targetLocalisation), name, localisations);
                 using (var fs = File.Open(targetLocalisation, FileMode.Create, FileAccess.ReadWrite))
                     await localisationFile.WriteAsync(fs, new AdhocWorkspace());
 
