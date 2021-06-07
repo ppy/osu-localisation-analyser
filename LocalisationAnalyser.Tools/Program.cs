@@ -204,6 +204,9 @@ namespace LocalisationAnalyser.Tools
                         // A._
                         string memberName = elementKey.Humanize().Dehumanize();
 
+                        if (memberName == string.Empty)
+                            memberName = "Default";
+
                         yield return new LocalisationMember(
                             memberName,
                             elementKey,
