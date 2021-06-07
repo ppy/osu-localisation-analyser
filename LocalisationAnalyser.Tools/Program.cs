@@ -5,6 +5,7 @@ using System.CommandLine.Invocation;
 using System.IO;
 using System.Linq;
 using System.Resources.NetStandard;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Humanizer;
@@ -151,14 +152,13 @@ namespace LocalisationAnalyser.Tools
 
             foreach (var i in arraySyntax.Elements)
             {
-                var key = i.Key.Text;
-
-                string elementKey = $"{currentKey}{key}";
+                string thisKey = i.Key.Text;
+                string fullKey = $"{currentKey}{thisKey}";
 
                 switch (i.Value)
                 {
                     case PhpArraySyntaxNode nestedArray:
-                        foreach (var nested in getLocalisationsFromPhpArray(nestedArray, $"{elementKey}."))
+                        foreach (var nested in getLocalisationsFromPhpArray(nestedArray, $"{fullKey}."))
                             yield return nested;
 
                         break;
@@ -198,23 +198,38 @@ namespace LocalisationAnalyser.Tools
                             stringValue = $"{stringValue[..match.Index]}{{{formatIndices[j]}}}{stringValue[(match.Index + match.Length)..]}";
                         }
 
-                        // This handles cases such as:
-                        // A.B_c
-                        // A._
-                        string memberName = elementKey.Humanize().Dehumanize();
-
-                        if (memberName == string.Empty)
-                            memberName = "Default";
-
                         yield return new LocalisationMember(
-                            memberName,
-                            elementKey,
+                            generateMemberNameFromKey(fullKey),
+                            fullKey,
                             stringValue,
                             formatParamNames.Select(p => new LocalisationParameter("string", p.Camelize())).ToArray());
 
                         break;
                 }
             }
+        }
+
+        private static string generateMemberNameFromKey(string key)
+        {
+            var memberName = new StringBuilder();
+
+            foreach (var ns in key.Split('.'))
+            {
+                string formatted = ns.Trim('_');
+
+                // If the string is just a simple _, add some default string.
+                if (string.IsNullOrEmpty(formatted))
+                    formatted = "Default";
+
+                // Only humanise if there's at least two unique characters in the stirng.
+                // This handles cases like "mm" and "MM" (time/date formatting strings).
+                if (ns.Distinct().Count() > 1)
+                    formatted = ns.Humanize().Dehumanize();
+
+                memberName.Append(formatted);
+            }
+
+            return memberName.ToString();
         }
 
         private static string getResourceTypeName(Type type)
