@@ -244,8 +244,7 @@ namespace {test_namespace}
 
             checkResult($@"
         /// <summary>
-        /// ""Line1
-        /// Line2""
+        /// ""Line1" + "\n" + $@"        /// Line2""
         /// </summary>
         public static LocalisableString {prop_name} => new TranslatableString(getKey(@""{key_name}""), @""{english_text}"");
 ");
