@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
@@ -7,9 +8,11 @@ using System.Linq;
 using System.Resources.NetStandard;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Humanizer;
 using LocalisationAnalyser.Localisation;
 using LocalisationAnalyser.Tools.Php;
 using Microsoft.Build.Locator;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 
 namespace LocalisationAnalyser.Tools
@@ -23,22 +26,17 @@ namespace LocalisationAnalyser.Tools
         {
             var toResx = new Command("to-resx", "Generates resource (.resx) files from all localisations in the target project.")
             {
-                new Argument("project-file")
-                {
-                    Description = "The C# project (.csproj) file."
-                },
+                new Argument("project-file") { Description = "The C# project (.csproj) file." }
             };
 
-            var phpToResx = new Command("from-php", "Generates side-by-side resource (.resx) files for all PHP files recursively in the target directory.")
+            var phpToResx = new Command("from-php", "Converts localisations from the target osu!web directory into the target project.")
             {
-                new Argument("directory")
-                {
-                    Description = "The directory to find all PHP files in."
-                }
+                new Argument("osu-web directory") { Description = "The osu!web installation directory." },
+                new Argument("project-file") { Description = "The target C# project (.csproj) file to place the localisations in." }
             };
 
             toResx.Handler = CommandHandler.Create<string>(projectToResX);
-            phpToResx.Handler = CommandHandler.Create<string>(phpToResX);
+            phpToResx.Handler = CommandHandler.Create<string, string>(convertPhp);
 
             await new RootCommand("osu! Localisation Tools")
             {
@@ -89,43 +87,67 @@ namespace LocalisationAnalyser.Tools
             }
         }
 
-        private static async Task phpToResX(string directory)
+        private static async Task convertPhp(string osuWeb, string projectFile)
         {
-            var files = Directory.EnumerateFiles(directory, "*.php", SearchOption.AllDirectories).ToArray();
+            string projectLocalisationDirectory = Path.Combine(Path.GetDirectoryName(projectFile)!, "Localisation", "Web");
+            Directory.CreateDirectory(projectLocalisationDirectory);
 
-            if (files.Length == 0)
+            string webLocalisationDirectory = Path.Combine(osuWeb, "resources", "lang");
+
+            if (!Directory.Exists(webLocalisationDirectory))
             {
-                Console.WriteLine("No PHP files found in the target directory.");
+                Console.WriteLine("No 'lang' directory in the osu!web installation.");
                 return;
             }
 
-            foreach (var file in files)
+            string enLangDirectory = Path.Combine(webLocalisationDirectory, "en");
+
+            if (!Directory.Exists(enLangDirectory))
+            {
+                Console.WriteLine("'en' localisation not found in the osu!web installation.");
+                return;
+            }
+
+            Console.WriteLine("Processing english localisations...");
+
+            foreach (var file in Directory.EnumerateFiles(enLangDirectory, "*.php", SearchOption.TopDirectoryOnly))
             {
                 Console.WriteLine($"Processing {file}...");
 
-                string fileContents = await File.ReadAllTextAsync(file);
+                string name = Path.GetFileNameWithoutExtension(file).Humanize().Dehumanize();
 
-                // Get the first array.
-                int firstBracket = fileContents.IndexOf('[');
-                int lastBracket = fileContents.LastIndexOf(']') + 1;
-                fileContents = fileContents.Substring(firstBracket, lastBracket - firstBracket);
+                string targetLocalisation = Path.Combine(projectLocalisationDirectory, Path.ChangeExtension($"{name}Strings", "cs"));
+                string targetResources = Path.Combine(projectLocalisationDirectory, Path.ChangeExtension(name, "resx"));
+                string targetPrefix = $"osu.Game.Localisation.Web.{name}";
 
-                var arraySyntax = PhpArraySyntaxNode.Parse(new PhpTokeniser(fileContents));
-                string resxFile = Path.ChangeExtension(file, ".resx");
+                // Get the first array from the PHP file.
+                string phpContents = await File.ReadAllTextAsync(file);
+                int firstBracket = phpContents.IndexOf('[');
+                int lastBracket = phpContents.LastIndexOf(']') + 1;
+                phpContents = phpContents.Substring(firstBracket, lastBracket - firstBracket);
 
-                using (var fs = File.Open(resxFile, FileMode.Create, FileAccess.ReadWrite))
+                var localisations = getLocalisationsFromPhpArray(PhpArraySyntaxNode.Parse(new PhpTokeniser(phpContents))).ToArray();
+
+                // Create the .resx file.
+                using (var fs = File.Open(targetResources, FileMode.Create, FileAccess.ReadWrite))
                 using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
                 {
-                    foreach (var (key, value) in getTokensAndValues(arraySyntax))
-                        resWriter.AddResource(key, value);
+                    foreach (var member in localisations)
+                        resWriter.AddResource(member.Key, member.EnglishText);
                     resWriter.Generate();
                 }
 
-                Console.WriteLine($"  -> {resxFile}");
+                // Create the .cs file.
+                var localisationFile = new LocalisationFile("osu.Game.Localisation.Web", Path.GetFileNameWithoutExtension(targetLocalisation), targetPrefix, localisations);
+                using (var fs = File.Open(targetLocalisation, FileMode.Create, FileAccess.ReadWrite))
+                    await localisationFile.WriteAsync(fs, new AdhocWorkspace());
+
+                Console.WriteLine($"  -> {targetResources}");
+                Console.WriteLine($"  -> {targetLocalisation}");
             }
         }
 
-        private static IEnumerable<(string key, string value)> getTokensAndValues(PhpArraySyntaxNode arraySyntax, string? currentKey = null)
+        private static IEnumerable<LocalisationMember> getLocalisationsFromPhpArray(PhpArraySyntaxNode arraySyntax, string? currentKey = null)
         {
             currentKey ??= string.Empty;
 
@@ -138,25 +160,29 @@ namespace LocalisationAnalyser.Tools
                 switch (i.Value)
                 {
                     case PhpArraySyntaxNode nestedArray:
-                        foreach (var nestedPair in getTokensAndValues(nestedArray, $"{elementKey}."))
-                            yield return nestedPair;
+                        foreach (var nested in getLocalisationsFromPhpArray(nestedArray, $"{elementKey}."))
+                            yield return nested;
 
                         break;
 
                     case PhpStringLiteralSyntaxNode str:
                         string stringValue = str.Text;
 
-                        var formatMatches = Regex.Matches(stringValue, @":[a-zA-Z\-_]+");
+                        var formatMatches = Regex.Matches(stringValue, @":([a-zA-Z\-_]+)");
                         int formatIndex = formatMatches.Count - 1;
+                        var formatParamNames = ImmutableArray.CreateBuilder<LocalisationParameter>();
 
                         while (formatIndex >= 0)
                         {
                             var match = formatMatches[formatIndex];
                             stringValue = $"{stringValue[..match.Index]}{{{formatIndex}}}{stringValue[(match.Index + match.Length)..]}";
+                            formatParamNames.Add(new LocalisationParameter("string", match.Groups[1].Captures[0].Value));
                             formatIndex--;
                         }
 
-                        yield return (elementKey, stringValue);
+                        formatParamNames.Reverse();
+
+                        yield return new LocalisationMember(elementKey.Humanize().Dehumanize(), elementKey, stringValue, formatParamNames.ToArray());
 
                         break;
                 }
