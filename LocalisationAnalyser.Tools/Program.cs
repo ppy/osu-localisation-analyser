@@ -21,6 +21,8 @@ namespace LocalisationAnalyser.Tools
     {
         private const string reader_type = "System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089";
         private const string writer_type = "System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089";
+        private const string web_namespace = "osu.Game.Localisation.Web";
+        private const string en_lang_name = "en";
 
         public static async Task Main(string[] args)
         {
@@ -90,8 +92,6 @@ namespace LocalisationAnalyser.Tools
         private static async Task convertPhp(string osuWeb, string projectFile)
         {
             string projectLocalisationDirectory = Path.Combine(Path.GetDirectoryName(projectFile)!, "Localisation", "Web");
-            Directory.CreateDirectory(projectLocalisationDirectory);
-
             string webLocalisationDirectory = Path.Combine(osuWeb, "resources", "lang");
 
             if (!Directory.Exists(webLocalisationDirectory))
@@ -100,111 +100,137 @@ namespace LocalisationAnalyser.Tools
                 return;
             }
 
-            string enLangDirectory = Path.Combine(webLocalisationDirectory, "en");
-
-            if (!Directory.Exists(enLangDirectory))
-            {
-                Console.WriteLine("'en' localisation not found in the osu!web installation.");
-                return;
-            }
-
-            Console.WriteLine("Processing english localisations...");
-
-            foreach (var file in Directory.EnumerateFiles(enLangDirectory, "*.php", SearchOption.TopDirectoryOnly))
-            {
-                Console.WriteLine($"Processing {file}...");
-
-                string name = Path.GetFileNameWithoutExtension(file).Pascalize();
-
-                string targetLocalisation = Path.Combine(projectLocalisationDirectory, Path.ChangeExtension($"{name}Strings", "cs"));
-                string targetResources = Path.Combine(projectLocalisationDirectory, Path.ChangeExtension(name, "resx"));
-
-                // Get the first array from the PHP file.
-                string phpContents = await File.ReadAllTextAsync(file);
-                int firstBracket = phpContents.IndexOf('[');
-                int lastBracket = phpContents.LastIndexOf(']') + 1;
-                phpContents = phpContents.Substring(firstBracket, lastBracket - firstBracket);
-
-                var localisations = getLocalisationsFromPhpArray(PhpArraySyntaxNode.Parse(new PhpTokeniser(phpContents))).ToArray();
-
-                // Create the .resx file.
-                using (var fs = File.Open(targetResources, FileMode.Create, FileAccess.ReadWrite))
-                using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
-                {
-                    foreach (var member in localisations)
-                        resWriter.AddResource(member.Key, member.EnglishText);
-                    resWriter.Generate();
-                }
-
-                // Create the .cs file.
-                var localisationFile = new LocalisationFile("osu.Game.Localisation.Web", Path.GetFileNameWithoutExtension(targetLocalisation), name, localisations);
-                using (var fs = File.Open(targetLocalisation, FileMode.Create, FileAccess.ReadWrite))
-                    await localisationFile.WriteAsync(fs, new AdhocWorkspace());
-
-                Console.WriteLine($"  -> {targetResources}");
-                Console.WriteLine($"  -> {targetLocalisation}");
-            }
+            foreach (var file in Directory.EnumerateFiles(webLocalisationDirectory, "*.php", SearchOption.AllDirectories))
+                await processPhpFile(file, projectLocalisationDirectory);
         }
 
-        private static IEnumerable<LocalisationMember> getLocalisationsFromPhpArray(PhpArraySyntaxNode arraySyntax, string? currentKey = null)
+        private static async Task processPhpFile(string file, string targetDirectory)
         {
-            currentKey ??= string.Empty;
+            Console.WriteLine($"Processing {file}...");
 
-            foreach (var i in arraySyntax.Elements)
+            var langParts = Regex.Match(file, @"lang[\/\\]([\w-]+)[\/\\](.*)");
+
+            // The language name - en, ro, etc..
+            string langName = langParts.Groups[1].Captures[0].Value;
+
+            // Any sub-directories before the php file itself.
+            string subDir = Path.GetDirectoryName(langParts.Groups[2].Captures[0].Value) ?? string.Empty;
+            subDir = Path.Combine(subDir.Split(Path.DirectorySeparatorChar).Select(d => d.Pascalize()).ToArray());
+
+            // The full namespace, taking into account any sub-directories from above.
+            string subNameSpace = subDir.Replace(Path.DirectorySeparatorChar, '.');
+            string nameSpace = web_namespace;
+            if (!string.IsNullOrEmpty(subNameSpace))
+                nameSpace += $".{subNameSpace}";
+
+            // The base name of files generated for this language.
+            string name = Path.GetFileNameWithoutExtension(file).Pascalize();
+            if (langName != en_lang_name)
+                name += $".{langName}";
+
+            // The target directory for files generated for this language.
+            targetDirectory = Path.Combine(targetDirectory, subDir);
+            Directory.CreateDirectory(targetDirectory); //  Make sure the target directory exists (again, consider sub-directories).
+
+            string targetLocalisationFile = Path.Combine(targetDirectory, $"{name}Strings.cs");
+            string targetResourcesFile = Path.Combine(targetDirectory, $"{name}.resx");
+
+            // The localisation members to generate files from.
+            var members = (await getMembersFromPhpFile(file)).ToArray();
+
+            // Create the .resx file.
+            using (var fs = File.Open(targetResourcesFile, FileMode.Create, FileAccess.ReadWrite))
+            using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
             {
-                string thisKey = i.Key.Text;
-                string fullKey = $"{currentKey}{thisKey}";
+                foreach (var member in members)
+                    resWriter.AddResource(member.Key, member.EnglishText);
+                resWriter.Generate();
+            }
 
-                switch (i.Value)
+            Console.WriteLine($"  -> {targetResourcesFile}");
+
+            // Only generate the localisation file for the english language. All others only exist as resources.
+            if (langName != en_lang_name)
+                return;
+
+            // Create the .cs file.
+            var localisationFile = new LocalisationFile(nameSpace, Path.GetFileNameWithoutExtension(targetLocalisationFile), name, members);
+            using (var fs = File.Open(targetLocalisationFile, FileMode.Create, FileAccess.ReadWrite))
+                await localisationFile.WriteAsync(fs, new AdhocWorkspace());
+
+            Console.WriteLine($"  -> {targetLocalisationFile}");
+        }
+
+        private static async Task<IEnumerable<LocalisationMember>> getMembersFromPhpFile(string file)
+        {
+            // Get the first array from the PHP file.
+            string phpContents = await File.ReadAllTextAsync(file);
+            int firstBracket = phpContents.IndexOf('[');
+            int lastBracket = phpContents.LastIndexOf(']') + 1;
+            phpContents = phpContents.Substring(firstBracket, lastBracket - firstBracket);
+
+            return getMembersFromPhpArray(PhpArraySyntaxNode.Parse(new PhpTokeniser(phpContents)));
+
+            static IEnumerable<LocalisationMember> getMembersFromPhpArray(PhpArraySyntaxNode arraySyntax, string? currentKey = null)
+            {
+                currentKey ??= string.Empty;
+
+                foreach (var i in arraySyntax.Elements)
                 {
-                    case PhpArraySyntaxNode nestedArray:
-                        foreach (var nested in getLocalisationsFromPhpArray(nestedArray, $"{fullKey}."))
-                            yield return nested;
+                    string thisKey = i.Key.Text;
+                    string fullKey = $"{currentKey}{thisKey}";
 
-                        break;
+                    switch (i.Value)
+                    {
+                        case PhpArraySyntaxNode nestedArray:
+                            foreach (var nested in getMembersFromPhpArray(nestedArray, $"{fullKey}."))
+                                yield return nested;
 
-                    case PhpStringLiteralSyntaxNode str:
-                        string stringValue = str.Text;
+                            break;
 
-                        // Find all "format parameters" in the localisation string of type :text .
-                        var formatStrings = Regex.Matches(stringValue, @":([a-zA-Z\-_]+)");
+                        case PhpStringLiteralSyntaxNode str:
+                            string stringValue = str.Text;
 
-                        // Each format parameter needs to be assigned a C# format index and parameter name (for the C# class).
-                        var formatIndices = new List<int>();
-                        var formatParamNames = new List<string>();
+                            // Find all "format parameters" in the localisation string of type :text .
+                            var formatStrings = Regex.Matches(stringValue, @":([a-zA-Z\-_]+)");
 
-                        for (int j = 0; j < formatStrings.Count; j++)
-                        {
-                            var match = formatStrings[j];
-                            var paramName = match.Groups[1].Captures[0].Value;
+                            // Each format parameter needs to be assigned a C# format index and parameter name (for the C# class).
+                            var formatIndices = new List<int>();
+                            var formatParamNames = new List<string>();
 
-                            int existingIndex = formatParamNames.IndexOf(paramName);
-
-                            if (existingIndex >= 0)
+                            for (int j = 0; j < formatStrings.Count; j++)
                             {
-                                // If this is a duplicated format string within the same string, refer to the same index as the others and forego addition of a new parameter.
-                                formatIndices.Add(formatIndices[existingIndex]);
-                                continue;
+                                var match = formatStrings[j];
+                                var paramName = match.Groups[1].Captures[0].Value;
+
+                                int existingIndex = formatParamNames.IndexOf(paramName);
+
+                                if (existingIndex >= 0)
+                                {
+                                    // If this is a duplicated format string within the same string, refer to the same index as the others and forego addition of a new parameter.
+                                    formatIndices.Add(formatIndices[existingIndex]);
+                                    continue;
+                                }
+
+                                formatIndices.Add(formatIndices.Count == 0 ? 0 : formatIndices.Max() + 1);
+                                formatParamNames.Add(paramName);
                             }
 
-                            formatIndices.Add(formatIndices.Count == 0 ? 0 : formatIndices.Max() + 1);
-                            formatParamNames.Add(paramName);
-                        }
+                            // Replace the format parameters in the original string with the respective C# counterpart ({0}, {1}, ...).
+                            for (int j = formatStrings.Count - 1; j >= 0; j--)
+                            {
+                                var match = formatStrings[j];
+                                stringValue = $"{stringValue[..match.Index]}{{{formatIndices[j]}}}{stringValue[(match.Index + match.Length)..]}";
+                            }
 
-                        // Replace the format parameters in the original string with the respective C# counterpart ({0}, {1}, ...).
-                        for (int j = formatStrings.Count - 1; j >= 0; j--)
-                        {
-                            var match = formatStrings[j];
-                            stringValue = $"{stringValue[..match.Index]}{{{formatIndices[j]}}}{stringValue[(match.Index + match.Length)..]}";
-                        }
+                            yield return new LocalisationMember(
+                                generateMemberNameFromKey(fullKey),
+                                fullKey,
+                                stringValue,
+                                formatParamNames.Select(p => new LocalisationParameter("string", p.Camelize())).ToArray());
 
-                        yield return new LocalisationMember(
-                            generateMemberNameFromKey(fullKey),
-                            fullKey,
-                            stringValue,
-                            formatParamNames.Select(p => new LocalisationParameter("string", p.Camelize())).ToArray());
-
-                        break;
+                            break;
+                    }
                 }
             }
         }
