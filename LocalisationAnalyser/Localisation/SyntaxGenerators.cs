@@ -56,14 +56,14 @@ namespace LocalisationAnalyser.Localisation
             var paramList = SyntaxFactory.ParameterList(
                 SyntaxFactory.SeparatedList(
                     member.Parameters.Select(param => SyntaxFactory.Parameter(
-                                                                       SyntaxFactory.Identifier(param.Name))
+                                                                       GenerateIdentifier(param.Name))
                                                                    .WithType(
                                                                        SyntaxFactory.IdentifierName(param.Type)))));
 
             var argList = SyntaxFactory.ArgumentList(
                 SyntaxFactory.SeparatedList(
                     member.Parameters.Select(param => SyntaxFactory.Argument(
-                        SyntaxFactory.IdentifierName(param.Name)))));
+                        GenerateIdentifierName(param.Name)))));
 
             return SyntaxFactory.ParseMemberDeclaration(
                 string.Format(SyntaxTemplates.METHOD_MEMBER_TEMPLATE,
@@ -97,6 +97,28 @@ namespace LocalisationAnalyser.Localisation
         /// </summary>
         public static MemberDeclarationSyntax GenerateGetKeySyntax()
             => SyntaxFactory.ParseMemberDeclaration(SyntaxTemplates.GET_KEY_METHOD_TEMPLATE)!;
+
+        /// <summary>
+        /// Generates an identifier <see cref="SyntaxToken"/> from a string, taking into account reserved language keywords.
+        /// </summary>
+        /// <param name="name">The string to generate an identifier for.</param>
+        public static SyntaxToken GenerateIdentifier(string name)
+        {
+            if (SyntaxFacts.IsReservedKeyword(SyntaxFacts.GetKeywordKind(name)))
+                name = $"@{name}";
+            return SyntaxFactory.Identifier(name);
+        }
+
+        /// <summary>
+        /// Generates an <see cref="IdentifierNameSyntax"/> from a string, taking into account reserved language keywords.
+        /// </summary>
+        /// <param name="name">The string to generate an identifier for.</param>
+        public static IdentifierNameSyntax GenerateIdentifierName(string name)
+        {
+            if (SyntaxFacts.IsReservedKeyword(SyntaxFacts.GetKeywordKind(name)))
+                name = $"@{name}";
+            return SyntaxFactory.IdentifierName(name);
+        }
 
         /// <summary>
         /// Converts a string literal to its verbatim representation. Assumes that the string is already non-verbatim.

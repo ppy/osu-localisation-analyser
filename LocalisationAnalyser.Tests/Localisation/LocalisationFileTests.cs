@@ -214,6 +214,25 @@ namespace {test_namespace}
             Assert.Equal(initial, updated);
         }
 
+        [Fact]
+        public async Task ReservedKeywordIsPrefixed()
+        {
+            const string method_name = "TestMethod";
+            const string key_name = "TestKey";
+            const string english_text = "TestEnglish{0}{1}{2}";
+
+            var param1 = new LocalisationParameter("int", "new");
+
+            await setupLocalisation(new LocalisationMember(method_name, key_name, english_text, param1));
+
+            checkResult($@"
+        /// <summary>
+        /// ""{english_text}""
+        /// </summary>
+        public static LocalisableString {method_name}({param1.Type} @{param1.Name}) => new TranslatableString(getKey(@""{key_name}""), @""{english_text}"", @{param1.Name});
+");
+        }
+
         private async Task<LocalisationFile> setupFile(string contents)
         {
             mockFs.AddFile(test_file_name, contents);
