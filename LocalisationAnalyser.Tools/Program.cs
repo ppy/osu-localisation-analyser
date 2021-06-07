@@ -199,8 +199,13 @@ namespace LocalisationAnalyser.Tools
                             stringValue = $"{stringValue[..match.Index]}{{{formatIndices[j]}}}{stringValue[(match.Index + match.Length)..]}";
                         }
 
+                        // This handles cases such as:
+                        // A.B_c
+                        // A._
+                        string memberName = elementKey.Humanize().Dehumanize();
+
                         yield return new LocalisationMember(
-                            elementKey.Pascalize(),
+                            memberName,
                             elementKey,
                             stringValue,
                             formatParamNames.Select(p => new LocalisationParameter("string", p.Camelize())).ToArray());
