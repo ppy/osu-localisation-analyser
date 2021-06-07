@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -142,7 +143,7 @@ namespace LocalisationAnalyser.Localisation
                 lines[i] = sb.ToString();
             }
 
-            return string.Join("\n", lines);
+            return string.Join(Environment.NewLine, lines);
         }
 
         /// <summary>
