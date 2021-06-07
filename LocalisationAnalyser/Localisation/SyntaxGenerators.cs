@@ -3,6 +3,7 @@
 
 using System.Linq;
 using System.Text;
+using System.Web;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -46,7 +47,7 @@ namespace LocalisationAnalyser.Localisation
                     member.Name,
                     member.Key,
                     convertToVerbatim(member.EnglishText),
-                    member.EnglishText))!;
+                    EncodeXmlDoc(member.EnglishText)))!;
 
         /// <summary>
         /// Generates the syntax for a method member.
@@ -72,7 +73,7 @@ namespace LocalisationAnalyser.Localisation
                     member.Key,
                     convertToVerbatim(member.EnglishText),
                     trimParens(Formatter.Format(argList, workspace).ToFullString()), // The entire string minus the parens
-                    member.EnglishText))!; // Todo: Improve xmldoc
+                    EncodeXmlDoc(member.EnglishText)))!;
 
             static string trimParens(string input) => input.Substring(1, input.Length - 2);
         }
@@ -118,6 +119,30 @@ namespace LocalisationAnalyser.Localisation
             if (SyntaxFacts.IsReservedKeyword(SyntaxFacts.GetKeywordKind(name)))
                 name = $"@{name}";
             return SyntaxFactory.IdentifierName(name);
+        }
+
+        public static string EncodeXmlDoc(string xmlDoc)
+        {
+            var lines = xmlDoc.Split('\n');
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var sb = new StringBuilder();
+
+                sb.Append("/// ");
+
+                if (i == 0)
+                    sb.Append("\"");
+
+                sb.Append(HttpUtility.HtmlEncode(lines[i]));
+
+                if (i == lines.Length - 1)
+                    sb.Append("\"");
+
+                lines[i] = sb.ToString();
+            }
+
+            return string.Join("\n", lines);
         }
 
         /// <summary>
