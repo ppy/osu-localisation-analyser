@@ -138,27 +138,27 @@ namespace LocalisationAnalyser.Tools
             // The localisation members to generate files from.
             var members = (await getMembersFromPhpFile(file)).ToArray();
 
-            // Create the .resx file.
-            using (var fs = File.Open(targetResourcesFile, FileMode.Create, FileAccess.ReadWrite))
-            using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
+            if (langName == en_lang_name)
             {
-                foreach (var member in members)
-                    resWriter.AddResource(member.Key, member.EnglishText);
-                resWriter.Generate();
+                // Create the .cs file.
+                var localisationFile = new LocalisationFile(nameSpace, Path.GetFileNameWithoutExtension(targetLocalisationFile), name, members);
+                using (var fs = File.Open(targetLocalisationFile, FileMode.Create, FileAccess.ReadWrite))
+                    await localisationFile.WriteAsync(fs, new AdhocWorkspace());
+
+                Console.WriteLine($"  -> {targetLocalisationFile}");
             }
+            else
+            {
+                using (var fs = File.Open(targetResourcesFile, FileMode.Create, FileAccess.ReadWrite))
+                using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
+                {
+                    foreach (var member in members)
+                        resWriter.AddResource(member.Key, member.EnglishText);
+                    resWriter.Generate();
+                }
 
-            Console.WriteLine($"  -> {targetResourcesFile}");
-
-            // Only generate the localisation file for the english language. All others only exist as resources.
-            if (langName != en_lang_name)
-                return;
-
-            // Create the .cs file.
-            var localisationFile = new LocalisationFile(nameSpace, Path.GetFileNameWithoutExtension(targetLocalisationFile), name, members);
-            using (var fs = File.Open(targetLocalisationFile, FileMode.Create, FileAccess.ReadWrite))
-                await localisationFile.WriteAsync(fs, new AdhocWorkspace());
-
-            Console.WriteLine($"  -> {targetLocalisationFile}");
+                Console.WriteLine($"  -> {targetResourcesFile}");
+            }
         }
 
         private static async Task<IEnumerable<LocalisationMember>> getMembersFromPhpFile(string file)
