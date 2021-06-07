@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
@@ -114,7 +113,7 @@ namespace LocalisationAnalyser.Tools
             {
                 Console.WriteLine($"Processing {file}...");
 
-                string name = Path.GetFileNameWithoutExtension(file).Humanize().Dehumanize();
+                string name = Path.GetFileNameWithoutExtension(file).Pascalize();
 
                 string targetLocalisation = Path.Combine(projectLocalisationDirectory, Path.ChangeExtension($"{name}Strings", "cs"));
                 string targetResources = Path.Combine(projectLocalisationDirectory, Path.ChangeExtension(name, "resx"));
@@ -168,21 +167,43 @@ namespace LocalisationAnalyser.Tools
                     case PhpStringLiteralSyntaxNode str:
                         string stringValue = str.Text;
 
-                        var formatMatches = Regex.Matches(stringValue, @":([a-zA-Z\-_]+)");
-                        int formatIndex = formatMatches.Count - 1;
-                        var formatParamNames = ImmutableArray.CreateBuilder<LocalisationParameter>();
+                        // Find all "format parameters" in the localisation string of type :text .
+                        var formatStrings = Regex.Matches(stringValue, @":([a-zA-Z\-_]+)");
 
-                        while (formatIndex >= 0)
+                        // Each format parameter needs to be assigned a C# format index and parameter name (for the C# class).
+                        var formatIndices = new List<int>();
+                        var formatParamNames = new List<string>();
+
+                        for (int j = 0; j < formatStrings.Count; j++)
                         {
-                            var match = formatMatches[formatIndex];
-                            stringValue = $"{stringValue[..match.Index]}{{{formatIndex}}}{stringValue[(match.Index + match.Length)..]}";
-                            formatParamNames.Add(new LocalisationParameter("string", match.Groups[1].Captures[0].Value));
-                            formatIndex--;
+                            var match = formatStrings[j];
+                            var paramName = match.Groups[1].Captures[0].Value;
+
+                            int existingIndex = formatParamNames.IndexOf(paramName);
+
+                            if (existingIndex >= 0)
+                            {
+                                // If this is a duplicated format string within the same string, refer to the same index as the others and forego addition of a new parameter.
+                                formatIndices.Add(formatIndices[existingIndex]);
+                                continue;
+                            }
+
+                            formatIndices.Add(formatIndices.Count == 0 ? 0 : formatIndices.Max() + 1);
+                            formatParamNames.Add(paramName);
                         }
 
-                        formatParamNames.Reverse();
+                        // Replace the format parameters in the original string with the respective C# counterpart ({0}, {1}, ...).
+                        for (int j = formatStrings.Count - 1; j >= 0; j--)
+                        {
+                            var match = formatStrings[j];
+                            stringValue = $"{stringValue[..match.Index]}{{{formatIndices[j]}}}{stringValue[(match.Index + match.Length)..]}";
+                        }
 
-                        yield return new LocalisationMember(elementKey.Humanize().Dehumanize(), elementKey, stringValue, formatParamNames.ToArray());
+                        yield return new LocalisationMember(
+                            elementKey.Pascalize(),
+                            elementKey,
+                            stringValue,
+                            formatParamNames.Select(p => new LocalisationParameter("string", p.Camelize())).ToArray());
 
                         break;
                 }
