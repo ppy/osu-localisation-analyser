@@ -159,7 +159,13 @@ namespace LocalisationAnalyser.Tools
             using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
             {
                 foreach (var member in members)
+                {
+                    if (string.IsNullOrEmpty(member.EnglishText) && langName != en_lang_name)
+                        continue;
+
                     resWriter.AddResource(member.Key, member.EnglishText);
+                }
+
                 resWriter.Generate();
             }
 
