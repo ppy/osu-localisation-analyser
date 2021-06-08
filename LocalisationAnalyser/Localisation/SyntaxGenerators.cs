@@ -1,8 +1,10 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Linq;
 using System.Text;
+using System.Web;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -46,7 +48,7 @@ namespace LocalisationAnalyser.Localisation
                     member.Name,
                     member.Key,
                     convertToVerbatim(member.EnglishText),
-                    member.EnglishText))!;
+                    EncodeXmlDoc(member.EnglishText)))!;
 
         /// <summary>
         /// Generates the syntax for a method member.
@@ -56,14 +58,14 @@ namespace LocalisationAnalyser.Localisation
             var paramList = SyntaxFactory.ParameterList(
                 SyntaxFactory.SeparatedList(
                     member.Parameters.Select(param => SyntaxFactory.Parameter(
-                                                                       SyntaxFactory.Identifier(param.Name))
+                                                                       GenerateIdentifier(param.Name))
                                                                    .WithType(
                                                                        SyntaxFactory.IdentifierName(param.Type)))));
 
             var argList = SyntaxFactory.ArgumentList(
                 SyntaxFactory.SeparatedList(
                     member.Parameters.Select(param => SyntaxFactory.Argument(
-                        SyntaxFactory.IdentifierName(param.Name)))));
+                        GenerateIdentifierName(param.Name)))));
 
             return SyntaxFactory.ParseMemberDeclaration(
                 string.Format(SyntaxTemplates.METHOD_MEMBER_TEMPLATE,
@@ -72,7 +74,7 @@ namespace LocalisationAnalyser.Localisation
                     member.Key,
                     convertToVerbatim(member.EnglishText),
                     trimParens(Formatter.Format(argList, workspace).ToFullString()), // The entire string minus the parens
-                    member.EnglishText))!; // Todo: Improve xmldoc
+                    EncodeXmlDoc(member.EnglishText)))!;
 
             static string trimParens(string input) => input.Substring(1, input.Length - 2);
         }
@@ -97,6 +99,52 @@ namespace LocalisationAnalyser.Localisation
         /// </summary>
         public static MemberDeclarationSyntax GenerateGetKeySyntax()
             => SyntaxFactory.ParseMemberDeclaration(SyntaxTemplates.GET_KEY_METHOD_TEMPLATE)!;
+
+        /// <summary>
+        /// Generates an identifier <see cref="SyntaxToken"/> from a string, taking into account reserved language keywords.
+        /// </summary>
+        /// <param name="name">The string to generate an identifier for.</param>
+        public static SyntaxToken GenerateIdentifier(string name)
+        {
+            if (SyntaxFacts.IsReservedKeyword(SyntaxFacts.GetKeywordKind(name)))
+                name = $"@{name}";
+            return SyntaxFactory.Identifier(name);
+        }
+
+        /// <summary>
+        /// Generates an <see cref="IdentifierNameSyntax"/> from a string, taking into account reserved language keywords.
+        /// </summary>
+        /// <param name="name">The string to generate an identifier for.</param>
+        public static IdentifierNameSyntax GenerateIdentifierName(string name)
+        {
+            if (SyntaxFacts.IsReservedKeyword(SyntaxFacts.GetKeywordKind(name)))
+                name = $"@{name}";
+            return SyntaxFactory.IdentifierName(name);
+        }
+
+        public static string EncodeXmlDoc(string xmlDoc)
+        {
+            var lines = xmlDoc.Split('\n');
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var sb = new StringBuilder();
+
+                sb.Append("/// ");
+
+                if (i == 0)
+                    sb.Append("\"");
+
+                sb.Append(HttpUtility.HtmlEncode(lines[i]));
+
+                if (i == lines.Length - 1)
+                    sb.Append("\"");
+
+                lines[i] = sb.ToString();
+            }
+
+            return string.Join(Environment.NewLine, lines);
+        }
 
         /// <summary>
         /// Converts a string literal to its verbatim representation. Assumes that the string is already non-verbatim.

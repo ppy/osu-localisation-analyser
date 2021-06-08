@@ -46,7 +46,7 @@ private const string {PREFIX_CONST_NAME} = @""{{0}}"";
         /// </remarks>
         public static readonly string PROPERTY_MEMBER_TEMPLATE = $@"
 /// <summary>
-/// ""{{3}}""
+{{3}}
 /// </summary>
 public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_KEY_METHOD_NAME}(@""{{1}}""), @""{{2}}"");
 ";
@@ -64,7 +64,7 @@ public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_
         /// </remarks>
         public static readonly string METHOD_MEMBER_TEMPLATE = $@"
 /// <summary>
-/// ""{{5}}""
+{{5}}
 /// </summary>
 public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_KEY_METHOD_NAME}(@""{{2}}""), @""{{3}}"", {{4}});
 ";
