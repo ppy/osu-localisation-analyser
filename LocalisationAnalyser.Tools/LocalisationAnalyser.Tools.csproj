@@ -30,6 +30,7 @@
         <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.3.1" />
         <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.21216.1" />
         <PackageReference Include="ResXResourceReader.NetStandard" Version="1.0.1" />
+        <PackageReference Include="YamlDotNet" Version="11.2.0" />
     </ItemGroup>
 
     <ItemGroup>

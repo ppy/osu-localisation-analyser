@@ -14,6 +14,7 @@ using LocalisationAnalyser.Tools.Php;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
+using YamlDotNet.Serialization;
 
 namespace LocalisationAnalyser.Tools
 {
@@ -23,6 +24,7 @@ namespace LocalisationAnalyser.Tools
         private const string writer_type = "System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089";
         private const string web_namespace = "osu.Game.Localisation.Web";
         private const string en_lang_name = "en";
+        private const string crowdin_mapping_file = "crowdin.yml";
 
         public static async Task Main(string[] args)
         {
@@ -100,11 +102,21 @@ namespace LocalisationAnalyser.Tools
                 return;
             }
 
+            // Process the crowdin mapping file in order to reverse localisation mappings (e.g. pt-br -> pt-BR).
+            // .NET uses the standard localisation scheme such that the original names conflict with other libraries and cause compiler errors due to case insensitivity.
+            var settings = new Deserializer().Deserialize<dynamic>(await File.ReadAllTextAsync(Path.Combine(osuWeb, crowdin_mapping_file)));
+            var mappings = ((IDictionary<object, object>)settings["files"][0]["languages_mapping"]["locale"])
+                .ToDictionary(kvp => (string)kvp.Key, kvp => (string)kvp.Value);
+
+            var reverseMappings = new Dictionary<string, string>();
+            foreach (var (key, value) in mappings)
+                reverseMappings.TryAdd(value, key);
+
             foreach (var file in Directory.EnumerateFiles(webLocalisationDirectory, "*.php", SearchOption.AllDirectories))
-                await processPhpFile(file, projectLocalisationDirectory);
+                await processPhpFile(file, projectLocalisationDirectory, reverseMappings);
         }
 
-        private static async Task processPhpFile(string file, string targetDirectory)
+        private static async Task processPhpFile(string file, string targetDirectory, Dictionary<string, string> languageMappings)
         {
             Console.WriteLine($"Processing {file}...");
 
@@ -112,6 +124,10 @@ namespace LocalisationAnalyser.Tools
 
             // The language name - en, ro, etc..
             string langName = langParts.Groups[1].Captures[0].Value;
+
+            // Reverse the language name through the mappings.
+            if (languageMappings.TryGetValue(langName, out var mappedName))
+                langName = mappedName;
 
             // Any sub-directories before the php file itself.
             string subDir = Path.GetDirectoryName(langParts.Groups[2].Captures[0].Value) ?? string.Empty;
