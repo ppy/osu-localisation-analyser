@@ -140,9 +140,25 @@ namespace LocalisationAnalyser.Tools
 
             if (members.Length == 0)
             {
-                Console.WriteLine("Skipped (empty).");
+                Console.WriteLine("  -> Skipped (empty).");
                 return;
             }
+
+            // Print warnings for duplicated keys. For full context, this is done prior to converting keys to lower case.
+            var groupedMemberKeys = members.Select(m => m.Key).GroupBy(k => k.ToLowerInvariant());
+
+            foreach (var g in groupedMemberKeys)
+            {
+                if (g.Count() == 1)
+                    continue;
+
+                await printWarning($"  -> WARNING: Skipping duplicate key \"{g.Key}\" ({string.Join(", ", g)})");
+            }
+
+            // Convert keys to lower-case and remove duplicates.
+            for (int i = 0; i < members.Length; i++)
+                members[i] = new LocalisationMember(members[i].Name, members[i].Key.ToLowerInvariant(), members[i].EnglishText, members[i].Parameters.ToArray());
+            members = members.Distinct(new LocalisationMemberKeyEqualityComparer()).ToArray();
 
             // Only create the .cs file for the english localisation.
             if (langName == en_lang_name)
@@ -277,6 +293,14 @@ namespace LocalisationAnalyser.Tools
                 return writer_type;
 
             throw new ArgumentException("Unexpected resource type.", nameof(type));
+        }
+
+        private static async Task printWarning(string message)
+        {
+            ConsoleColor currentColour = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            await Console.Error.WriteLineAsync(message);
+            Console.ForegroundColor = currentColour;
         }
     }
 }
