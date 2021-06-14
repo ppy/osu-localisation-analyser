@@ -22,7 +22,7 @@ namespace LocalisationAnalyser.Tools
     {
         private const string reader_type = "System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089";
         private const string writer_type = "System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089";
-        private const string web_namespace = "osu.Game.Localisation.Web";
+        private const string web_namespace = "osu.Game.Resources.Localisation.Web";
         private const string en_lang_name = "en";
 
         public static async Task Main(string[] args)
