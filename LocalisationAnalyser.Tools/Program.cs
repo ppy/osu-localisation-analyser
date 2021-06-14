@@ -152,7 +152,7 @@ namespace LocalisationAnalyser.Tools
                 if (g.Count() == 1)
                     continue;
 
-                await printWarning($"  -> WARNING: Skipping duplicate key \"{g.Key}\" ({string.Join(", ", g)})");
+                await printWarning($"  -> WARNING: Skipping duplicate key \"{g.Key}\" ({string.Join(", ", g)}) in {file}.");
             }
 
             // Convert keys to lower-case and remove duplicates.
