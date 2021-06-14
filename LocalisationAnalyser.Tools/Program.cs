@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Resources.NetStandard;
@@ -113,6 +114,9 @@ namespace LocalisationAnalyser.Tools
             // The language name - en, ro, etc..
             string langName = langParts.Groups[1].Captures[0].Value;
 
+            // Make sure the language name is a standardised IETF language tag. Without this, we run into compiler errors due to case-insensitivity (e.g. pt-br / pt-BR).
+            string ietfLangName = CultureInfo.GetCultureInfo(langName).Name;
+
             // Any sub-directories before the php file itself.
             string subDir = Path.GetDirectoryName(langParts.Groups[2].Captures[0].Value) ?? string.Empty;
             subDir = Path.Combine(subDir.Split(Path.DirectorySeparatorChar).Select(d => d.Pascalize()).ToArray());
@@ -126,7 +130,7 @@ namespace LocalisationAnalyser.Tools
             // The base name of files generated for this language.
             string name = Path.GetFileNameWithoutExtension(file).Pascalize();
             if (langName != en_lang_name)
-                name += $".{langName}";
+                name += $".{ietfLangName}";
 
             // The target directory for files generated for this language.
             targetDirectory = Path.Combine(targetDirectory, subDir);
