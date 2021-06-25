@@ -16,6 +16,7 @@ namespace LocalisationAnalyser.Tests.Analysers
         private const string resources_namespace = "LocalisationAnalyser.Tests.Resources";
 
         [Theory]
+        [InlineData("Attribute")]
         [InlineData("BasicString")]
         [InlineData("EmptyString")]
         [InlineData("InterpolatedString")]
