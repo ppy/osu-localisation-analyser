@@ -34,8 +34,15 @@ namespace LocalisationAnalyser.Analysers
                     if (literal.Token.IsVerbatimStringLiteral())
                         break;
 
-                    if (literal.Token.ValueText.Where(char.IsLetter).Any())
-                        context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED, context.Node.GetLocation(), context.Node));
+                    // Ignore numeric strings.
+                    if (literal.Token.ValueText.All(c => !char.IsLetter(c)))
+                        return;
+
+                    // Ignore strings in attributes.
+                    if (literal.Parent?.Kind() == SyntaxKind.AttributeArgument)
+                        return;
+
+                    context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED, context.Node.GetLocation(), context.Node));
                     break;
 
                 case InterpolatedStringExpressionSyntax interpolated:

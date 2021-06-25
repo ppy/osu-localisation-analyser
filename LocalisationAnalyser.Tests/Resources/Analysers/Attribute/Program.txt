@@ -1,0 +1,28 @@
+namespace Test
+{
+    class Program
+    {
+        [TestAttribute("a")]
+        [TestAttribute(nameof(Main))]
+        [TestAttribute(Name = "a")]
+        [TestAttribute(name: "a")]
+        static void Main()
+        {
+        }
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
+    public class TestAttributeAttribute : System.Attribute
+    {
+        public string? Name { get; set; }
+
+        public TestAttributeAttribute()
+        {
+        }
+
+        public TestAttributeAttribute(string name)
+        {
+            Name = name;
+        }
+    }
+}
