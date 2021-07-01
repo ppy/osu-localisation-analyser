@@ -1,0 +1,4 @@
+root = true
+
+[*.cs]
+dotnet_diagnostic.OLOC001.prefix_namespace = CustomNamespace

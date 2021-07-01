@@ -16,6 +16,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         [InlineData("VerbatimString")]
         [InlineData("InterpolatedString")]
         [InlineData("InterpolatedStringWithQuotes")]
+        [InlineData("CustomPrefix")]
         public async Task Check(string name) => await RunTest(name);
 
         protected override Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources)

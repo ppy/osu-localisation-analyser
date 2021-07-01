@@ -45,11 +45,25 @@ namespace LocalisationAnalyser.Tests.CodeFixes
 
         private string getFileNameFromResourceName(string resourceNamespace, string resourceName)
         {
-            resourceName = resourceName.Replace(resourceNamespace, string.Empty)[1..]
-                                       .Replace(".txt", string.Empty)
-                                       .Replace('.', '/');
+            string extension = Path.GetExtension(resourceName);
 
-            return $"{Path.GetFileName(resourceName)}.cs";
+            resourceName = resourceName.Replace(resourceNamespace, string.Empty)[1..]
+                                       .Replace(extension, string.Empty);
+
+            if (extension == ".txt")
+            {
+                // .txt files are translated to .cs. We provide only the file name, not the path.
+                resourceName = resourceName[(resourceName.LastIndexOf('.') + 1)..];
+                resourceName = $"{Path.GetFileName(resourceName)}.cs";
+            }
+            else
+            {
+                // For all other files, we provide the full path.
+                resourceName = resourceName.Replace('.', '/');
+                resourceName = $"/{resourceName}{extension}";
+            }
+
+            return resourceName;
         }
 
         protected abstract Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources);

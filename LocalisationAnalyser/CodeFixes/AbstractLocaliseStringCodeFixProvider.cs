@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace LocalisationAnalyser.CodeFixes
 {
@@ -177,6 +178,9 @@ namespace LocalisationAnalyser.CodeFixes
             var project = document.Project;
             var solution = project.Solution;
 
+            var options = await getOptionsAsync(document, cancellationToken);
+            // options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.prefix_namespace", )
+
             var (file, localisation) = await openOrCreateLocalisation(project, nodeToReplace);
 
             MemberAccessExpressionSyntax memberAccess;
@@ -228,6 +232,13 @@ namespace LocalisationAnalyser.CodeFixes
             }
 
             return solution.WithDocumentSyntaxRoot(document.Id, newRoot);
+        }
+
+        private async Task<AnalyzerConfigOptions> getOptionsAsync(Document document, CancellationToken cancellationToken)
+        {
+            var tree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
+            var options = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(tree);
+            return options;
         }
 
         private async Task<(IFileInfo, LocalisationFile)> openOrCreateLocalisation(Project project, SyntaxNode sourceNode)
