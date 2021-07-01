@@ -266,15 +266,16 @@ namespace LocalisationAnalyser.CodeFixes
                 }
             }
 
-            return (localisationFile, new LocalisationFile(localisationNamespace, localisationName, GetLocalisationPrefix(incomingClassName)));
+            return (localisationFile, new LocalisationFile(localisationNamespace, localisationName, GetLocalisationPrefix(localisationNamespace, incomingClassName)));
         }
 
         /// <summary>
-        /// Retrieves un-namespaced prefix for the localisation class corresponding to a given class name.
+        /// Retrieves "prefix" value for the localisation class corresponding to a given class name and namespace.
         /// </summary>
+        /// <param name="namespace">The namespace in which the localisation class will be placed.</param>
         /// <param name="className">The name of the original class.</param>
-        /// <returns>The un-namespaced prefix.</returns>
-        protected virtual string GetLocalisationPrefix(string className) => className;
+        /// <returns>The prefix value.</returns>
+        protected virtual string GetLocalisationPrefix(string @namespace, string className) => $"{@namespace}.{className}";
 
         /// <summary>
         /// Retrieves the name of the localisation class corresponding to a given class name.

@@ -167,7 +167,7 @@ namespace LocalisationAnalyser.Tools
             // Only create the .cs file for the english localisation.
             if (langName == en_lang_name)
             {
-                var localisationFile = new LocalisationFile(nameSpace, Path.GetFileNameWithoutExtension(targetLocalisationFile), name, members);
+                var localisationFile = new LocalisationFile(nameSpace, Path.GetFileNameWithoutExtension(targetLocalisationFile), $"{nameSpace}.{name}", members);
                 using (var fs = File.Open(targetLocalisationFile, FileMode.Create, FileAccess.ReadWrite))
                     await localisationFile.WriteAsync(fs, new AdhocWorkspace());
 

@@ -92,7 +92,7 @@ namespace LocalisationAnalyser.Localisation
         /// Generates the syntax for the prefix constant.
         /// </summary>
         public static MemberDeclarationSyntax GeneratePrefixSyntax(LocalisationFile localisationFile)
-            => SyntaxFactory.ParseMemberDeclaration(string.Format(SyntaxTemplates.PREFIX_CONST_TEMPLATE, $"{localisationFile.Namespace}.{localisationFile.Prefix}"))!;
+            => SyntaxFactory.ParseMemberDeclaration(string.Format(SyntaxTemplates.PREFIX_CONST_TEMPLATE, localisationFile.Prefix))!;
 
         /// <summary>
         /// Generates the syntax for the getKey() method.

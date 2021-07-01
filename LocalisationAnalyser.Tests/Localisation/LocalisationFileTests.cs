@@ -50,7 +50,7 @@ namespace {test_namespace}
 
             Assert.Equal(localisation.Namespace, test_namespace);
             Assert.Equal(localisation.Name, test_class_name);
-            Assert.Equal(localisation.Prefix, test_class_name);
+            Assert.Equal(localisation.Prefix, $"{test_namespace}.{test_class_name}");
             Assert.Empty(localisation.Members);
         }
 
@@ -278,7 +278,7 @@ namespace {test_namespace}
         private async Task setupLocalisation(params LocalisationMember[] members)
         {
             using (var stream = mockFs.FileInfo.FromFileName(test_file_name).OpenWrite())
-                await new LocalisationFile(test_namespace, test_class_name, test_class_name, members).WriteAsync(stream, workspace);
+                await new LocalisationFile(test_namespace, test_class_name, $"{test_namespace}.{test_class_name}", members).WriteAsync(stream, workspace);
         }
 
         private void checkResult(string inner)
