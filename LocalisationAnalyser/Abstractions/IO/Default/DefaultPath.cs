@@ -14,5 +14,7 @@ namespace LocalisationAnalyser.Abstractions.IO.Default
         public string ChangeExtension(string path, string newExtension) => Path.ChangeExtension(path, newExtension);
 
         public string GetFileName(string path) => Path.GetFileName(path);
+
+        public string GetFullPath(string path) => Path.GetFullPath(path);
     }
 }
