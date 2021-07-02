@@ -47,7 +47,7 @@ namespace LocalisationAnalyser.CodeFixes
 
             foreach (var literal in nodes.OfType<LiteralExpressionSyntax>())
             {
-                var (_, localisation) = await openOrCreateLocalisation(context.Document.Project, literal);
+                var (_, localisation) = await openOrCreateLocalisation(context.Document.Project, literal, null);
                 var matchingMember = localisation.Members.FirstOrDefault(m => m.EnglishText == literal.Token.ValueText);
 
                 if (matchingMember != null)
@@ -179,9 +179,8 @@ namespace LocalisationAnalyser.CodeFixes
             var solution = project.Solution;
 
             var options = await getOptionsAsync(document, cancellationToken);
-            // options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.prefix_namespace", )
 
-            var (file, localisation) = await openOrCreateLocalisation(project, nodeToReplace);
+            var (file, localisation) = await openOrCreateLocalisation(project, nodeToReplace, options);
 
             MemberAccessExpressionSyntax memberAccess;
 
@@ -241,7 +240,7 @@ namespace LocalisationAnalyser.CodeFixes
             return options;
         }
 
-        private async Task<(IFileInfo, LocalisationFile)> openOrCreateLocalisation(Project project, SyntaxNode sourceNode)
+        private async Task<(IFileInfo, LocalisationFile)> openOrCreateLocalisation(Project project, SyntaxNode sourceNode, AnalyzerConfigOptions? options)
         {
             if (project.FilePath == null)
                 throw new ArgumentException("Project cannot have a null path.", nameof(project));
@@ -277,7 +276,18 @@ namespace LocalisationAnalyser.CodeFixes
                 }
             }
 
-            return (localisationFile, new LocalisationFile(localisationNamespace, localisationName, GetLocalisationPrefix(localisationNamespace, incomingClassName)));
+            // The prefix namespace defaults to the localisation class' namespace, but can be customised via .editorconfig.
+            var prefixNamespace = localisationNamespace;
+
+            if (options != null && options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.prefix_namespace", out var customPrefixNamespace))
+            {
+                if (string.IsNullOrEmpty(customPrefixNamespace))
+                    throw new InvalidOperationException("Custom namespace cannot be empty.");
+
+                prefixNamespace = customPrefixNamespace;
+            }
+
+            return (localisationFile, new LocalisationFile(localisationNamespace, localisationName, GetLocalisationPrefix(prefixNamespace, incomingClassName)));
         }
 
         /// <summary>
