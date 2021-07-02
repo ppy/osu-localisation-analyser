@@ -29,17 +29,32 @@ namespace LocalisationAnalyser.Tools
         {
             var toResx = new Command("to-resx", "Generates resource (.resx) files from all localisations in the target project.")
             {
-                new Argument("project-file") { Description = "The C# project (.csproj) file." }
+                new Argument<FileInfo>("project-file")
+                {
+                    Description = "The C# project (.csproj) file."
+                }.ExistingOnly(),
+                new Option<DirectoryInfo>("--output")
+                {
+                    IsRequired = false,
+                    Description = "The path to output the resource files into.\n"
+                                  + "By default, the .resx files are output alongside their .cs counterparts."
+                }.ExistingOnly()
             };
 
             var phpToResx = new Command("from-php", "Converts localisations from the target osu!web directory into the target project.")
             {
-                new Argument("osu-web directory") { Description = "The osu!web installation directory." },
-                new Argument("project-file") { Description = "The target C# project (.csproj) file to place the localisations in." }
+                new Argument<DirectoryInfo>("osu-web directory")
+                {
+                    Description = "The osu!web installation directory."
+                }.ExistingOnly(),
+                new Argument<FileInfo>("project-file")
+                {
+                    Description = "The target C# project (.csproj) file to place the localisations in."
+                }.ExistingOnly()
             };
 
-            toResx.Handler = CommandHandler.Create<string>(projectToResX);
-            phpToResx.Handler = CommandHandler.Create<string, string>(convertPhp);
+            toResx.Handler = CommandHandler.Create<FileInfo, DirectoryInfo?>(projectToResX);
+            phpToResx.Handler = CommandHandler.Create<DirectoryInfo, FileInfo>(convertPhp);
 
             await new RootCommand("osu! Localisation Tools")
             {
@@ -48,14 +63,14 @@ namespace LocalisationAnalyser.Tools
             }.InvokeAsync(args);
         }
 
-        private static async Task projectToResX(string projectFile)
+        private static async Task projectToResX(FileInfo projectFile, DirectoryInfo? output)
         {
             Console.WriteLine($"Converting all localisation files in {projectFile}...");
 
             MSBuildLocator.RegisterDefaults();
 
             var workspace = MSBuildWorkspace.Create();
-            var project = await workspace.OpenProjectAsync(projectFile);
+            var project = await workspace.OpenProjectAsync(projectFile.FullName);
 
             var localisationFiles = project.Documents.Where(d => d.Folders.SequenceEqual(SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Split('/')))
                                            .Where(d => d.Name.EndsWith(".cs"))
@@ -76,7 +91,9 @@ namespace LocalisationAnalyser.Tools
                 using (var stream = File.OpenRead(file.FilePath))
                     localisationFile = await LocalisationFile.ReadAsync(stream);
 
-                string resxFile = Path.Combine(Path.GetDirectoryName(file.FilePath)!, $"{localisationFile.Prefix}.resx");
+                string targetDirectory = output != null ? output.FullName : Path.GetDirectoryName(file.FilePath)!;
+                string targetFileName = localisationFile.Prefix[(localisationFile.Prefix.LastIndexOf('.') + 1)..];
+                string resxFile = Path.Combine(targetDirectory, $"{targetFileName}.resx");
 
                 using (var fs = File.Open(resxFile, FileMode.Create, FileAccess.ReadWrite))
                 using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
@@ -90,10 +107,10 @@ namespace LocalisationAnalyser.Tools
             }
         }
 
-        private static async Task convertPhp(string osuWeb, string projectFile)
+        private static async Task convertPhp(DirectoryInfo osuWeb, FileInfo projectFile)
         {
-            string projectLocalisationDirectory = Path.Combine(Path.GetDirectoryName(projectFile)!, "Localisation", "Web");
-            string webLocalisationDirectory = Path.Combine(osuWeb, "resources", "lang");
+            string projectLocalisationDirectory = Path.Combine(Path.GetDirectoryName(projectFile.FullName)!, "Localisation", "Web");
+            string webLocalisationDirectory = Path.Combine(osuWeb.FullName, "resources", "lang");
 
             if (!Directory.Exists(webLocalisationDirectory))
             {
