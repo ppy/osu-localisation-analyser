@@ -38,7 +38,7 @@ namespace LocalisationAnalyser.Tools
                     IsRequired = false,
                     Description = "The path to output the resource files into.\n"
                                   + "By default, the .resx files are output alongside their .cs counterparts."
-                }.ExistingOnly()
+                }.LegalFilePathsOnly()
             };
 
             var phpToResx = new Command("from-php", "Converts localisations from the target osu!web directory into the target project.")
@@ -94,6 +94,9 @@ namespace LocalisationAnalyser.Tools
                 string targetDirectory = output != null ? output.FullName : Path.GetDirectoryName(file.FilePath)!;
                 string targetFileName = localisationFile.Prefix[(localisationFile.Prefix.LastIndexOf('.') + 1)..];
                 string resxFile = Path.Combine(targetDirectory, $"{targetFileName}.resx");
+
+                // For custom output directories.
+                Directory.CreateDirectory(targetDirectory);
 
                 using (var fs = File.Open(resxFile, FileMode.Create, FileAccess.ReadWrite))
                 using (var resWriter = new ResXResourceWriter(fs, getResourceTypeName))
