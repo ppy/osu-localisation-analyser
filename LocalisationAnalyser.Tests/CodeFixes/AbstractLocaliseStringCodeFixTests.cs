@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using LocalisationAnalyser.Tests.Helpers.IO;
 
 namespace LocalisationAnalyser.Tests.CodeFixes
 {
@@ -54,8 +55,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
             // .txt files are converted to .cs.
             resourceName = extension == ".txt" ? $"{resourceName}.cs" : $"{resourceName}{extension}";
 
-            // Absolute file paths.
-            return $"/{resourceName}";
+            return new MockFileSystem().Path.GetFullPath(resourceName);
         }
 
         protected abstract Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources);
