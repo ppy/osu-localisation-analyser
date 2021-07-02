@@ -204,7 +204,7 @@ namespace LocalisationAnalyser.CodeFixes
                     if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != file.FullName))
                     {
                         var classDocument = project.AddDocument(
-                            fileSystem.Path.GetFileName(file.FullName),
+                            file.FullName,
                             file.FileSystem.File.ReadAllText(file.FullName),
                             Enumerable.Empty<string>(),
                             file.FullName);

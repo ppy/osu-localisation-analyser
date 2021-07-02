@@ -37,8 +37,8 @@ namespace LocalisationAnalyser.Tests.CodeFixes
 
             // Files added to the solution via the codefix are always appended to the end. This is always going to be the localisation file.
             // We need ot maintain a consistent order for roslyn to assert correctly.
-            sourceFiles = sourceFiles.OrderBy(f => f.filename == "Program.cs" ? -1 : 1).ToList();
-            fixedFiles = fixedFiles.OrderBy(f => f.filename == "Program.cs" ? -1 : 1).ToList();
+            sourceFiles = sourceFiles.OrderBy(f => Path.GetFileName(f.filename) == "Program.cs" ? -1 : 1).ToList();
+            fixedFiles = fixedFiles.OrderBy(f => Path.GetFileName(f.filename) == "Program.cs" ? -1 : 1).ToList();
 
             await Verify(sourceFiles.ToArray(), fixedFiles.ToArray());
         }
@@ -48,22 +48,14 @@ namespace LocalisationAnalyser.Tests.CodeFixes
             string extension = Path.GetExtension(resourceName);
 
             resourceName = resourceName.Replace(resourceNamespace, string.Empty)[1..]
-                                       .Replace(extension, string.Empty);
+                                       .Replace(extension, string.Empty)
+                                       .Replace('.', '/');
 
-            if (extension == ".txt")
-            {
-                // .txt files are translated to .cs. We provide only the file name, not the path.
-                resourceName = resourceName[(resourceName.LastIndexOf('.') + 1)..];
-                resourceName = $"{Path.GetFileName(resourceName)}.cs";
-            }
-            else
-            {
-                // For all other files, we provide the full path.
-                resourceName = resourceName.Replace('.', '/');
-                resourceName = $"/{resourceName}{extension}";
-            }
+            // .txt files are converted to .cs.
+            resourceName = extension == ".txt" ? $"{resourceName}.cs" : $"{resourceName}{extension}";
 
-            return resourceName;
+            // Absolute file paths.
+            return $"/{resourceName}";
         }
 
         protected abstract Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources);
