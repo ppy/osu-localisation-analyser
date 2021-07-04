@@ -21,5 +21,7 @@ namespace LocalisationAnalyser.Tests.Helpers.IO
         public string ChangeExtension(string path, string newExtension) => mockFs.Path.ChangeExtension(path, newExtension);
 
         public string GetFileName(string path) => mockFs.Path.GetFileName(path);
+
+        public string GetFullPath(string path) => mockFs.Path.GetFullPath(path);
     }
 }

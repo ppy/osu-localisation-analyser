@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace LocalisationAnalyser.CodeFixes
 {
@@ -46,7 +47,7 @@ namespace LocalisationAnalyser.CodeFixes
 
             foreach (var literal in nodes.OfType<LiteralExpressionSyntax>())
             {
-                var (_, localisation) = await openOrCreateLocalisation(context.Document.Project, literal);
+                var (_, localisation) = await openOrCreateLocalisation(context.Document.Project, literal, null);
                 var matchingMember = localisation.Members.FirstOrDefault(m => m.EnglishText == literal.Token.ValueText);
 
                 if (matchingMember != null)
@@ -177,7 +178,9 @@ namespace LocalisationAnalyser.CodeFixes
             var project = document.Project;
             var solution = project.Solution;
 
-            var (file, localisation) = await openOrCreateLocalisation(project, nodeToReplace);
+            var options = await getOptionsAsync(document, cancellationToken);
+
+            var (file, localisation) = await openOrCreateLocalisation(project, nodeToReplace, options);
 
             MemberAccessExpressionSyntax memberAccess;
 
@@ -200,7 +203,7 @@ namespace LocalisationAnalyser.CodeFixes
                     if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != file.FullName))
                     {
                         var classDocument = project.AddDocument(
-                            fileSystem.Path.GetFileName(file.FullName),
+                            file.FullName,
                             file.FileSystem.File.ReadAllText(file.FullName),
                             Enumerable.Empty<string>(),
                             file.FullName);
@@ -230,7 +233,14 @@ namespace LocalisationAnalyser.CodeFixes
             return solution.WithDocumentSyntaxRoot(document.Id, newRoot);
         }
 
-        private async Task<(IFileInfo, LocalisationFile)> openOrCreateLocalisation(Project project, SyntaxNode sourceNode)
+        private async Task<AnalyzerConfigOptions> getOptionsAsync(Document document, CancellationToken cancellationToken)
+        {
+            var tree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
+            var options = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(tree);
+            return options;
+        }
+
+        private async Task<(IFileInfo, LocalisationFile)> openOrCreateLocalisation(Project project, SyntaxNode sourceNode, AnalyzerConfigOptions? options)
         {
             if (project.FilePath == null)
                 throw new ArgumentException("Project cannot have a null path.", nameof(project));
@@ -266,15 +276,27 @@ namespace LocalisationAnalyser.CodeFixes
                 }
             }
 
-            return (localisationFile, new LocalisationFile(localisationNamespace, localisationName, GetLocalisationPrefix(incomingClassName)));
+            // The prefix namespace defaults to the localisation class' namespace, but can be customised via .editorconfig.
+            var prefixNamespace = localisationNamespace;
+
+            if (options != null && options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.prefix_namespace", out var customPrefixNamespace))
+            {
+                if (string.IsNullOrEmpty(customPrefixNamespace))
+                    throw new InvalidOperationException("Custom namespace cannot be empty.");
+
+                prefixNamespace = customPrefixNamespace;
+            }
+
+            return (localisationFile, new LocalisationFile(localisationNamespace, localisationName, GetLocalisationPrefix(prefixNamespace, incomingClassName)));
         }
 
         /// <summary>
-        /// Retrieves un-namespaced prefix for the localisation class corresponding to a given class name.
+        /// Retrieves "prefix" value for the localisation class corresponding to a given class name and namespace.
         /// </summary>
+        /// <param name="namespace">The namespace in which the localisation class will be placed.</param>
         /// <param name="className">The name of the original class.</param>
-        /// <returns>The un-namespaced prefix.</returns>
-        protected virtual string GetLocalisationPrefix(string className) => className;
+        /// <returns>The prefix value.</returns>
+        protected virtual string GetLocalisationPrefix(string @namespace, string className) => $"{@namespace}.{className}";
 
         /// <summary>
         /// Retrieves the name of the localisation class corresponding to a given class name.

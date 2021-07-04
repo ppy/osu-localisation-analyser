@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -24,10 +25,40 @@ namespace LocalisationAnalyser.Tests.Verifiers
             var test = new Test();
 
             foreach (var s in sources)
-                test.TestState.Sources.Add(s);
+            {
+                switch (Path.GetExtension(s.filename))
+                {
+                    case ".cs":
+                        test.TestState.Sources.Add(s);
+                        break;
+
+                    case ".editorconfig":
+                        test.TestState.AnalyzerConfigFiles.Add(s);
+                        break;
+
+                    default:
+                        test.TestState.AdditionalFiles.Add(s);
+                        break;
+                }
+            }
 
             foreach (var s in fixedSources)
-                test.FixedState.Sources.Add(s);
+            {
+                switch (Path.GetExtension(s.filename))
+                {
+                    case ".cs":
+                        test.FixedState.Sources.Add(s);
+                        break;
+
+                    case ".editorconfig":
+                        test.FixedState.AnalyzerConfigFiles.Add(s);
+                        break;
+
+                    default:
+                        test.FixedState.AdditionalFiles.Add(s);
+                        break;
+                }
+            }
 
             test.ExpectedDiagnostics.AddRange(expected);
             await test.RunAsync(CancellationToken.None);

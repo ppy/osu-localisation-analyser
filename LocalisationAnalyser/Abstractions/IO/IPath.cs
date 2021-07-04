@@ -12,5 +12,7 @@ namespace LocalisationAnalyser.Abstractions.IO
         string ChangeExtension(string path, string newExtension);
 
         string GetFileName(string path);
+
+        string GetFullPath(string path);
     }
 }

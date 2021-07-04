@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using LocalisationAnalyser.Tests.Helpers.IO;
 
 namespace LocalisationAnalyser.Tests.CodeFixes
 {
@@ -37,19 +38,24 @@ namespace LocalisationAnalyser.Tests.CodeFixes
 
             // Files added to the solution via the codefix are always appended to the end. This is always going to be the localisation file.
             // We need ot maintain a consistent order for roslyn to assert correctly.
-            sourceFiles = sourceFiles.OrderBy(f => f.filename == "Program.cs" ? -1 : 1).ToList();
-            fixedFiles = fixedFiles.OrderBy(f => f.filename == "Program.cs" ? -1 : 1).ToList();
+            sourceFiles = sourceFiles.OrderBy(f => Path.GetFileName(f.filename) == "Program.cs" ? -1 : 1).ToList();
+            fixedFiles = fixedFiles.OrderBy(f => Path.GetFileName(f.filename) == "Program.cs" ? -1 : 1).ToList();
 
             await Verify(sourceFiles.ToArray(), fixedFiles.ToArray());
         }
 
         private string getFileNameFromResourceName(string resourceNamespace, string resourceName)
         {
+            string extension = Path.GetExtension(resourceName);
+
             resourceName = resourceName.Replace(resourceNamespace, string.Empty)[1..]
-                                       .Replace(".txt", string.Empty)
+                                       .Replace(extension, string.Empty)
                                        .Replace('.', '/');
 
-            return $"{Path.GetFileName(resourceName)}.cs";
+            // .txt files are converted to .cs.
+            resourceName = extension == ".txt" ? $"{resourceName}.cs" : $"{resourceName}{extension}";
+
+            return new MockFileSystem().Path.GetFullPath(resourceName);
         }
 
         protected abstract Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources);
