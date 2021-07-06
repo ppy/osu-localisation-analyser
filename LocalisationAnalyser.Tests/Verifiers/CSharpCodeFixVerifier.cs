@@ -14,13 +14,15 @@ namespace LocalisationAnalyser.Tests.Verifiers
         where TAnalyzer : DiagnosticAnalyzer, new()
         where TCodeFix : CodeFixProvider, new()
     {
-        public static async Task VerifyCodeFixAsync((string filename, string contents)[] sources, (string filename, string contents)[] fixedSources)
-            => await VerifyCodeFixAsync(sources, DiagnosticResult.EmptyDiagnosticResults, fixedSources);
+        public static async Task VerifyCodeFixAsync((string filename, string contents)[] sources, (string filename, string contents)[] fixedSources, bool brokenAnalyserConfigFiles = false)
+            => await VerifyCodeFixAsync(sources, DiagnosticResult.EmptyDiagnosticResults, fixedSources, brokenAnalyserConfigFiles);
 
-        public static async Task VerifyCodeFixAsync((string filename, string contents)[] sources, DiagnosticResult expected, (string filename, string contents)[] fixedSources)
-            => await VerifyCodeFixAsync(sources, new[] { expected }, fixedSources);
+        public static async Task VerifyCodeFixAsync((string filename, string contents)[] sources, DiagnosticResult expected, (string filename, string contents)[] fixedSources,
+                                                    bool brokenAnalyserConfigFiles = false)
+            => await VerifyCodeFixAsync(sources, new[] { expected }, fixedSources, brokenAnalyserConfigFiles);
 
-        public static async Task VerifyCodeFixAsync((string filename, string contents)[] sources, DiagnosticResult[] expected, (string filename, string contents)[] fixedSources)
+        public static async Task VerifyCodeFixAsync((string filename, string contents)[] sources, DiagnosticResult[] expected, (string filename, string contents)[] fixedSources,
+                                                    bool brokenAnalyserConfigFiles = false)
         {
             var test = new Test();
 
@@ -32,7 +34,7 @@ namespace LocalisationAnalyser.Tests.Verifiers
                         test.TestState.Sources.Add(s);
                         break;
 
-                    case ".editorconfig":
+                    case ".editorconfig" when !brokenAnalyserConfigFiles:
                         test.TestState.AnalyzerConfigFiles.Add(s);
                         break;
 
@@ -50,7 +52,7 @@ namespace LocalisationAnalyser.Tests.Verifiers
                         test.FixedState.Sources.Add(s);
                         break;
 
-                    case ".editorconfig":
+                    case ".editorconfig" when !brokenAnalyserConfigFiles:
                         test.FixedState.AnalyzerConfigFiles.Add(s);
                         break;
 
