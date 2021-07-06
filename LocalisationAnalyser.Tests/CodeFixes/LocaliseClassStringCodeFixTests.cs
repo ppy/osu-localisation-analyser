@@ -19,7 +19,11 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         [InlineData("CustomPrefix")]
         public async Task Check(string name) => await RunTest(name);
 
-        protected override Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources)
-            => VerifyCS.VerifyCodeFixAsync(sources, fixedSources);
+        [Theory]
+        [InlineData("CustomPrefix")]
+        public async Task CheckWithBrokenAnalyzerConfigFiles(string name) => await RunTest(name, true);
+
+        protected override Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources, bool brokenAnalyserConfigFiles = false)
+            => VerifyCS.VerifyCodeFixAsync(sources, fixedSources, brokenAnalyserConfigFiles);
     }
 }

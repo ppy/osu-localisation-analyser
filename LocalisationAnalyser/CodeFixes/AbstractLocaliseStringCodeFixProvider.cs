@@ -235,8 +235,25 @@ namespace LocalisationAnalyser.CodeFixes
 
         private async Task<AnalyzerConfigOptions> getOptionsAsync(Document document, CancellationToken cancellationToken)
         {
+            var project = document.Project;
+
+            var analyzersInAdditionalDocuments = project.AdditionalDocuments
+                                                        .Where(d => d.FilePath.EndsWith(".editorconfig"))
+                                                        .Select(d => d.Id);
+
+            // Rider <= 2021.2 EAP5 puts analyzer configs in the incorrect location (project.AdditionalDocuments rather than the expected project.AnalyzerConfigDocuments).
+            // We need to manually duplicate these files into AnalyzerConfigDocuments to allow the analyser to read the file.
+            // Note that, also due to Rider, this only handles the project's .editorconfig file.
+            // Todo: Remove when https://youtrack.jetbrains.com/issue/RIDER-64877 is fixed!!
+            foreach (var docId in analyzersInAdditionalDocuments)
+            {
+                var doc = project.GetAdditionalDocument(docId);
+                var text = await doc!.GetTextAsync(cancellationToken);
+                project = project.AddAnalyzerConfigDocument(doc.Name, text, doc.Folders, doc.FilePath).Project;
+            }
+
             var tree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
-            var options = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(tree);
+            var options = project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(tree);
             return options;
         }
 

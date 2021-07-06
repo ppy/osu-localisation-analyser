@@ -14,7 +14,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
     {
         private const string resources_namespace = "LocalisationAnalyser.Tests.Resources";
 
-        public async Task RunTest(string name)
+        public async Task RunTest(string name, bool brokenAnalyserConfigFiles = false)
         {
             var assembly = Assembly.GetExecutingAssembly();
             var resourceNames = assembly.GetManifestResourceNames();
@@ -41,7 +41,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
             sourceFiles = sourceFiles.OrderBy(f => Path.GetFileName(f.filename) == "Program.cs" ? -1 : 1).ToList();
             fixedFiles = fixedFiles.OrderBy(f => Path.GetFileName(f.filename) == "Program.cs" ? -1 : 1).ToList();
 
-            await Verify(sourceFiles.ToArray(), fixedFiles.ToArray());
+            await Verify(sourceFiles.ToArray(), fixedFiles.ToArray(), brokenAnalyserConfigFiles);
         }
 
         private string getFileNameFromResourceName(string resourceNamespace, string resourceName)
@@ -58,7 +58,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
             return new MockFileSystem().Path.GetFullPath(resourceName);
         }
 
-        protected abstract Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources);
+        protected abstract Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources, bool brokenAnalyserConfigFiles = false);
 
         private string readResourceStream(Assembly asm, string resource)
         {

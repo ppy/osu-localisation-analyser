@@ -15,7 +15,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         [InlineData("CommonBasicString")]
         public async Task Check(string name) => await RunTest(name);
 
-        protected override Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources)
+        protected override Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources, bool brokenAnalyserConfigFiles = false)
             => VerifyCS.VerifyCodeFixAsync(sources, fixedSources);
     }
 }
