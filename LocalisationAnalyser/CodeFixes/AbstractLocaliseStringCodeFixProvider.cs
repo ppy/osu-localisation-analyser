@@ -262,10 +262,17 @@ namespace LocalisationAnalyser.CodeFixes
             if (project.FilePath == null)
                 throw new ArgumentException("Project cannot have a null path.", nameof(project));
 
-            // Search for the containing class.
-            SyntaxNode? containingClass = sourceNode.Parent;
-            while (containingClass != null && containingClass.Kind() != SyntaxKind.ClassDeclaration)
-                containingClass = containingClass.Parent;
+            // Search for the top-level containing class.
+            ClassDeclarationSyntax? containingClass = null;
+            SyntaxNode? parentNode = sourceNode.Parent;
+
+            while (parentNode != null)
+            {
+                if (parentNode.Kind() == SyntaxKind.ClassDeclaration)
+                    containingClass = (ClassDeclarationSyntax)parentNode;
+                parentNode = parentNode.Parent;
+            }
+
             if (containingClass == null)
                 throw new InvalidOperationException("String is not within a class.");
 
@@ -273,11 +280,11 @@ namespace LocalisationAnalyser.CodeFixes
             var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Split('/')).ToArray());
 
             // The class being localised.
-            var incomingClassName = ((ClassDeclarationSyntax)containingClass).Identifier.Text;
+            var incomingClassName = containingClass.Identifier.Text;
 
             // The localisation class.
             var localisationNamespace = $"{project.AssemblyName}.{SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Replace('/', '.')}";
-            var localisationName = GetLocalisationFileName(((ClassDeclarationSyntax)containingClass).Identifier.Text);
+            var localisationName = GetLocalisationFileName(containingClass.Identifier.Text);
             var localisationFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(localisationName, "cs"));
             var localisationFile = fileSystem.FileInfo.FromFileName(localisationFileName);
 
