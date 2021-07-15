@@ -12,7 +12,7 @@ namespace TestProject.Localisation
         /// <summary>
         /// "this is an interpolated string (i = {0})"
         /// </summary>
-        public static LocalisableString Thisisanin(int i) => new TranslatableString(getKey(@"thisisanin"), @"this is an interpolated string (i = {0})", i);
+        public static LocalisableString ThisIsAnInterpolatedStringI(int i) => new TranslatableString(getKey(@"this_is_an_interpolated_string_i"), @"this is an interpolated string (i = {0})", i);
 
         private static string getKey(string key) => $@"{prefix}:{key}";
     }

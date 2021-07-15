@@ -12,7 +12,7 @@ namespace TestProject.Localisation
         /// <summary>
         /// "Folder &quot;{0}&quot; not available in the target osu!stable installation to import."
         /// </summary>
-        public static LocalisableString Foldernota(string fullPath) => new TranslatableString(getKey(@"foldernota"), @"Folder ""{0}"" not available in the target osu!stable installation to import.", fullPath);
+        public static LocalisableString FolderNotAvailableInTheTargetOsuStableInstallationToImport(string fullPath) => new TranslatableString(getKey(@"folder_not_available_in_the_target_osu_stable_installation_to_import"), @"Folder ""{0}"" not available in the target osu!stable installation to import.", fullPath);
 
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
