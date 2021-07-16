@@ -10,9 +10,9 @@ namespace TestProject.Localisation
         private const string prefix = @"TestProject.Localisation.Program";
 
         /// <summary>
-        /// "this is an &quot;escaped&quot; string"
+        /// "this string contains some words"
         /// </summary>
-        public static LocalisableString ThisIsAnEscapedString => new TranslatableString(getKey(@"this_is_an_escaped_string"), @"this is an ""escaped"" string");
+        public static LocalisableString ThisStringContainsSomeWords => new TranslatableString(getKey(@"this_string_contains_some_words"), @"this string contains some words");
 
         private static string getKey(string key) => $@"{prefix}:{key}";
     }

@@ -6,8 +6,7 @@ namespace Test
     {
         static void Main()
         {
-            int i = 5;
-            string x = ProgramStrings.ThisIsAnInterpolatedStringI(i);
+            string x = ProgramStrings.ThisStringContainsSomeWords;
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Test
         static void Main()
         {
             string fullPath = string.Empty;
-            string x = ProgramStrings.Foldernota(fullPath);
+            string x = ProgramStrings.FolderNotAvailableInTheTargetOsuStableInstallationToImport(fullPath);
         }
     }
 }

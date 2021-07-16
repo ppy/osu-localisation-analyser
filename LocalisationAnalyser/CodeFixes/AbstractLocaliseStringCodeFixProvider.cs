@@ -186,8 +186,8 @@ namespace LocalisationAnalyser.CodeFixes
 
             if (!useExisting || !localisation.Members.Any(m => m.EnglishText == text))
             {
-                var name = createMemberName(localisation, text);
-                var key = name.ToLowerInvariant();
+                var name = createMemberName(localisation, text, options);
+                var key = createKey(name);
                 var newMember = new LocalisationMember(name, key, text, parameters.ToArray());
 
                 localisation = localisation.WithMembers(localisation.Members.Append(newMember).ToArray());
@@ -335,11 +335,42 @@ namespace LocalisationAnalyser.CodeFixes
                                             valueArray.Select(SyntaxFactory.Argument))));
         }
 
-        private static string createMemberName(LocalisationFile localisation, string englishText)
+        private static string createMemberName(LocalisationFile localisation, string englishText, AnalyzerConfigOptions? options)
         {
-            var basePropertyName = new string(englishText.Where(char.IsLetter).Take(10).ToArray());
-            basePropertyName = char.ToUpperInvariant(basePropertyName[0]) + basePropertyName.Substring(1);
+            var basePropertyNameBuilder = new StringBuilder();
 
+            int wordsInName = int.MaxValue;
+
+            if (options != null && options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.words_in_name", out var customWordsInName))
+            {
+                if (!int.TryParse(customWordsInName, out wordsInName))
+                    wordsInName = int.MaxValue;
+            }
+
+            foreach (var word in englishText.Split(' '))
+            {
+                bool first = true;
+                bool anyAdded = false;
+
+                for (int i = 0; i < word.Length; i++)
+                {
+                    if (!char.IsLetter(word[i]))
+                    {
+                        first = true;
+                        continue;
+                    }
+
+                    basePropertyNameBuilder.Append(first ? char.ToUpperInvariant(word[i]) : word[i]);
+
+                    anyAdded = true;
+                    first = false;
+                }
+
+                if (anyAdded && --wordsInName == 0)
+                    break;
+            }
+
+            var basePropertyName = basePropertyNameBuilder.ToString();
             var finalPropertyName = basePropertyName;
             int propertyNameSuffix = 0;
 
@@ -350,6 +381,20 @@ namespace LocalisationAnalyser.CodeFixes
 
             static bool containsMember(LocalisationFile localisation, string memberName)
                 => localisation.Members.Any(m => m.Name == memberName);
+        }
+
+        private static string createKey(string memberName)
+        {
+            var keyBuilder = new StringBuilder();
+
+            foreach (var c in memberName)
+            {
+                if (char.IsUpper(c) && keyBuilder.Length > 0)
+                    keyBuilder.Append('_');
+                keyBuilder.Append(char.ToLowerInvariant(c));
+            }
+
+            return keyBuilder.ToString();
         }
 
         private static string convertUsingDirectiveToString(UsingDirectiveSyntax directive)
