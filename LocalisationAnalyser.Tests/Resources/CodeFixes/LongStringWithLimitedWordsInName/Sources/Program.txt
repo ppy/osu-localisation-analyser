@@ -1,12 +1,10 @@
-using TestProject.Localisation;
-
 namespace Test
 {
     class Program
     {
         static void Main()
         {
-            string x = ProgramStrings.ThisIsAnEscapedString;
+            string x = [|"this string contains some words"|];
         }
     }
 }
