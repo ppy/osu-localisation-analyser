@@ -17,6 +17,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         [InlineData("InterpolatedString")]
         [InlineData("InterpolatedStringWithQuotes")]
         [InlineData("CustomPrefix")]
+        [InlineData("NestedClass")]
         [InlineData("LongString")]
         public async Task Check(string name) => await RunTest(name);
 

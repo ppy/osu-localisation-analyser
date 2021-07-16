@@ -1,0 +1,18 @@
+namespace Test
+{
+    class Program
+    {
+        static void Main()
+        {
+            B.BMethod();
+        }
+
+        class B
+        {
+            public static void BMethod()
+            {
+                string x = [|"abc"|];
+            }
+        }
+    }
+}
