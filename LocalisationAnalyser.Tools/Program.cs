@@ -278,7 +278,7 @@ namespace LocalisationAnalyser.Tools
                                 generateMemberNameFromKey(fullKey),
                                 fullKey,
                                 stringValue,
-                                formatParamNames.Select(p => new LocalisationParameter("string", p.Camelize())).ToArray());
+                                formatParamNames.Select(p => new LocalisationParameter("LocalisableString", p.Camelize())).ToArray());
 
                             break;
                     }
