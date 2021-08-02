@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Formatting;
 
 namespace LocalisationAnalyser.Localisation
@@ -57,10 +58,11 @@ namespace LocalisationAnalyser.Localisation
         /// </summary>
         /// <param name="stream">The stream to write to.</param>
         /// <param name="workspace">The workspace to format with.</param>
-        public async Task WriteAsync(Stream stream, Workspace workspace)
+        /// <param name="options">The analyser options to apply to the document.</param>
+        public async Task WriteAsync(Stream stream, Workspace workspace, AnalyzerConfigOptions? options = null)
         {
             using (var sw = new StreamWriter(stream))
-                await sw.WriteAsync(Formatter.Format(SyntaxGenerators.GenerateClassSyntax(workspace, this), workspace).ToFullString());
+                await sw.WriteAsync(Formatter.Format(SyntaxGenerators.GenerateClassSyntax(workspace, this, options), workspace).ToFullString());
         }
 
         /// <summary>

@@ -1,10 +1,13 @@
+// This is a custom license header
+// This is line 2
+
 using osu.Framework.Localisation;
 
 namespace TestProject.Localisation
 {
-    public static class CommonStrings
+    public static class ProgramStrings
     {
-        private const string prefix = @"TestProject.Localisation.Common";
+        private const string prefix = @"TestProject.Localisation.Program";
 
         /// <summary>
         /// "abc"

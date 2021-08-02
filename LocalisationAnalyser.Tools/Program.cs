@@ -189,7 +189,7 @@ namespace LocalisationAnalyser.Tools
             {
                 var localisationFile = new LocalisationFile(nameSpace, Path.GetFileNameWithoutExtension(targetLocalisationFile), $"{nameSpace}.{name}", members);
                 using (var fs = File.Open(targetLocalisationFile, FileMode.Create, FileAccess.ReadWrite))
-                    await localisationFile.WriteAsync(fs, new AdhocWorkspace());
+                    await localisationFile.WriteAsync(fs, new AdhocWorkspace(), new OsuAnalyzerConfigOptions());
 
                 Console.WriteLine($"  -> {targetLocalisationFile}");
             }

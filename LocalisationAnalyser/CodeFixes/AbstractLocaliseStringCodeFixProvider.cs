@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LocalisationAnalyser.Abstractions.IO;
 using LocalisationAnalyser.Localisation;
+using LocalisationAnalyser.Utils;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -178,8 +179,7 @@ namespace LocalisationAnalyser.CodeFixes
             var project = document.Project;
             var solution = project.Solution;
 
-            var options = await getOptionsAsync(document, cancellationToken);
-
+            var options = await document.GetAnalyserOptionsAsync(cancellationToken);
             var (file, localisation) = await openOrCreateLocalisation(project, nodeToReplace, options);
 
             MemberAccessExpressionSyntax memberAccess;
@@ -197,7 +197,7 @@ namespace LocalisationAnalyser.CodeFixes
                     // Write the resultant localisation class.
                     file.FileSystem.Directory.CreateDirectory(file.DirectoryName);
                     using (var stream = file.OpenWrite())
-                        await localisation.WriteAsync(stream, document.Project.Solution.Workspace);
+                        await localisation.WriteAsync(stream, document.Project.Solution.Workspace, options);
 
                     // Check for and add the new class file to the project if required.
                     if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != file.FullName))
@@ -231,30 +231,6 @@ namespace LocalisationAnalyser.CodeFixes
             }
 
             return solution.WithDocumentSyntaxRoot(document.Id, newRoot);
-        }
-
-        private async Task<AnalyzerConfigOptions> getOptionsAsync(Document document, CancellationToken cancellationToken)
-        {
-            var project = document.Project;
-
-            var analyzersInAdditionalDocuments = project.AdditionalDocuments
-                                                        .Where(d => d.FilePath.EndsWith(".editorconfig"))
-                                                        .Select(d => d.Id);
-
-            // Rider <= 2021.2 EAP5 puts analyzer configs in the incorrect location (project.AdditionalDocuments rather than the expected project.AnalyzerConfigDocuments).
-            // We need to manually duplicate these files into AnalyzerConfigDocuments to allow the analyser to read the file.
-            // Note that, also due to Rider, this only handles the project's .editorconfig file.
-            // Todo: Remove when https://youtrack.jetbrains.com/issue/RIDER-64877 is fixed!!
-            foreach (var docId in analyzersInAdditionalDocuments)
-            {
-                var doc = project.GetAdditionalDocument(docId);
-                var text = await doc!.GetTextAsync(cancellationToken);
-                project = project.AddAnalyzerConfigDocument(doc.Name, text, doc.Folders, doc.FilePath).Project;
-            }
-
-            var tree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
-            var options = project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(tree);
-            return options;
         }
 
         private async Task<(IFileInfo, LocalisationFile)> openOrCreateLocalisation(Project project, SyntaxNode sourceNode, AnalyzerConfigOptions? options)

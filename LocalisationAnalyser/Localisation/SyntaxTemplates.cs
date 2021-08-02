@@ -83,19 +83,9 @@ public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}(
 private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}}"";";
 
         /// <summary>
-        /// The license header.
-        /// </summary>
-        public const string LICENSE_HEADER =
-            @"// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
-// See the LICENCE file in the repository root for full licence text.";
-
-        /// <summary>
         /// The template for the localisation file header.
         /// </summary>
-        public static readonly string FILE_HEADER_SIGNATURE =
-            @$"{LICENSE_HEADER}
-
-using osu.Framework.Localisation;";
+        public const string FILE_HEADER_TEMPLATE = @"{0}using osu.Framework.Localisation;";
 
         /// <summary>
         /// The suffix attached to a localisation file name.
