@@ -1,0 +1,4 @@
+root = true
+
+[*.cs]
+dotnet_diagnostic.OLOC001.license_header = // This is a custom license header\n// This is line 2

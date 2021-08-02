@@ -8,6 +8,7 @@ using System.Web;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Formatting;
 
 namespace LocalisationAnalyser.Localisation
@@ -21,23 +22,48 @@ namespace LocalisationAnalyser.Localisation
         /// Generates the full class syntax, including the namespace, all leading/trailing members, and the localisation members.
         /// </summary>
         /// <returns>The syntax.</returns>
-        public static SyntaxNode GenerateClassSyntax(Workspace workspace, LocalisationFile localisationFile)
-            => SyntaxFactory.ParseCompilationUnit(SyntaxTemplates.FILE_HEADER_SIGNATURE)
-                            .AddMembers(
-                                SyntaxFactory.NamespaceDeclaration(
-                                                 SyntaxFactory.IdentifierName(localisationFile.Namespace))
-                                             .WithMembers(
-                                                 SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                                     SyntaxFactory.ClassDeclaration(localisationFile.Name)
-                                                                  .WithMembers(SyntaxFactory.List(
-                                                                      localisationFile.Members
-                                                                                      .Select(m => m.Parameters.Length == 0 ? GeneratePropertySyntax(m) : GenerateMethodSyntax(workspace, m))
-                                                                                      .Prepend(GeneratePrefixSyntax(localisationFile))
-                                                                                      .Append(GenerateGetKeySyntax())))
-                                                                  .WithModifiers(
-                                                                      new SyntaxTokenList(
-                                                                          SyntaxFactory.Token(SyntaxKind.PublicKeyword),
-                                                                          SyntaxFactory.Token(SyntaxKind.StaticKeyword))))));
+        public static SyntaxNode GenerateClassSyntax(Workspace workspace, LocalisationFile localisationFile, AnalyzerConfigOptions? options)
+            => GenerateFileHeaderSyntax(options)
+                .AddMembers(
+                    SyntaxFactory.NamespaceDeclaration(
+                                     SyntaxFactory.IdentifierName(localisationFile.Namespace))
+                                 .WithMembers(
+                                     SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                                         SyntaxFactory.ClassDeclaration(localisationFile.Name)
+                                                      .WithMembers(SyntaxFactory.List(
+                                                          localisationFile.Members
+                                                                          .Select(m => m.Parameters.Length == 0 ? GeneratePropertySyntax(m) : GenerateMethodSyntax(workspace, m))
+                                                                          .Prepend(GeneratePrefixSyntax(localisationFile))
+                                                                          .Append(GenerateGetKeySyntax())))
+                                                      .WithModifiers(
+                                                          new SyntaxTokenList(
+                                                              SyntaxFactory.Token(SyntaxKind.PublicKeyword),
+                                                              SyntaxFactory.Token(SyntaxKind.StaticKeyword))))));
+
+        public static CompilationUnitSyntax GenerateFileHeaderSyntax(AnalyzerConfigOptions? options)
+        {
+            if (options == null || !options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.license_header", out string licenseHeader))
+                licenseHeader = string.Empty;
+
+            string[] lines = licenseHeader.Split(new[] { "\\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+            var builder = new StringBuilder();
+
+            foreach (var line in lines)
+            {
+                if (!line.StartsWith("//"))
+                    builder.Append("// ");
+                builder.AppendLine(line);
+            }
+
+            // One extra line at the end (before the using declarations).
+            if (lines.Length > 0)
+                builder.AppendLine();
+
+            return SyntaxFactory.ParseCompilationUnit(
+                string.Format(SyntaxTemplates.FILE_HEADER_TEMPLATE,
+                    builder));
+        }
 
         /// <summary>
         /// Generates the syntax for a property member.
