@@ -40,7 +40,7 @@ namespace LocalisationAnalyser.Analysers
                         return;
 
                     // Ignore strings in all attributes other than System.ComponentModel.DescriptionAttribute.
-                    if (literal.Parent.Kind() == SyntaxKind.AttributeArgument)
+                    if (literal.Parent?.Kind() == SyntaxKind.AttributeArgument)
                     {
                         SyntaxNode attributeSyntax = literal.FirstAncestorOrSelf<AttributeSyntax>();
                         string attributeName = context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol.ContainingType.ToString();
