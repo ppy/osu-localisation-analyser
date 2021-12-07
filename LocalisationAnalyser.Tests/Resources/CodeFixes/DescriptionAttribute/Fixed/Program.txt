@@ -1,0 +1,25 @@
+using System.ComponentModel;
+using osu.Framework.Localisation;
+using TestProject.Localisation;
+
+namespace Test
+{
+    [LocalisableDescription(typeof(Class1Strings), nameof(Class1Strings.Abc))]
+    class Class1
+    {
+    }
+
+    class Class2
+    {
+        [LocalisableDescription(typeof(Class2Strings), nameof(Class2Strings.Abc))]
+        static void Main()
+        {
+        }
+    }
+
+    enum Enum1
+    {
+        [LocalisableDescription(typeof(Enum1Strings), nameof(Enum1Strings.Abc))]
+        A
+    }
+}

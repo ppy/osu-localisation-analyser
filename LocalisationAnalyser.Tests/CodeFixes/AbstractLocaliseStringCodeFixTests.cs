@@ -22,7 +22,8 @@ namespace LocalisationAnalyser.Tests.CodeFixes
             var requiredFiles = new List<(string filename, string content)>
             {
                 ("LocalisableString.cs", readResourceStream(assembly, $"{resources_namespace}.LocalisableString.txt")),
-                ("TranslatableString.cs", readResourceStream(assembly, $"{resources_namespace}.TranslatableString.txt"))
+                ("TranslatableString.cs", readResourceStream(assembly, $"{resources_namespace}.TranslatableString.txt")),
+                ("LocalisableDescriptionAttribute.cs", readResourceStream(assembly, $"{resources_namespace}.LocalisableDescriptionAttribute.txt"))
             };
 
             var sourceFiles = new List<(string filename, string content)>(requiredFiles);

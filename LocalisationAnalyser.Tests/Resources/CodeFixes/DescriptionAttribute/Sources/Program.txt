@@ -1,0 +1,23 @@
+using System.ComponentModel;
+
+namespace Test
+{
+    [Description([|"abc"|])]
+    class Class1
+    {
+    }
+
+    class Class2
+    {
+        [Description([|"abc"|])]
+        static void Main()
+        {
+        }
+    }
+
+    enum Enum1
+    {
+        [Description([|"abc"|])]
+        A
+    }
+}
