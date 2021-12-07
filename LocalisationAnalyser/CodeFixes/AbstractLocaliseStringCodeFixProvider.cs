@@ -223,15 +223,13 @@ namespace LocalisationAnalyser.CodeFixes
 
             if (nodeToReplace.Parent.Kind() == SyntaxKind.AttributeArgument)
             {
-                nodeToReplace = nodeToReplace.FirstAncestorOrSelf<AttributeSyntax>();
-                rootNode = rootNode.ReplaceNode(nodeToReplace, create_localisation_attribute_access_syntax(memberAccess));
-
-                rootNode = addUsingDirectiveIfNotExisting((CompilationUnitSyntax)rootNode, SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE);
+                rootNode = rootNode.ReplaceNode(nodeToReplace.FirstAncestorOrSelf<AttributeSyntax>(), SyntaxGenerators.GenerateAttributeAccessSyntax(memberAccess));
+                rootNode = SyntaxGenerators.AddUsingDirectiveIfNotExisting((CompilationUnitSyntax)rootNode, SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE);
             }
             else
-                rootNode = rootNode.ReplaceNode(nodeToReplace, create_localisation_direct_access_syntax(memberAccess, parameterValues));
+                rootNode = rootNode.ReplaceNode(nodeToReplace, SyntaxGenerators.GenerateDirectAccessSyntax(memberAccess, parameterValues));
 
-            rootNode = addUsingDirectiveIfNotExisting((CompilationUnitSyntax)rootNode, localisation.Namespace);
+            rootNode = SyntaxGenerators.AddUsingDirectiveIfNotExisting((CompilationUnitSyntax)rootNode, localisation.Namespace);
 
             return solution.WithDocumentSyntaxRoot(document.Id, rootNode);
         }
@@ -308,50 +306,6 @@ namespace LocalisationAnalyser.CodeFixes
         /// <returns>The name of the localisation class corresponding to <paramref name="className"/>.</returns>
         protected virtual string GetLocalisationFileName(string className) => className;
 
-        /// <summary>
-        /// Checks for and adds a new using directive to the given <see cref="CompilationUnitSyntax"/> if required.
-        /// </summary>
-        /// <param name="node">The <see cref="CompilationUnitSyntax"/> to add the using directive to.</param>
-        /// <param name="directive">The directive to add.</param>
-        /// <returns>The new <see cref="CompilationUnitSyntax"/>.</returns>
-        private static CompilationUnitSyntax addUsingDirectiveIfNotExisting(CompilationUnitSyntax node, string directive)
-        {
-            if (node.DescendantNodes().OfType<UsingDirectiveSyntax>().Select(convertUsingDirectiveToString).Any(ud => ud == directive))
-                return node;
-
-            return node.AddUsings(SyntaxFactory.UsingDirective(
-                SyntaxFactory.ParseName(directive)));
-        }
-
-        private static SyntaxNode create_localisation_direct_access_syntax(MemberAccessExpressionSyntax memberAccess, IEnumerable<ExpressionSyntax> parameterValues)
-        {
-            var valueArray = parameterValues.ToArray();
-            if (valueArray.Length == 0)
-                return memberAccess;
-
-            return SyntaxFactory.InvocationExpression(memberAccess)
-                                .WithArgumentList(
-                                    SyntaxFactory.ArgumentList(
-                                        SyntaxFactory.SeparatedList(
-                                            valueArray.Select(SyntaxFactory.Argument))));
-        }
-
-        private static SyntaxNode create_localisation_attribute_access_syntax(MemberAccessExpressionSyntax memberAccess)
-        {
-            return SyntaxFactory.Attribute(
-                                    SyntaxFactory.IdentifierName(SyntaxTemplates.ATTRIBUTE_CONSTRUCTION_TYPE))
-                                .WithArgumentList(
-                                    SyntaxFactory.AttributeArgumentList(
-                                        SyntaxFactory.SeparatedList(new[]
-                                            {
-                                                SyntaxFactory.AttributeArgument(
-                                                    SyntaxFactory.TypeOfExpression(((IdentifierNameSyntax)memberAccess.Expression))),
-                                                SyntaxFactory.AttributeArgument(
-                                                    SyntaxFactory.ParseExpression($"nameof({memberAccess.Expression}.{memberAccess.Name})"))
-                                            }
-                                        )));
-        }
-
         private static string createMemberName(LocalisationFile localisation, string englishText, AnalyzerConfigOptions? options)
         {
             var basePropertyNameBuilder = new StringBuilder();
@@ -412,21 +366,6 @@ namespace LocalisationAnalyser.CodeFixes
             }
 
             return keyBuilder.ToString();
-        }
-
-        private static string convertUsingDirectiveToString(UsingDirectiveSyntax directive)
-        {
-            return getName(directive.Name);
-
-            static string getName(NameSyntax name)
-            {
-                return name switch
-                {
-                    IdentifierNameSyntax identifierNameSyntax => identifierNameSyntax.ToString(),
-                    QualifiedNameSyntax qualifiedNameSyntax => $"{getName(qualifiedNameSyntax.Left)}.{getName(qualifiedNameSyntax.Right)}",
-                    _ => string.Empty
-                };
-            }
         }
     }
 }
