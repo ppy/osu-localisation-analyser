@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -148,6 +149,59 @@ namespace LocalisationAnalyser.Localisation
             return SyntaxFactory.IdentifierName(name);
         }
 
+        /// <summary>
+        /// Generates syntax to access a <see cref="MemberAccessExpressionSyntax"/> with optional parameters.
+        /// </summary>
+        /// <param name="memberAccess">The member to access.</param>
+        /// <param name="parameterValues">Any parameters to perform the access with.</param>
+        /// <returns>The parameterised expression syntax.</returns>
+        public static ExpressionSyntax GenerateDirectAccessSyntax(MemberAccessExpressionSyntax memberAccess, IEnumerable<ExpressionSyntax> parameterValues)
+        {
+            var valueArray = parameterValues.ToArray();
+            if (valueArray.Length == 0)
+                return memberAccess;
+
+            return SyntaxFactory.InvocationExpression(memberAccess)
+                                .WithArgumentList(
+                                    SyntaxFactory.ArgumentList(
+                                        SyntaxFactory.SeparatedList(
+                                            valueArray.Select(SyntaxFactory.Argument))));
+        }
+
+        /// <summary>
+        /// Generates syntax to access a <see cref="MemberAccessExpressionSyntax"/> via an attribute.
+        /// </summary>
+        /// <param name="memberAccess">The member to access.</param>
+        /// <returns>The <see cref="AttributeSyntax"/>.</returns>
+        public static AttributeSyntax GenerateAttributeAccessSyntax(MemberAccessExpressionSyntax memberAccess)
+            => SyntaxFactory.Attribute(
+                                SyntaxFactory.IdentifierName(SyntaxTemplates.ATTRIBUTE_CONSTRUCTION_TYPE))
+                            .WithArgumentList(
+                                SyntaxFactory.AttributeArgumentList(
+                                    SyntaxFactory.SeparatedList(new[]
+                                        {
+                                            SyntaxFactory.AttributeArgument(
+                                                SyntaxFactory.TypeOfExpression(((IdentifierNameSyntax)memberAccess.Expression))),
+                                            SyntaxFactory.AttributeArgument(
+                                                SyntaxFactory.ParseExpression($"nameof({memberAccess.Expression}.{memberAccess.Name})"))
+                                        }
+                                    )));
+
+        /// <summary>
+        /// Checks for and adds a new using directive to the given <see cref="CompilationUnitSyntax"/> if required.
+        /// </summary>
+        /// <param name="node">The <see cref="CompilationUnitSyntax"/> to add the using directive to.</param>
+        /// <param name="directive">The directive to add.</param>
+        /// <returns>The new <see cref="CompilationUnitSyntax"/>.</returns>
+        public static CompilationUnitSyntax AddUsingDirectiveIfNotExisting(CompilationUnitSyntax node, string directive)
+        {
+            if (node.DescendantNodes().OfType<UsingDirectiveSyntax>().Select(convertUsingDirectiveToString).Any(ud => ud == directive))
+                return node;
+
+            return node.AddUsings(SyntaxFactory.UsingDirective(
+                SyntaxFactory.ParseName(directive)));
+        }
+
         public static string EncodeXmlDoc(string xmlDoc)
         {
             var lines = xmlDoc.Split('\n');
@@ -190,6 +244,26 @@ namespace LocalisationAnalyser.Localisation
             }
 
             return result.ToString();
+        }
+
+        /// <summary>
+        /// Converts a using directive to a fully qualified string.
+        /// </summary>
+        /// <param name="directive">The top-level using directive.</param>
+        /// <returns>The fully qualified string consisting of all namespaces in the using directive.</returns>
+        private static string convertUsingDirectiveToString(UsingDirectiveSyntax directive)
+        {
+            return getName(directive.Name);
+
+            static string getName(NameSyntax name)
+            {
+                return name switch
+                {
+                    IdentifierNameSyntax identifierNameSyntax => identifierNameSyntax.ToString(),
+                    QualifiedNameSyntax qualifiedNameSyntax => $"{getName(qualifiedNameSyntax.Left)}.{getName(qualifiedNameSyntax.Right)}",
+                    _ => string.Empty
+                };
+            }
         }
     }
 }

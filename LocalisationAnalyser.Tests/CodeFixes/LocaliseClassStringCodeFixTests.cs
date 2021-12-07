@@ -20,6 +20,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         [InlineData("NestedClass")]
         [InlineData("LongString")]
         [InlineData("LicenseHeader")]
+        [InlineData("DescriptionAttribute")]
         public async Task Check(string name) => await RunTest(name);
 
         [Theory]

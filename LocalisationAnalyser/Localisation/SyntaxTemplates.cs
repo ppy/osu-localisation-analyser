@@ -6,6 +6,11 @@ namespace LocalisationAnalyser.Localisation
     public static class SyntaxTemplates
     {
         /// <summary>
+        /// The osu!framework namespace containing localisation-related classes.
+        /// </summary>
+        public const string FRAMEWORK_LOCALISATION_NAMESPACE = "osu.Framework.Localisation";
+
+        /// <summary>
         /// The return type of either property or method members (see: <see cref="PROPERTY_MEMBER_TEMPLATE"/> and <see cref="METHOD_MEMBER_TEMPLATE"/>).
         /// </summary>
         public const string MEMBER_RETURN_TYPE = "LocalisableString";
@@ -14,6 +19,11 @@ namespace LocalisationAnalyser.Localisation
         /// The construction type of either property or method members (see: <see cref="PROPERTY_MEMBER_TEMPLATE"/> and <see cref="METHOD_MEMBER_TEMPLATE"/>).
         /// </summary>
         public const string MEMBER_CONSTRUCTION_TYPE = "TranslatableString";
+
+        /// <summary>
+        /// The construction type of the localisable attribute which replaces <see cref="System.ComponentModel.DescriptionAttribute"/>.
+        /// </summary>
+        public const string ATTRIBUTE_CONSTRUCTION_TYPE = "LocalisableDescription";
 
         /// <summary>
         /// The path to localisations relative to the project directory.
@@ -85,7 +95,7 @@ private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}
         /// <summary>
         /// The template for the localisation file header.
         /// </summary>
-        public const string FILE_HEADER_TEMPLATE = @"{0}using osu.Framework.Localisation;";
+        public static readonly string FILE_HEADER_TEMPLATE = $@"{{0}}using {FRAMEWORK_LOCALISATION_NAMESPACE};";
 
         /// <summary>
         /// The suffix attached to a localisation file name.

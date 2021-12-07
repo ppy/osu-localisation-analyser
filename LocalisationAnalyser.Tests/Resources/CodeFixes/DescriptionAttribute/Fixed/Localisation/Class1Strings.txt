@@ -1,0 +1,16 @@
+using osu.Framework.Localisation;
+
+namespace TestProject.Localisation
+{
+    public static class Class1Strings
+    {
+        private const string prefix = @"TestProject.Localisation.Class1";
+
+        /// <summary>
+        /// "abc"
+        /// </summary>
+        public static LocalisableString Abc => new TranslatableString(getKey(@"abc"), @"abc");
+
+        private static string getKey(string key) => $@"{prefix}:{key}";
+    }
+}

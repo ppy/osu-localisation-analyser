@@ -1,0 +1,12 @@
+// Minimal template code for LocalisableDescriptionAttribute to be used in analysis.
+
+namespace osu.Framework.Localisation
+{
+    [System.AttributeUsage(System.AttributeTargets.All)]
+    public sealed class LocalisableDescriptionAttribute : System.Attribute
+    {
+        public LocalisableDescriptionAttribute(System.Type declaringType, string name)
+        {
+        }
+    }
+}

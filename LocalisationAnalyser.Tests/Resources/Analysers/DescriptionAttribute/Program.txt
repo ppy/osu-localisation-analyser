@@ -1,0 +1,12 @@
+using System.ComponentModel;
+
+namespace Test
+{
+    class Program
+    {
+        [Description([|"a"|])]
+        static void Main()
+        {
+        }
+    }
+}

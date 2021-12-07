@@ -219,18 +219,19 @@ namespace LocalisationAnalyser.CodeFixes
                 memberAccess = SyntaxGenerators.GenerateMemberAccessSyntax(localisation, localisation.Members.First(m => m.EnglishText == text));
 
             // Replace the syntax node (the localised string) in the target document.
-            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false)!;
-            var newRoot = oldRoot!.ReplaceNode(nodeToReplace, create_syntax_transformation(memberAccess, parameterValues));
+            SyntaxNode rootNode = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-            // Check for and add a new using directive to the document if required.
-            if (newRoot.DescendantNodes().OfType<UsingDirectiveSyntax>().Select(convertUsingDirectiveToString).All(ud => ud != localisation.Namespace))
+            if (nodeToReplace.Parent.Kind() == SyntaxKind.AttributeArgument)
             {
-                newRoot = ((CompilationUnitSyntax)newRoot)
-                    .AddUsings(SyntaxFactory.UsingDirective(
-                        SyntaxFactory.ParseName(localisation.Namespace)));
+                rootNode = rootNode.ReplaceNode(nodeToReplace.FirstAncestorOrSelf<AttributeSyntax>(), SyntaxGenerators.GenerateAttributeAccessSyntax(memberAccess));
+                rootNode = SyntaxGenerators.AddUsingDirectiveIfNotExisting((CompilationUnitSyntax)rootNode, SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE);
             }
+            else
+                rootNode = rootNode.ReplaceNode(nodeToReplace, SyntaxGenerators.GenerateDirectAccessSyntax(memberAccess, parameterValues));
 
-            return solution.WithDocumentSyntaxRoot(document.Id, newRoot);
+            rootNode = SyntaxGenerators.AddUsingDirectiveIfNotExisting((CompilationUnitSyntax)rootNode, localisation.Namespace);
+
+            return solution.WithDocumentSyntaxRoot(document.Id, rootNode);
         }
 
         private async Task<(IFileInfo, LocalisationFile)> openOrCreateLocalisation(Project project, SyntaxNode sourceNode, AnalyzerConfigOptions? options)
@@ -239,28 +240,28 @@ namespace LocalisationAnalyser.CodeFixes
                 throw new ArgumentException("Project cannot have a null path.", nameof(project));
 
             // Search for the top-level containing class.
-            ClassDeclarationSyntax? containingClass = null;
+            BaseTypeDeclarationSyntax? containingType = null;
             SyntaxNode? parentNode = sourceNode.Parent;
 
             while (parentNode != null)
             {
-                if (parentNode.Kind() == SyntaxKind.ClassDeclaration)
-                    containingClass = (ClassDeclarationSyntax)parentNode;
+                if (parentNode.Kind() == SyntaxKind.ClassDeclaration || parentNode.Kind() == SyntaxKind.StructDeclaration || parentNode.Kind() == SyntaxKind.EnumDeclaration)
+                    containingType = (BaseTypeDeclarationSyntax)parentNode;
                 parentNode = parentNode.Parent;
             }
 
-            if (containingClass == null)
-                throw new InvalidOperationException("String is not within a class.");
+            if (containingType == null)
+                throw new InvalidOperationException("String is not within a class, struct, or enum type.");
 
             var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath!);
             var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Split('/')).ToArray());
 
             // The class being localised.
-            var incomingClassName = containingClass.Identifier.Text;
+            var incomingClassName = containingType.Identifier.Text;
 
             // The localisation class.
             var localisationNamespace = $"{project.AssemblyName}.{SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Replace('/', '.')}";
-            var localisationName = GetLocalisationFileName(containingClass.Identifier.Text);
+            var localisationName = GetLocalisationFileName(containingType.Identifier.Text);
             var localisationFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(localisationName, "cs"));
             var localisationFile = fileSystem.FileInfo.FromFileName(localisationFileName);
 
@@ -304,19 +305,6 @@ namespace LocalisationAnalyser.CodeFixes
         /// <param name="className">The name of the original class.</param>
         /// <returns>The name of the localisation class corresponding to <paramref name="className"/>.</returns>
         protected virtual string GetLocalisationFileName(string className) => className;
-
-        private static SyntaxNode create_syntax_transformation(MemberAccessExpressionSyntax memberAccess, IEnumerable<ExpressionSyntax> parameterValues)
-        {
-            var valueArray = parameterValues.ToArray();
-            if (valueArray.Length == 0)
-                return memberAccess;
-
-            return SyntaxFactory.InvocationExpression(memberAccess)
-                                .WithArgumentList(
-                                    SyntaxFactory.ArgumentList(
-                                        SyntaxFactory.SeparatedList(
-                                            valueArray.Select(SyntaxFactory.Argument))));
-        }
 
         private static string createMemberName(LocalisationFile localisation, string englishText, AnalyzerConfigOptions? options)
         {
@@ -378,21 +366,6 @@ namespace LocalisationAnalyser.CodeFixes
             }
 
             return keyBuilder.ToString();
-        }
-
-        private static string convertUsingDirectiveToString(UsingDirectiveSyntax directive)
-        {
-            return getName(directive.Name);
-
-            static string getName(NameSyntax name)
-            {
-                return name switch
-                {
-                    IdentifierNameSyntax identifierNameSyntax => identifierNameSyntax.ToString(),
-                    QualifiedNameSyntax qualifiedNameSyntax => $"{getName(qualifiedNameSyntax.Left)}.{getName(qualifiedNameSyntax.Right)}",
-                    _ => string.Empty
-                };
-            }
         }
     }
 }

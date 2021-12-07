@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Collections.Immutable;
+using System.ComponentModel;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -38,9 +39,15 @@ namespace LocalisationAnalyser.Analysers
                     if (literal.Token.ValueText.All(c => !char.IsLetter(c)))
                         return;
 
-                    // Ignore strings in attributes.
+                    // Ignore strings in all attributes other than System.ComponentModel.DescriptionAttribute.
                     if (literal.Parent?.Kind() == SyntaxKind.AttributeArgument)
-                        return;
+                    {
+                        SyntaxNode attributeSyntax = literal.FirstAncestorOrSelf<AttributeSyntax>();
+                        string attributeName = context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol.ContainingType.ToString();
+
+                        if (attributeName != typeof(DescriptionAttribute).FullName)
+                            return;
+                    }
 
                     context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED, context.Node.GetLocation(), context.Node));
                     break;
