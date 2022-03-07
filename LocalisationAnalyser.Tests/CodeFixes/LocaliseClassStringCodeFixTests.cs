@@ -21,6 +21,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         [InlineData("LongString")]
         [InlineData("LicenseHeader")]
         [InlineData("DescriptionAttribute")]
+        [InlineData("StringWithApostrophe")]
         public async Task Check(string name) => await RunTest(name);
 
         [Theory]

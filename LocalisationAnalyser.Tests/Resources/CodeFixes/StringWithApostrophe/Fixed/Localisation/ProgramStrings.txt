@@ -1,0 +1,16 @@
+using osu.Framework.Localisation;
+
+namespace TestProject.Localisation
+{
+    public static class ProgramStrings
+    {
+        private const string prefix = @"TestProject.Localisation.Program";
+
+        /// <summary>
+        /// "here&#39;s an apostrophe"
+        /// </summary>
+        public static LocalisableString HeresAnApostrophe => new TranslatableString(getKey(@"heres_an_apostrophe"), @"here's an apostrophe");
+
+        private static string getKey(string key) => $@"{prefix}:{key}";
+    }
+}
