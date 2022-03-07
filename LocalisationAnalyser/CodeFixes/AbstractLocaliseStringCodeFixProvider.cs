@@ -327,7 +327,9 @@ namespace LocalisationAnalyser.CodeFixes
                 {
                     if (!char.IsLetter(word[i]))
                     {
-                        first = true;
+                        // Special case for apostrophes to not start new words.
+                        if (word[i] != '\'')
+                            first = true;
                         continue;
                     }
 
