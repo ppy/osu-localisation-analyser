@@ -137,6 +137,22 @@ namespace LocalisationAnalyser.Tools
             // Make sure the language name is a standardised IETF language tag. Without this, we run into compiler errors due to case-insensitivity (e.g. pt-br / pt-BR).
             string ietfLangName = CultureInfo.GetCultureInfo(langName).Name;
 
+            switch (ietfLangName)
+            {
+                // osu-web doesn't specify zh-CN, but this is here for safety.
+                case "zh-CN":
+                    // zh-CN is no longer supported by GetCultures(), and so MSBuild doesn't output .resource files for it.
+                    // See: https://github.com/dotnet/msbuild/issues/7331#issuecomment-1023776992
+                    ietfLangName = "zh-Hans";
+                    break;
+
+                case "zh-TW":
+                    // zh-TW is no longer supported by GetCultures(), and so MSBuild doesn't output .resource files for it.
+                    // See: https://github.com/dotnet/msbuild/issues/7331#issuecomment-1023776992
+                    ietfLangName = "zh-Hant";
+                    break;
+            }
+
             // Any sub-directories before the php file itself.
             string subDir = Path.GetDirectoryName(langParts.Groups[2].Captures[0].Value) ?? string.Empty;
             subDir = Path.Combine(subDir.Split(Path.DirectorySeparatorChar).Select(d => d.Pascalize()).ToArray());
