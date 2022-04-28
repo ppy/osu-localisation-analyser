@@ -57,7 +57,7 @@ namespace LocalisationAnalyser.CodeFixes
                         new LocaliseStringCodeAction(
                             $"Use existing {friendlyLocalisationTarget} localisation: {matchingMember.Name}",
                             (preview, cancellationToken) => localiseLiteralAsync(context.Document, literal, preview, cancellationToken, true),
-                            nameof(LocaliseClassStringCodeFixProvider)),
+                            $@"{friendlyLocalisationTarget}-existing-literal"),
                         diagnostic);
                 }
                 else
@@ -66,7 +66,7 @@ namespace LocalisationAnalyser.CodeFixes
                         new LocaliseStringCodeAction(
                             $"Add new {friendlyLocalisationTarget} localisation for: {literal}",
                             (preview, cancellationToken) => localiseLiteralAsync(context.Document, literal, preview, cancellationToken, false),
-                            nameof(LocaliseClassStringCodeFixProvider)),
+                            $@"{friendlyLocalisationTarget}-new-literal"),
                         diagnostic);
                 }
             }
@@ -77,7 +77,7 @@ namespace LocalisationAnalyser.CodeFixes
                     new LocaliseStringCodeAction(
                         $"Add new {friendlyLocalisationTarget} localisation for: {interpolated}",
                         (preview, cancellationToken) => localiseInterpolatedStringAsync(context.Document, interpolated, preview, cancellationToken),
-                        nameof(LocaliseClassStringCodeFixProvider)),
+                        $@"{friendlyLocalisationTarget}-new-interpolated"),
                     diagnostic);
             }
         }
