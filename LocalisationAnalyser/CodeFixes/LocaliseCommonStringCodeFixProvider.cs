@@ -14,6 +14,7 @@ namespace LocalisationAnalyser.CodeFixes
     /// Code-fix provider for <see cref="DiagnosticRules.STRING_CAN_BE_LOCALISED"/> inspections to replace strings with a localisation from the common localisation class.
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(LocaliseCommonStringCodeFixProvider)), Shared]
+    [ExtensionOrder(After = nameof(LocaliseClassStringCodeFixProvider))]
     internal class LocaliseCommonStringCodeFixProvider : AbstractLocaliseStringCodeFixProvider
     {
         public LocaliseCommonStringCodeFixProvider()
