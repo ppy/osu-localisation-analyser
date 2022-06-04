@@ -75,7 +75,7 @@ namespace LocalisationAnalyser.Localisation
                     member.Name,
                     member.Key,
                     convertToVerbatim(member.EnglishText),
-                    EncodeXmlDoc(member.EnglishText)))!;
+                    EncodeXmlDoc(member.XmlDoc)))!;
 
         /// <summary>
         /// Generates the syntax for a method member.
@@ -101,7 +101,7 @@ namespace LocalisationAnalyser.Localisation
                     member.Key,
                     convertToVerbatim(member.EnglishText),
                     trimParens(Formatter.Format(argList, workspace).ToFullString()), // The entire string minus the parens
-                    EncodeXmlDoc(member.EnglishText)))!;
+                    EncodeXmlDoc(member.XmlDoc)))!;
 
             static string trimParens(string input) => input.Substring(1, input.Length - 2);
         }
@@ -202,9 +202,9 @@ namespace LocalisationAnalyser.Localisation
                 SyntaxFactory.ParseName(directive)));
         }
 
-        public static string EncodeXmlDoc(string xmlDoc)
+        public static string EncodeXmlDoc(string text)
         {
-            var lines = xmlDoc.Split('\n');
+            var lines = text.Split('\n');
 
             for (int i = 0; i < lines.Length; i++)
             {
@@ -224,6 +224,19 @@ namespace LocalisationAnalyser.Localisation
             }
 
             return string.Join(Environment.NewLine, lines);
+        }
+
+        public static string DecodeXmlDoc(string xmlDoc)
+        {
+            xmlDoc = xmlDoc.Trim();
+
+            // A valid XMLDoc is formulated as: "text". We need to remove only one set of quotes from either side, so Trim() is too greedy.
+            if (xmlDoc.Length > 0)
+                xmlDoc = xmlDoc.Substring(1);
+            if (xmlDoc.Length > 0)
+                xmlDoc = xmlDoc.Substring(0, xmlDoc.Length - 1);
+
+            return HttpUtility.HtmlDecode(xmlDoc);
         }
 
         /// <summary>
