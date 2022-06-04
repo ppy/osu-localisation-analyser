@@ -17,6 +17,8 @@ namespace LocalisationAnalyser.CodeFixes
 {
     public abstract class AbstractMemberCodeFixProvider : CodeFixProvider
     {
+        public override FixAllProvider? GetFixAllProvider() => null;
+
         protected async Task<Solution> UpdateDefinition(Document document, MemberDeclarationSyntax member, bool preview, CancellationToken cancellationToken)
         {
             LocalisationFile currentFile;
