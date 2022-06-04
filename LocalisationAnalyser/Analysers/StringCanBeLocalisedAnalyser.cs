@@ -15,7 +15,7 @@ namespace LocalisationAnalyser.Analysers
     /// Discovers all non-verbatim strings (literal and interpolated) and reports <see cref="DiagnosticRules.STRING_CAN_BE_LOCALISED"/>.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    internal class StringCanBeLocalisedAnalyser : DiagnosticAnalyzer
+    public class StringCanBeLocalisedAnalyser : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED);
 

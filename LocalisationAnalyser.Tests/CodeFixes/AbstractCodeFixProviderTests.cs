@@ -10,7 +10,7 @@ using LocalisationAnalyser.Tests.Helpers.IO;
 
 namespace LocalisationAnalyser.Tests.CodeFixes
 {
-    public abstract class AbstractLocaliseStringCodeFixTests
+    public abstract class AbstractCodeFixProviderTests
     {
         private const string resources_namespace = "LocalisationAnalyser.Tests.Resources";
 

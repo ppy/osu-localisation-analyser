@@ -9,7 +9,7 @@ using VerifyCS = LocalisationAnalyser.Tests.Verifiers.CSharpCodeFixVerifier<
 
 namespace LocalisationAnalyser.Tests.CodeFixes
 {
-    public class LocaliseCommonStringCodeFixTests : AbstractLocaliseStringCodeFixTests
+    public class LocaliseCommonStringCodeFixProviderTests : AbstractCodeFixProviderTests
     {
         [Theory]
         [InlineData("CommonBasicString")]

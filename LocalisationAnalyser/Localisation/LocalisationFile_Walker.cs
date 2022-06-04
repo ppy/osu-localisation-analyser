@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -31,7 +33,17 @@ namespace LocalisationAnalyser.Localisation
             /// </summary>
             public string? Prefix { get; private set; }
 
+            /// <summary>
+            /// The discovered xmldoc text for the current member. This only accounts for the &lt;summary&gt; element.
+            /// </summary>
+            private string currentXmlDoc = string.Empty;
+
             public readonly List<LocalisationMember> Members = new List<LocalisationMember>();
+
+            public Walker()
+                : base(SyntaxWalkerDepth.StructuredTrivia)
+            {
+            }
 
             public override void VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
             {
@@ -62,12 +74,37 @@ namespace LocalisationAnalyser.Localisation
             {
                 base.VisitPropertyDeclaration(node);
                 analyseNode(node);
+                currentXmlDoc = string.Empty;
             }
 
             public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
             {
                 base.VisitMethodDeclaration(node);
                 analyseNode(node);
+                currentXmlDoc = string.Empty;
+            }
+
+            public override void VisitXmlElement(XmlElementSyntax node)
+            {
+                base.VisitXmlElement(node);
+
+                if (node.StartTag.Name.ToString() != "summary")
+                    return;
+
+                StringBuilder sb = new StringBuilder();
+
+                foreach (var textSyntax in node.Content.OfType<XmlTextSyntax>())
+                {
+                    foreach (var literal in textSyntax.TextTokens)
+                    {
+                        if (literal.Kind() == SyntaxKind.XmlTextLiteralNewLineToken)
+                            continue;
+
+                        sb.Append(literal);
+                    }
+                }
+
+                currentXmlDoc = SyntaxGenerators.DecodeXmlDoc(sb.ToString());
             }
 
             private static string convertNamespaceToString(NamespaceDeclarationSyntax declaration)
@@ -93,7 +130,7 @@ namespace LocalisationAnalyser.Localisation
                 if (!tryAnalyseMemberBody(body!, out var key, out var englishText))
                     return;
 
-                Members.Add(new LocalisationMember(name, key, englishText, parameters));
+                Members.Add(new LocalisationMember(name, key, englishText, currentXmlDoc, parameters));
             }
 
             private bool tryAnalyseMemberDefinition(MemberDeclarationSyntax member, out string name, out LocalisationParameter[] parameters,
