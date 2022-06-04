@@ -1,0 +1,16 @@
+using osu.Framework.Localisation;
+
+namespace TestProject.Localisation
+{
+    public static class CommonStrings
+    {
+        private const string prefix = @"TestProject.Localisation.Common";
+
+        /// <summary>
+        /// "dnm"
+        /// </summary>
+        public static LocalisableString DoesNotMatch => new TranslatableString(getKey(@"does_not_match"), @"dnm");
+
+        private static string getKey(string key) => $@"{prefix}:{key}";
+    }
+}
