@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -8,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
+using Microsoft.CodeAnalysis.Text;
 
 namespace LocalisationAnalyser.Tests.Verifiers
 {
@@ -28,7 +30,7 @@ namespace LocalisationAnalyser.Tests.Verifiers
             var test = new Test();
 
             foreach (var s in sources)
-                test.TestState.Sources.Add(s);
+                test.TestState.Sources.Add((s.filename, SourceText.From(s.content, Encoding.UTF8)));
 
             test.ExpectedDiagnostics.AddRange(expected);
             await test.RunAsync(CancellationToken.None);

@@ -16,6 +16,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 
 namespace LocalisationAnalyser.CodeFixes
 {
@@ -204,7 +205,7 @@ namespace LocalisationAnalyser.CodeFixes
                     {
                         var classDocument = project.AddDocument(
                             file.FullName,
-                            file.FileSystem.File.ReadAllText(file.FullName),
+                            SourceText.From(file.FileSystem.File.ReadAllText(file.FullName), Encoding.UTF8),
                             Enumerable.Empty<string>(),
                             file.FullName);
 

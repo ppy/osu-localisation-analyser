@@ -2,11 +2,13 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis.Text;
 
 namespace LocalisationAnalyser.Tests.Verifiers
 {
@@ -31,7 +33,7 @@ namespace LocalisationAnalyser.Tests.Verifiers
                 switch (Path.GetExtension(s.filename))
                 {
                     case ".cs":
-                        test.TestState.Sources.Add(s);
+                        test.TestState.Sources.Add((s.filename, SourceText.From(s.contents, Encoding.UTF8)));
                         break;
 
                     case ".editorconfig" when !brokenAnalyserConfigFiles:
@@ -49,7 +51,7 @@ namespace LocalisationAnalyser.Tests.Verifiers
                 switch (Path.GetExtension(s.filename))
                 {
                     case ".cs":
-                        test.FixedState.Sources.Add(s);
+                        test.FixedState.Sources.Add((s.filename, SourceText.From(s.contents, Encoding.UTF8)));
                         break;
 
                     case ".editorconfig" when !brokenAnalyserConfigFiles:
