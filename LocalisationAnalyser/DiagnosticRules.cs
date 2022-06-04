@@ -20,6 +20,24 @@ namespace LocalisationAnalyser
             true,
             "This string can be localised by using TranslatableString.");
 
+        public static readonly DiagnosticDescriptor XMLDOC_DOES_NOT_MATCH_TEXT = new DiagnosticDescriptor(
+            "OLOC002",
+            "XMLDoc does not match the translation text",
+            "XMLDoc does not match the translation text",
+            "Globalization",
+            DiagnosticSeverity.Warning,
+            true,
+            "Prevent confusion by matching the XMLDoc and the translation text.");
+
+        public static readonly DiagnosticDescriptor TEXT_DOES_NOT_MATCH_XMLDOC = new DiagnosticDescriptor(
+            "OLOC003",
+            "Translation text does not match the XMLDoc",
+            "Translation text does not match the XMLDoc",
+            "Globalization",
+            DiagnosticSeverity.Warning,
+            true,
+            "Prevent confusion by matching the XMLDoc and the translation text.");
+
 #pragma warning restore RS2008
     }
 }
