@@ -22,6 +22,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         [InlineData("LicenseHeader")]
         [InlineData("DescriptionAttribute")]
         [InlineData("StringWithApostrophe")]
+        [InlineData("SequentialCapitals")]
         public async Task Check(string name) => await RunTest(name);
 
         [Theory]
