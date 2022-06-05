@@ -1,0 +1,16 @@
+using osu.Framework.Localisation;
+
+namespace TestProject.Localisation
+{
+    public static class ProgramStrings
+    {
+        private const string prefix = @"TestProject.Localisation.Program";
+
+        /// <summary>
+        /// "Mac OS"
+        /// </summary>
+        public static LocalisableString MacOS => new TranslatableString(getKey(@"mac_os"), @"Mac OS");
+
+        private static string getKey(string key) => $@"{prefix}:{key}";
+    }
+}

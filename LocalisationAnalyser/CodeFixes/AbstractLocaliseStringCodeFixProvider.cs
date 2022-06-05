@@ -361,11 +361,14 @@ namespace LocalisationAnalyser.CodeFixes
         {
             var keyBuilder = new StringBuilder();
 
+            bool lastWasCapital = false;
+
             foreach (var c in memberName)
             {
-                if (char.IsUpper(c) && keyBuilder.Length > 0)
+                if (char.IsUpper(c) && keyBuilder.Length > 0 && !lastWasCapital)
                     keyBuilder.Append('_');
                 keyBuilder.Append(char.ToLowerInvariant(c));
+                lastWasCapital = char.IsUpper(c);
             }
 
             return keyBuilder.ToString();
