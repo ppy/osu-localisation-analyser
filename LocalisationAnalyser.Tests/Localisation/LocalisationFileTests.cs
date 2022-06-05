@@ -252,7 +252,7 @@ namespace {test_namespace}
         }
 
         [Fact]
-        public async Task EnglishStringIsHtmlEncoded()
+        public async Task EncodeEnglishStringIntoXmlDoc()
         {
             const string prop_name = "TestProperty";
             const string key_name = "TestKey";
@@ -266,6 +266,114 @@ namespace {test_namespace}
         /// </summary>
         public static LocalisableString {prop_name} => new TranslatableString(getKey(@""{key_name}""), @""{english_text}"");
 ");
+        }
+
+        [Fact]
+        public async Task CustomXmlDoc()
+        {
+            const string prop_name = "TestProperty";
+            const string key_name = "TestKey";
+            const string english_text = "hello & greetings";
+            const string xml_doc = "goodbye";
+
+            await setupLocalisation(new LocalisationMember(prop_name, key_name, english_text, xml_doc));
+
+            checkResult($@"
+        /// <summary>
+        /// ""{xml_doc}""
+        /// </summary>
+        public static LocalisableString {prop_name} => new TranslatableString(getKey(@""{key_name}""), @""{english_text}"");
+");
+        }
+
+        [Fact]
+        public async Task XmlDocIsHtmlDecoded()
+        {
+            const string prop_name = "TestProperty";
+            const string key_name = "TestKey";
+
+            var localisation = await setupFile($@"{SyntaxTemplates.FILE_HEADER_TEMPLATE}
+
+namespace {test_namespace}
+{{
+    public static class TestClass
+    {{
+        private const string prefix = @""{test_namespace}.{test_class_name}"";
+
+        /// <summary>
+        /// """"&lt;&gt;?&quot;&#39;&#39;&amp;*!@#&amp;*^%^()-=""""
+        /// </summary>
+        public static LocalisableString {prop_name} => new TranslatableString(getKey(@""{key_name}""), @""""""<>?""""''&*!@#&*^%^()-="""""");
+
+        private static string getKey(string key) => $@""{{prefix}}:{{key}}"";
+    }}
+}}");
+
+            Assert.Equal(localisation.Members[0].EnglishText, localisation.Members[0].XmlDoc);
+        }
+
+        [Fact]
+        public async Task XmlDocWithNewlines()
+        {
+            const string prop_name = "TestProperty";
+            const string key_name = "TestKey";
+
+            var localisation = await setupFile($@"{SyntaxTemplates.FILE_HEADER_TEMPLATE}
+
+namespace {test_namespace}
+{{
+    public static class TestClass
+    {{
+        private const string prefix = @""{test_namespace}.{test_class_name}"";
+
+        /// <summary>
+        /// ""matches
+        ///
+        ///     with very 
+        ///&quot; complex
+        ///  newlines&quot;""
+        /// </summary>
+        public static LocalisableString {prop_name} => new TranslatableString(getKey(@""{key_name}""), @""matches
+
+    with very 
+"""" complex
+ newlines"""""");
+
+        private static string getKey(string key) => $@""{{prefix}}:{{key}}"";
+    }}
+}}");
+
+            Assert.Equal(localisation.Members[0].EnglishText, localisation.Members[0].XmlDoc);
+        }
+
+        [Fact]
+        public async Task XmlDocWithXmlEntities()
+        {
+            const string prop_name = "TestProperty";
+            const string key_name = "TestKey";
+
+            var localisation = await setupFile($@"{SyntaxTemplates.FILE_HEADER_TEMPLATE}
+
+namespace {test_namespace}
+{{
+    public static class TestClass
+    {{
+        private const string prefix = @""{test_namespace}.{test_class_name}"";
+
+        /// <summary>
+        /// ""&quot; hello there &quot;
+        /// &lt;newline&gt;
+        ///  &lt;newline with leading space&gt;""
+        /// </summary>
+        public static LocalisableString {prop_name} => new TranslatableString(getKey(@""{key_name}""), @"""""" hello there """"
+<newline>
+ <newline with leading space>"");
+
+        private static string getKey(string key) => $@""{{prefix}}:{{key}}"";
+    }}
+}}");
+
+            Assert.Equal(localisation.Members[0].EnglishText, localisation.Members[0].XmlDoc);
         }
 
         private async Task<LocalisationFile> setupFile(string contents)

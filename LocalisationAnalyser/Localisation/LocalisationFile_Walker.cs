@@ -93,14 +93,50 @@ namespace LocalisationAnalyser.Localisation
 
                 StringBuilder sb = new StringBuilder();
 
+                // We'll assume the proper XMLDoc construction is of the exact form:
+                //
+                // /// <summary>
+                // /// "matches
+                // /// with
+                // /// &quot;newlines&quot;"
+                // /// </summary>
+                //
+                // There's a few rules to keep in mind:
+                // 1. The first token will _always_ be a newline (the newline after the <summary> tag).
+                // 2. The last two tokens will _always_ be a newline + the space before the </summary> tag.
+                // 3. The first literal text token (_not_ XML entity token) on every line is preceded by _at most_ one space. Anything after that is part of the text.
+                // 4. Everything else is parsed as-is.
+
                 foreach (var textSyntax in node.Content.OfType<XmlTextSyntax>())
                 {
-                    foreach (var literal in textSyntax.TextTokens)
-                    {
-                        if (literal.Kind() == SyntaxKind.XmlTextLiteralNewLineToken)
-                            continue;
+                    bool isNewLine = true;
 
-                        sb.Append(literal);
+                    // Ignore the first and last two tokens.
+                    for (int i = 1; i < textSyntax.TextTokens.Count - 2; i++)
+                    {
+                        switch (textSyntax.TextTokens[i].Kind())
+                        {
+                            default:
+                                sb.Append(textSyntax.TextTokens[i].Text);
+                                break;
+
+                            case SyntaxKind.XmlTextLiteralNewLineToken:
+                                sb.Append(textSyntax.TextTokens[i].Text);
+                                isNewLine = true;
+                                continue;
+
+                            case SyntaxKind.XmlTextLiteralToken:
+                                var text = textSyntax.TextTokens[i].Text;
+
+                                // Ignore a single leading space at most.
+                                if (isNewLine && text.Length > 0 && text[0] == ' ')
+                                    text = text.Substring(1);
+
+                                sb.Append(text);
+                                break;
+                        }
+
+                        isNewLine = false;
                     }
                 }
 
