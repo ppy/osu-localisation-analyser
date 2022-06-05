@@ -4,12 +4,9 @@
 using System;
 using System.Collections.Immutable;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Formatting;
 
 namespace LocalisationAnalyser.Localisation
 {
@@ -53,19 +50,6 @@ namespace LocalisationAnalyser.Localisation
         /// <returns>The resultant <see cref="LocalisationFile"/>.</returns>
         public LocalisationFile WithMembers(params LocalisationMember[] members)
             => new LocalisationFile(Namespace, Name, Prefix, members);
-
-        /// <summary>
-        /// Writes this <see cref="LocalisationFile"/> to a stream.
-        /// </summary>
-        /// <param name="stream">The stream to write to.</param>
-        /// <param name="workspace">The workspace to format with.</param>
-        /// <param name="options">The analyser options to apply to the document.</param>
-        /// <param name="leaveOpen">Whether to leave the given <paramref name="stream"/> open.</param>
-        public async Task WriteAsync(Stream stream, Workspace workspace, AnalyzerConfigOptions? options = null, bool leaveOpen = false)
-        {
-            using (var sw = new StreamWriter(stream, Encoding.UTF8, 1024, leaveOpen))
-                await sw.WriteAsync(Formatter.Format(SyntaxGenerators.GenerateClassSyntax(workspace, this, options), workspace).ToFullString());
-        }
 
         /// <summary>
         /// Reads a <see cref="LocalisationFile"/> from a stream.
