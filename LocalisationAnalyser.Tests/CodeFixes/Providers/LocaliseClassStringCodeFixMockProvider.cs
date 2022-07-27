@@ -12,5 +12,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes.Providers
             : base(new MockFileSystem())
         {
         }
+
+        protected override bool AddFilesToWorkspace => true;
     }
 }

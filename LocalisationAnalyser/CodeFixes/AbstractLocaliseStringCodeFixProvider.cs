@@ -16,6 +16,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 
 namespace LocalisationAnalyser.CodeFixes
 {
@@ -204,6 +205,19 @@ namespace LocalisationAnalyser.CodeFixes
                     file.FileSystem.Directory.CreateDirectory(file.DirectoryName);
                     using (var stream = file.OpenWrite())
                         await localisation.WriteAsync(stream, document.Project.Solution.Workspace, options);
+
+                    // The only exception is if we're specifically requested to add the file to the workspace. This is the case for tests.
+                    if (AddFilesToWorkspace && project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != file.FullName))
+                    {
+                        var classDocument = project.AddDocument(
+                            file.FullName,
+                            SourceText.From(file.FileSystem.File.ReadAllText(file.FullName), Encoding.UTF8),
+                            Enumerable.Empty<string>(),
+                            file.FullName);
+
+                        project = classDocument.Project;
+                        solution = project.Solution;
+                    }
                 }
 
                 memberAccess = SyntaxGenerators.GenerateMemberAccessSyntax(localisation, newMember);
@@ -298,6 +312,11 @@ namespace LocalisationAnalyser.CodeFixes
         /// <param name="className">The name of the original class.</param>
         /// <returns>The name of the localisation class corresponding to <paramref name="className"/>.</returns>
         protected virtual string GetLocalisationFileName(string className) => className;
+
+        /// <summary>
+        /// Whether to add the resultant localisation class file to the workspace.
+        /// </summary>
+        protected virtual bool AddFilesToWorkspace => false;
 
         private static string createMemberName(LocalisationFile localisation, string englishText, AnalyzerConfigOptions? options)
         {
