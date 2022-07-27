@@ -16,7 +16,6 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Text;
 
 namespace LocalisationAnalyser.CodeFixes
 {
@@ -195,23 +194,16 @@ namespace LocalisationAnalyser.CodeFixes
 
                 if (!preview)
                 {
-                    // Write the resultant localisation class.
+                    // Adding or changing files via the workspace is only partially supported on some IDEs (JetBrains Rider),
+                    // and on fully-supported IDEs (VSCode) it results in the terrible UX of opening a file buffer but not actually saving it until the user does so themselves.
+                    // As far as I know, there's no way to force the IDE to save the file, and so adding new localisation members to the same file
+                    // will overwrite previously-added members if the file wasn't saved at every step of the way.
+                    //
+                    // We write the localisation file to disk manually to get around both of these issues and merge behaviours across IDEs.
+
                     file.FileSystem.Directory.CreateDirectory(file.DirectoryName);
                     using (var stream = file.OpenWrite())
                         await localisation.WriteAsync(stream, document.Project.Solution.Workspace, options);
-
-                    // Check for and add the new class file to the project if required.
-                    if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != file.FullName))
-                    {
-                        var classDocument = project.AddDocument(
-                            file.FullName,
-                            SourceText.From(file.FileSystem.File.ReadAllText(file.FullName), Encoding.UTF8),
-                            Enumerable.Empty<string>(),
-                            file.FullName);
-
-                        project = classDocument.Project;
-                        solution = project.Solution;
-                    }
                 }
 
                 memberAccess = SyntaxGenerators.GenerateMemberAccessSyntax(localisation, newMember);
