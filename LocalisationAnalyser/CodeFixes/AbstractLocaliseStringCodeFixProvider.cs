@@ -195,13 +195,19 @@ namespace LocalisationAnalyser.CodeFixes
 
                 if (!preview)
                 {
-                    // Write the resultant localisation class.
+                    // Adding or changing files via the workspace is only partially supported on some IDEs (JetBrains Rider),
+                    // and on fully-supported IDEs (VSCode) it results in the terrible UX of opening a file buffer but not actually saving it until the user does so themselves.
+                    // As far as I know, there's no way to force the IDE to save the file, and so adding new localisation members to the same file
+                    // will overwrite previously-added members if the file wasn't saved at every step of the way.
+                    //
+                    // We write the localisation file to disk manually to get around both of these issues and merge behaviours across IDEs.
+
                     file.FileSystem.Directory.CreateDirectory(file.DirectoryName);
                     using (var stream = file.OpenWrite())
                         await localisation.WriteAsync(stream, document.Project.Solution.Workspace, options);
 
-                    // Check for and add the new class file to the project if required.
-                    if (project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != file.FullName))
+                    // The only exception is if we're specifically requested to add the file to the workspace. This is the case for tests.
+                    if (AddFilesToWorkspace && project.Solution.Workspace.CanApplyChange(ApplyChangesKind.AddDocument) && project.Documents.All(d => d.FilePath != file.FullName))
                     {
                         var classDocument = project.AddDocument(
                             file.FullName,
@@ -306,6 +312,11 @@ namespace LocalisationAnalyser.CodeFixes
         /// <param name="className">The name of the original class.</param>
         /// <returns>The name of the localisation class corresponding to <paramref name="className"/>.</returns>
         protected virtual string GetLocalisationFileName(string className) => className;
+
+        /// <summary>
+        /// Whether to add the resultant localisation class file to the workspace.
+        /// </summary>
+        protected virtual bool AddFilesToWorkspace => false;
 
         private static string createMemberName(LocalisationFile localisation, string englishText, AnalyzerConfigOptions? options)
         {

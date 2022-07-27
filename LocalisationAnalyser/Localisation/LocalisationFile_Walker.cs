@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
-using System.Web;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -154,7 +154,7 @@ namespace LocalisationAnalyser.Localisation
                 if (xmlDoc.Length > 0)
                     xmlDoc = xmlDoc.Substring(0, xmlDoc.Length - 1);
 
-                return HttpUtility.HtmlDecode(xmlDoc);
+                return WebUtility.HtmlDecode(xmlDoc);
             }
 
             private static string convertNamespaceToString(NamespaceDeclarationSyntax declaration)
