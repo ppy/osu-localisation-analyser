@@ -2,7 +2,8 @@ using osu.Framework.Allocation;
 
 namespace Test
 {
-    public class Program {
+    public class Program
+    {
         #nullable enable
 
         [Resolved]
