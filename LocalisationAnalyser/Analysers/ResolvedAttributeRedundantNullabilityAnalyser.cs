@@ -27,6 +27,8 @@ namespace LocalisationAnalyser.Analysers
 
         private void analyseAttribute(SyntaxNodeAnalysisContext context)
         {
+            // Todo: Use nameof() or equivalent when this project is moved alongside osu-framework.
+
             AttributeSyntax node = (AttributeSyntax)context.Node;
 
             // Simple check to avoid processing too many attributes.
