@@ -1,0 +1,31 @@
+using osu.Framework.Allocation;
+
+namespace Test
+{
+    public class Program {
+        #nullable enable
+
+        [Resolved]
+        private object obj1 { get; set; }
+
+        [Resolved([|CanBeNull = true|])]
+        private object obj2 { get; set; }
+
+        [Resolved([|canBeNull: true|])]
+        private object obj3 { get; set; }
+
+        [Resolved([|canBeNull: true|], [|CanBeNull = true|])]
+        private object obj4 { get; set; }
+
+        #nullable disable
+
+        [Resolved]
+        private object obj5 { get; set; }
+
+        [Resolved(CanBeNull = true)]
+        private object obj6 { get; set; }
+
+        [Resolved(canBeNull: true)]
+        private object obj7 { get; set; }
+    }
+}

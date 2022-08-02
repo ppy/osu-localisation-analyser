@@ -1,0 +1,20 @@
+// Minimal template code for ResolvedAttribute to be used in analysis.
+
+using System;
+
+namespace osu.Framework.Allocation
+{
+    [AttributeUsage(AttributeTargets.All)]
+    public class ResolvedAttribute : Attribute
+    {
+        public bool CanBeNull;
+
+        public ResolvedAttribute()
+        {
+        }
+
+        public ResolvedAttribute(bool canBeNull = false)
+        {
+        }
+    }
+}
