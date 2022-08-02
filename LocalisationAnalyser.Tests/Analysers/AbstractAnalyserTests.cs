@@ -23,6 +23,7 @@ namespace LocalisationAnalyser.Tests.Analysers
 
             var sourceFiles = new List<string>
             {
+                $"{resources_namespace}.ResolvedAttribute.txt",
                 $"{resources_namespace}.LocalisableString.txt",
                 $"{resources_namespace}.TranslatableString.txt",
             };

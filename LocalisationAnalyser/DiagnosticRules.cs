@@ -38,6 +38,14 @@ namespace LocalisationAnalyser
             true,
             "Prevent confusion by matching the XMLDoc and the translation text.");
 
+        public static readonly DiagnosticDescriptor RESOLVED_ATTRIBUTE_NULLABILITY_IS_REDUNDANT = new DiagnosticDescriptor(
+            "OSUF001",
+            "Nullability should be provided by the type",
+            "Nullability should be provided by the type",
+            "Design",
+            DiagnosticSeverity.Warning,
+            true);
+
 #pragma warning restore RS2008
     }
 }
