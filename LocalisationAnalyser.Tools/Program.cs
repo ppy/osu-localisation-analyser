@@ -72,7 +72,7 @@ namespace LocalisationAnalyser.Tools
             var workspace = MSBuildWorkspace.Create();
             var project = await workspace.OpenProjectAsync(projectFile.FullName);
 
-            var localisationFiles = project.Documents.Where(d => d.Folders.SequenceEqual(SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Split('/')))
+            var localisationFiles = project.Documents.Where(d => d.Folders.FirstOrDefault() == SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH)
                                            .Where(d => d.Name.EndsWith(".cs"))
                                            .Where(d => Path.GetFileNameWithoutExtension(d.Name).EndsWith(SyntaxTemplates.STRINGS_FILE_SUFFIX))
                                            .ToArray();
@@ -85,13 +85,16 @@ namespace LocalisationAnalyser.Tools
 
             foreach (var file in localisationFiles)
             {
-                Console.WriteLine($"Processing {file.Name}...");
+                Console.WriteLine($"Processing {file.Name} {(file.Folders.Count > 1 ? $"(sub-namespace \"{string.Join('/', file.Folders)}\")" : string.Empty)}...");
 
                 LocalisationFile localisationFile;
                 using (var stream = File.OpenRead(file.FilePath))
                     localisationFile = await LocalisationFile.ReadAsync(stream);
 
                 string targetDirectory = output != null ? output.FullName : Path.GetDirectoryName(file.FilePath)!;
+                if (file.Folders.Count > 1)
+                    targetDirectory += Path.DirectorySeparatorChar + string.Join(Path.DirectorySeparatorChar, file.Folders.Skip(1));
+
                 string targetFileName = localisationFile.Prefix[(localisationFile.Prefix.LastIndexOf('.') + 1)..];
                 string resxFile = Path.Combine(targetDirectory, $"{targetFileName}.resx");
 
