@@ -85,7 +85,7 @@ namespace LocalisationAnalyser.Tools
 
             foreach (var file in localisationFiles)
             {
-                Console.WriteLine($"Processing {file.Name} {(file.Folders.Count > 1 ? $"(sub-namespace \"{string.Join('/', file.Folders)}\")" : string.Empty)}...");
+                Console.WriteLine($"Processing {file.Name}...");
 
                 LocalisationFile localisationFile;
                 using (var stream = File.OpenRead(file.FilePath))
