@@ -93,7 +93,7 @@ namespace LocalisationAnalyser.Tools
 
                 string targetDirectory = output != null ? output.FullName : Path.GetDirectoryName(file.FilePath)!;
                 if (file.Folders.Count > 1)
-                    targetDirectory += Path.DirectorySeparatorChar + string.Join(Path.DirectorySeparatorChar, file.Folders.Skip(1));
+                    targetDirectory += string.Join(Path.DirectorySeparatorChar, file.Folders.Skip(1));
 
                 string targetFileName = localisationFile.Prefix[(localisationFile.Prefix.LastIndexOf('.') + 1)..];
                 string resxFile = Path.Combine(targetDirectory, $"{targetFileName}.resx");
