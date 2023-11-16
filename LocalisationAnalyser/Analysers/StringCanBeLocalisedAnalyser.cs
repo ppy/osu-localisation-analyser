@@ -19,6 +19,12 @@ namespace LocalisationAnalyser.Analysers
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED);
 
+        private static readonly string[] localisable_attributes =
+        {
+            typeof(DescriptionAttribute).FullName,
+            "osu.Game.Configuration.SettingSourceAttribute"
+        };
+
         public override void Initialize(AnalysisContext context)
         {
             // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/Analyzer%20Actions%20Semantics.md for more information
@@ -45,7 +51,7 @@ namespace LocalisationAnalyser.Analysers
                         SyntaxNode attributeSyntax = literal.FirstAncestorOrSelf<AttributeSyntax>();
                         string attributeName = context.SemanticModel.GetTypeInfo(attributeSyntax).Type.ToString();
 
-                        if (attributeName != typeof(DescriptionAttribute).FullName)
+                        if (!localisable_attributes.Contains(attributeName))
                             return;
                     }
 
