@@ -23,7 +23,8 @@ namespace LocalisationAnalyser.Tests.CodeFixes
             {
                 ("LocalisableString.cs", readResourceStream(assembly, $"{resources_namespace}.LocalisableString.txt")),
                 ("TranslatableString.cs", readResourceStream(assembly, $"{resources_namespace}.TranslatableString.txt")),
-                ("LocalisableDescriptionAttribute.cs", readResourceStream(assembly, $"{resources_namespace}.LocalisableDescriptionAttribute.txt"))
+                ("LocalisableDescriptionAttribute.cs", readResourceStream(assembly, $"{resources_namespace}.LocalisableDescriptionAttribute.txt")),
+                ("SettingSourceAttribute.cs", readResourceStream(assembly, $"{resources_namespace}.SettingSourceAttribute.txt")),
             };
 
             var sourceFiles = new List<(string filename, string content)>(requiredFiles);

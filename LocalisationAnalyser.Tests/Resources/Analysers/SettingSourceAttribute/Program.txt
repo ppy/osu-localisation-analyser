@@ -1,0 +1,17 @@
+using osu.Game.Configuration;
+
+namespace Test
+{
+    class Program
+    {
+        [SettingSource(typeof(object), [|"a"|])]
+        [SettingSource(typeof(object), [|"a"|], [|"b"|])]
+        [SettingSource([|"a"|])]
+        [SettingSource([|"a"|], [|"b"|])]
+        [SettingSource(typeof(object), [|"a"|], [|"b"|], 0)]
+        [SettingSource([|"a"|], [|"b"|], 0)]
+        static void Main()
+        {
+        }
+    }
+}
