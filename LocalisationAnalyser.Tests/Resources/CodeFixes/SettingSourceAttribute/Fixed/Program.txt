@@ -1,0 +1,13 @@
+using System.ComponentModel;
+using osu.Game.Configuration;
+using TestProject.Localisation;
+
+namespace Test
+{
+    [SettingSource(typeof(Class1Strings), nameof(Class1Strings.Abc))]
+    [SettingSource(typeof(Class1Strings), nameof(Class1Strings.Abc), nameof(Class1Strings.Def))]
+    [SettingSource(typeof(Class1Strings), nameof(Class1Strings.Abc), nameof(Class1Strings.Def), 1)]
+    class Class1
+    {
+    }
+}
