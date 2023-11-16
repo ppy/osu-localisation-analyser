@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Collections.Immutable;
-using System.ComponentModel;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -21,7 +20,7 @@ namespace LocalisationAnalyser.Analysers
 
         private static readonly string[] localisable_attributes =
         {
-            typeof(DescriptionAttribute).FullName,
+            "System.ComponentModel.DescriptionAttribute",
             "osu.Game.Configuration.SettingSourceAttribute"
         };
 

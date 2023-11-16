@@ -23,7 +23,9 @@ namespace LocalisationAnalyser.Localisation
         /// <summary>
         /// The construction type of the localisable attribute which replaces <see cref="System.ComponentModel.DescriptionAttribute"/>.
         /// </summary>
-        public const string ATTRIBUTE_CONSTRUCTION_TYPE = "LocalisableDescription";
+        public const string LOCALISABLE_DESCRIPTION_ATTRIBUTE_CONSTRUCTION_TYPE = "LocalisableDescription";
+
+        public const string SETTING_SOURCE_ATTRIBUTE_CONSTRUCTION_TYPE = "SettingSource";
 
         /// <summary>
         /// The path to localisations relative to the project directory.
