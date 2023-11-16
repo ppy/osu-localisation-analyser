@@ -43,7 +43,7 @@ namespace LocalisationAnalyser.Analysers
                     if (literal.Parent?.Kind() == SyntaxKind.AttributeArgument)
                     {
                         SyntaxNode attributeSyntax = literal.FirstAncestorOrSelf<AttributeSyntax>();
-                        string attributeName = context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol.ContainingType.ToString();
+                        string attributeName = context.SemanticModel.GetTypeInfo(attributeSyntax).Type.ToString();
 
                         if (attributeName != typeof(DescriptionAttribute).FullName)
                             return;
