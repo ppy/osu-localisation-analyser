@@ -1,0 +1,28 @@
+namespace osu.Game.Configuration
+{
+    [System.AttributeUsage(System.AttributeTargets.All, AllowMultiple = true)]
+    public class SettingSourceAttribute : System.Attribute
+    {
+        public string Label { get; }
+
+        public string Description { get; }
+
+        public SettingSourceAttribute(System.Type declaringType, string label, string? description = null)
+        {
+        }
+
+        public SettingSourceAttribute(string? label, string? description = null)
+        {
+        }
+
+        public SettingSourceAttribute(System.Type declaringType, string label, string description, int orderPosition)
+            : this(declaringType, label, description)
+        {
+        }
+
+        public SettingSourceAttribute(string label, string description, int orderPosition)
+            : this(label, description)
+        {
+        }
+    }
+}

@@ -173,19 +173,38 @@ namespace LocalisationAnalyser.Localisation
         /// </summary>
         /// <param name="memberAccess">The member to access.</param>
         /// <returns>The <see cref="AttributeSyntax"/>.</returns>
-        public static AttributeSyntax GenerateAttributeAccessSyntax(MemberAccessExpressionSyntax memberAccess)
+        public static AttributeSyntax GenerateLocalisableDescriptionAttributeAccessSyntax(MemberAccessExpressionSyntax memberAccess)
             => SyntaxFactory.Attribute(
-                                SyntaxFactory.IdentifierName(SyntaxTemplates.ATTRIBUTE_CONSTRUCTION_TYPE))
+                                SyntaxFactory.IdentifierName(SyntaxTemplates.LOCALISABLE_DESCRIPTION_ATTRIBUTE_CONSTRUCTION_TYPE))
                             .WithArgumentList(
                                 SyntaxFactory.AttributeArgumentList(
                                     SyntaxFactory.SeparatedList(new[]
                                         {
                                             SyntaxFactory.AttributeArgument(
-                                                SyntaxFactory.TypeOfExpression(((IdentifierNameSyntax)memberAccess.Expression))),
+                                                SyntaxFactory.TypeOfExpression((IdentifierNameSyntax)memberAccess.Expression)),
                                             SyntaxFactory.AttributeArgument(
                                                 SyntaxFactory.ParseExpression($"nameof({memberAccess.Expression}.{memberAccess.Name})"))
                                         }
                                     )));
+
+        public static AttributeSyntax GenerateSettingSourceAttributeAccessSyntax(AttributeSyntax attributeToReplace, AttributeArgumentSyntax argToReplace, MemberAccessExpressionSyntax memberAccess)
+        {
+            List<AttributeArgumentSyntax> newArguments =
+                attributeToReplace.ArgumentList.Arguments
+                                  .Select(arg => arg == argToReplace
+                                      ? SyntaxFactory.AttributeArgument(
+                                          SyntaxFactory.ParseExpression($"nameof({memberAccess.Expression}.{memberAccess.Name})"))
+                                      : arg).ToList();
+
+            if (newArguments.First().Expression is not TypeOfExpressionSyntax)
+                newArguments.Insert(0, SyntaxFactory.AttributeArgument(SyntaxFactory.TypeOfExpression((IdentifierNameSyntax)memberAccess.Expression)));
+
+            return SyntaxFactory.Attribute(
+                                    SyntaxFactory.IdentifierName(SyntaxTemplates.SETTING_SOURCE_ATTRIBUTE_CONSTRUCTION_TYPE))
+                                .WithArgumentList(
+                                    SyntaxFactory.AttributeArgumentList(
+                                        SyntaxFactory.SeparatedList(newArguments)));
+        }
 
         /// <summary>
         /// Checks for and adds a new using directive to the given <see cref="CompilationUnitSyntax"/> if required.

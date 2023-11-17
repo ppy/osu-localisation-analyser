@@ -230,8 +230,22 @@ namespace LocalisationAnalyser.CodeFixes
 
             if (nodeToReplace.Parent.Kind() == SyntaxKind.AttributeArgument)
             {
-                rootNode = rootNode.ReplaceNode(nodeToReplace.FirstAncestorOrSelf<AttributeSyntax>(), SyntaxGenerators.GenerateAttributeAccessSyntax(memberAccess));
-                rootNode = SyntaxGenerators.AddUsingDirectiveIfNotExisting((CompilationUnitSyntax)rootNode, SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE);
+                AttributeArgumentSyntax argSyntax = (AttributeArgumentSyntax)nodeToReplace.Parent;
+                AttributeSyntax attributeSyntax = nodeToReplace.FirstAncestorOrSelf<AttributeSyntax>();
+                SemanticModel semanticModel = await document.GetSemanticModelAsync(cancellationToken);
+                string attributeName = semanticModel.GetTypeInfo(attributeSyntax).Type.ToString();
+
+                switch (attributeName)
+                {
+                    case "System.ComponentModel.DescriptionAttribute":
+                        rootNode = rootNode.ReplaceNode(attributeSyntax, SyntaxGenerators.GenerateLocalisableDescriptionAttributeAccessSyntax(memberAccess));
+                        rootNode = SyntaxGenerators.AddUsingDirectiveIfNotExisting((CompilationUnitSyntax)rootNode, SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE);
+                        break;
+
+                    case "osu.Game.Configuration.SettingSourceAttribute":
+                        rootNode = rootNode.ReplaceNode(attributeSyntax, SyntaxGenerators.GenerateSettingSourceAttributeAccessSyntax(attributeSyntax, argSyntax, memberAccess));
+                        break;
+                }
             }
             else
                 rootNode = rootNode.ReplaceNode(nodeToReplace, SyntaxGenerators.GenerateDirectAccessSyntax(memberAccess, parameterValues));

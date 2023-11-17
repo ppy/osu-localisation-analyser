@@ -26,6 +26,7 @@ namespace LocalisationAnalyser.Tests.Analysers
                 $"{resources_namespace}.ResolvedAttribute.txt",
                 $"{resources_namespace}.LocalisableString.txt",
                 $"{resources_namespace}.TranslatableString.txt",
+                $"{resources_namespace}.SettingSourceAttribute.txt",
             };
 
             foreach (var f in resourceNames.Where(n => n.StartsWith($"{resources_namespace}.Analysers.{name}")))

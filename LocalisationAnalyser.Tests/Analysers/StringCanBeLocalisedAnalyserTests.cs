@@ -12,6 +12,7 @@ namespace LocalisationAnalyser.Tests.Analysers
         [Theory]
         [InlineData("Attribute")]
         [InlineData("DescriptionAttribute")]
+        [InlineData("SettingSourceAttribute")]
         [InlineData("BasicString")]
         [InlineData("EmptyString")]
         [InlineData("InterpolatedString")]

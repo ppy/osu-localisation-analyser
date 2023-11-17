@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Collections.Immutable;
-using System.ComponentModel;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,6 +17,12 @@ namespace LocalisationAnalyser.Analysers
     public class StringCanBeLocalisedAnalyser : DiagnosticAnalyzer
     {
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DiagnosticRules.STRING_CAN_BE_LOCALISED);
+
+        private static readonly string[] localisable_attributes =
+        {
+            "System.ComponentModel.DescriptionAttribute",
+            "osu.Game.Configuration.SettingSourceAttribute"
+        };
 
         public override void Initialize(AnalysisContext context)
         {
@@ -43,9 +48,9 @@ namespace LocalisationAnalyser.Analysers
                     if (literal.Parent?.Kind() == SyntaxKind.AttributeArgument)
                     {
                         SyntaxNode attributeSyntax = literal.FirstAncestorOrSelf<AttributeSyntax>();
-                        string attributeName = context.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol.ContainingType.ToString();
+                        string attributeName = context.SemanticModel.GetTypeInfo(attributeSyntax).Type.ToString();
 
-                        if (attributeName != typeof(DescriptionAttribute).FullName)
+                        if (!localisable_attributes.Contains(attributeName))
                             return;
                     }
 

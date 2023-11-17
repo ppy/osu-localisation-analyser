@@ -1,0 +1,12 @@
+using System.ComponentModel;
+using osu.Game.Configuration;
+
+namespace Test
+{
+    [SettingSource([|"abc"|])]
+    [SettingSource([|"abc"|], [|"def"|])]
+    [SettingSource([|"abc"|], [|"def"|], 1)]
+    class Class1
+    {
+    }
+}
