@@ -16,7 +16,8 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         [InlineData("VerbatimString")]
         [InlineData("InterpolatedString")]
         [InlineData("InterpolatedStringWithQuotes")]
-        [InlineData("CustomPrefix")]
+        [InlineData("CustomPrefixNamespace")]
+        [InlineData("CustomFileNamespace")]
         [InlineData("NestedClass")]
         [InlineData("LongString")]
         [InlineData("LicenseHeader")]
@@ -27,7 +28,8 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         public async Task Check(string name) => await RunTest(name);
 
         [Theory]
-        [InlineData("CustomPrefix")]
+        [InlineData("CustomPrefixNamespace")]
+        [InlineData("CustomFileNamespace")]
         public async Task CheckWithBrokenAnalyzerConfigFiles(string name) => await RunTest(name, true);
 
         protected override Task Verify((string filename, string content)[] sources, (string filename, string content)[] fixedSources, bool brokenAnalyserConfigFiles = false)

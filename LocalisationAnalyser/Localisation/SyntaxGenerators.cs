@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using LocalisationAnalyser.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -62,7 +63,7 @@ namespace LocalisationAnalyser.Localisation
                 builder.AppendLine();
 
             return SyntaxFactory.ParseCompilationUnit(
-                string.Format(SyntaxTemplates.FILE_HEADER_TEMPLATE,
+                string.Format(SyntaxTemplates.CreateFileHeader(options.GetLocalisationClassNamespace()),
                     builder));
         }
 

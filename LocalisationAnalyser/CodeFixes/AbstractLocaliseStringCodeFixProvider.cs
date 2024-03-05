@@ -274,14 +274,24 @@ namespace LocalisationAnalyser.CodeFixes
             if (containingType == null)
                 throw new InvalidOperationException("String is not within a class, struct, or enum type.");
 
+            string classNamespace = SyntaxTemplates.LOCALISATION_CLASS_NAMESPACE;
+
+            if (options != null && options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.class_namespace", out string? customFileNamespace))
+            {
+                if (string.IsNullOrEmpty(customFileNamespace))
+                    throw new InvalidOperationException("Custom file namespace cannot be empty.");
+
+                classNamespace = customFileNamespace;
+            }
+
             var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath!);
-            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Split('/')).ToArray());
+            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(classNamespace.Split('.')).ToArray());
 
             // The class being localised.
             var incomingClassName = containingType.Identifier.Text;
 
             // The localisation class.
-            var localisationNamespace = $"{project.AssemblyName}.{SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Replace('/', '.')}";
+            var localisationNamespace = $"{project.AssemblyName}.{classNamespace}";
             var localisationName = GetLocalisationFileName(containingType.Identifier.Text);
             var localisationFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(localisationName, "cs"));
             var localisationFile = fileSystem.FileInfo.FromFileName(localisationFileName);
@@ -301,10 +311,10 @@ namespace LocalisationAnalyser.CodeFixes
             // The prefix namespace defaults to the localisation class' namespace, but can be customised via .editorconfig.
             var prefixNamespace = localisationNamespace;
 
-            if (options != null && options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.prefix_namespace", out var customPrefixNamespace))
+            if (options != null && options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.prefix_namespace", out string? customPrefixNamespace))
             {
                 if (string.IsNullOrEmpty(customPrefixNamespace))
-                    throw new InvalidOperationException("Custom namespace cannot be empty.");
+                    throw new InvalidOperationException("Custom prefix namespace cannot be empty.");
 
                 prefixNamespace = customPrefixNamespace;
             }

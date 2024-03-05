@@ -1,6 +1,8 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
+
 namespace LocalisationAnalyser.Localisation
 {
     public static class SyntaxTemplates
@@ -30,7 +32,7 @@ namespace LocalisationAnalyser.Localisation
         /// <summary>
         /// The path to localisations relative to the project directory.
         /// </summary>
-        public const string PROJECT_RELATIVE_LOCALISATION_PATH = "Localisation";
+        public const string LOCALISATION_CLASS_NAMESPACE = "Localisation";
 
         /// <summary>
         /// The name of the 'prefix' const used for building the lookup key.
@@ -95,11 +97,6 @@ public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}(
 private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}}"";";
 
         /// <summary>
-        /// The template for the localisation file header.
-        /// </summary>
-        public static readonly string FILE_HEADER_TEMPLATE = $@"{{0}}using {FRAMEWORK_LOCALISATION_NAMESPACE};";
-
-        /// <summary>
         /// The suffix attached to a localisation file name.
         /// </summary>
         public const string STRINGS_FILE_SUFFIX = "Strings";
@@ -108,5 +105,16 @@ private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}
         /// The common localisation class name.
         /// </summary>
         public const string COMMON_STRINGS_CLASS_NAME = "Common";
+
+        /// <summary>
+        /// The template for the localisation file header.
+        /// </summary>
+        public static string CreateFileHeader(string classNamespace)
+        {
+            if (classNamespace.StartsWith(FRAMEWORK_LOCALISATION_NAMESPACE, StringComparison.Ordinal))
+                return $"{{0}}";
+
+            return $"{{0}}using {FRAMEWORK_LOCALISATION_NAMESPACE};";
+        }
     }
 }

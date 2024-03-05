@@ -1,0 +1,12 @@
+using TestProject.Localisation.Sub;
+
+namespace Test
+{
+    class Program
+    {
+        static void Main()
+        {
+            string x = ProgramStrings.Abc;
+        }
+    }
+}

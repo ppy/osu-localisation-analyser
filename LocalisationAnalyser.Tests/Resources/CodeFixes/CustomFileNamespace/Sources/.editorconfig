@@ -1,0 +1,4 @@
+root = true
+
+[*.cs]
+dotnet_diagnostic.OLOC001.class_namespace = Localisation.Sub
