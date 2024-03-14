@@ -58,10 +58,11 @@ namespace LocalisationAnalyser.Localisation
                 license.SelectMany(s => new[]
                        {
                            SyntaxFactory.Comment(s),
-                           SyntaxFactory.LineFeed
+                           SyntaxFactory.EndOfLine(Environment.NewLine)
                        })
                        // One leading space before any other content.
-                       .Append(SyntaxFactory.LineFeed)));
+                       .Append(
+                           SyntaxFactory.EndOfLine(Environment.NewLine))));
         }
 
         /// <summary>
