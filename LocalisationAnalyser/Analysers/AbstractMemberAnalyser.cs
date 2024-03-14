@@ -30,8 +30,15 @@ namespace LocalisationAnalyser.Analysers
 
             var root = context.Tree.GetRoot();
 
-            foreach (var prop in root.DescendantNodes().OfType<PropertyDeclarationSyntax>())
-                AnalyseProperty(context, prop, file);
+            foreach (var property in root.DescendantNodes().OfType<PropertyDeclarationSyntax>())
+                AnalyseProperty(context, property, file);
+
+            foreach (var method in root.DescendantNodes().OfType<MethodDeclarationSyntax>())
+                AnalyseMethod(context, method, file);
+        }
+
+        protected virtual void AnalyseMethod(SyntaxTreeAnalysisContext context, MethodDeclarationSyntax method, LocalisationFile localisationFile)
+        {
         }
 
         protected virtual void AnalyseProperty(SyntaxTreeAnalysisContext context, PropertyDeclarationSyntax property, LocalisationFile localisationFile)
