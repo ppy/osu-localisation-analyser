@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LocalisationAnalyser.Abstractions.IO;
+using LocalisationAnalyser.Extensions;
 using LocalisationAnalyser.Localisation;
 using LocalisationAnalyser.Utils;
 using Microsoft.CodeAnalysis;
@@ -308,18 +309,10 @@ namespace LocalisationAnalyser.CodeFixes
                 }
             }
 
-            // The prefix namespace defaults to the localisation class' namespace, but can be customised via .editorconfig.
-            var prefixNamespace = localisationNamespace;
+            // The resource namespace defaults to the localisation class' namespace, but can be customised via .editorconfig.
+            var resourceNamespace = options.GetLocalisationResourceNamespace(localisationNamespace);
 
-            if (options != null && options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.prefix_namespace", out string? customPrefixNamespace))
-            {
-                if (string.IsNullOrEmpty(customPrefixNamespace))
-                    throw new InvalidOperationException("Custom prefix namespace cannot be empty.");
-
-                prefixNamespace = customPrefixNamespace;
-            }
-
-            return (localisationFile, new LocalisationFile(localisationNamespace, localisationName, GetLocalisationPrefix(prefixNamespace, incomingClassName)));
+            return (localisationFile, new LocalisationFile(localisationNamespace, localisationName, GetLocalisationPrefix(resourceNamespace, incomingClassName)));
         }
 
         /// <summary>
