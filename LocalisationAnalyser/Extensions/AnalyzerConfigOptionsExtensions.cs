@@ -61,5 +61,22 @@ namespace LocalisationAnalyser.Extensions
 
             return fallback;
         }
+
+        public static string[]? GetLicenseHeader(this AnalyzerConfigOptions? config)
+        {
+            if (config == null)
+                return null;
+
+            if (!config.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.license_header", out string licenseHeader))
+                return null;
+
+            if (string.IsNullOrEmpty(licenseHeader))
+                return null;
+
+            if (!licenseHeader.StartsWith("//", StringComparison.Ordinal))
+                licenseHeader = $"// {licenseHeader}";
+
+            return licenseHeader.Split(new[] { "\\n" }, StringSplitOptions.None);
+        }
     }
 }

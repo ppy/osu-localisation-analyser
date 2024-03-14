@@ -1,8 +1,6 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
-
 namespace LocalisationAnalyser.Localisation
 {
     public static class SyntaxTemplates
@@ -105,16 +103,5 @@ private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}
         /// The common localisation class name.
         /// </summary>
         public const string COMMON_STRINGS_CLASS_NAME = "Common";
-
-        /// <summary>
-        /// The template for the localisation file header.
-        /// </summary>
-        public static string CreateFileHeader(string localisationNamespace)
-        {
-            if (localisationNamespace.StartsWith(FRAMEWORK_LOCALISATION_NAMESPACE, StringComparison.Ordinal))
-                return "{0}";
-
-            return $"{{0}}using {FRAMEWORK_LOCALISATION_NAMESPACE};";
-        }
     }
 }
