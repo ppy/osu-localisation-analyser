@@ -27,8 +27,8 @@ namespace LocalisationAnalyser.CodeFixes
         {
         }
 
-        protected override string GetLocalisationPrefix(string @namespace, string className) => base.GetLocalisationPrefix(@namespace, SyntaxTemplates.COMMON_STRINGS_CLASS_NAME);
+        protected override string BuildResourcePrefix(string @namespace, string className) => base.BuildResourcePrefix(@namespace, SyntaxTemplates.COMMON_STRINGS_CLASS_NAME);
 
-        protected override string GetLocalisationFileName(string className) => $"{SyntaxTemplates.COMMON_STRINGS_CLASS_NAME}{SyntaxTemplates.STRINGS_FILE_SUFFIX}";
+        protected override string BuildLocalisationName(string className) => $"{SyntaxTemplates.COMMON_STRINGS_CLASS_NAME}{SyntaxTemplates.STRINGS_FILE_SUFFIX}";
     }
 }

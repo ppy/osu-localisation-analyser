@@ -4,7 +4,7 @@ namespace TestProject.Localisation.Sub
 {
     public static class ProgramStrings
     {
-        private const string prefix = @"TestProject.Localisation.Sub.Program";
+        private const string prefix = @"TestProject.Localisation.Program";
 
         /// <summary>
         /// "abc"

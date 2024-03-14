@@ -26,6 +26,6 @@ namespace LocalisationAnalyser.CodeFixes
         {
         }
 
-        protected override string GetLocalisationFileName(string className) => $"{base.GetLocalisationFileName(className)}{SyntaxTemplates.STRINGS_FILE_SUFFIX}";
+        protected override string BuildLocalisationName(string className) => $"{base.BuildLocalisationName(className)}{SyntaxTemplates.STRINGS_FILE_SUFFIX}";
     }
 }

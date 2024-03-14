@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
-using LocalisationAnalyser.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -25,7 +24,7 @@ namespace LocalisationAnalyser.Localisation
         /// </summary>
         /// <returns>The syntax.</returns>
         public static SyntaxNode GenerateClassSyntax(Workspace workspace, LocalisationFile localisationFile, AnalyzerConfigOptions? options)
-            => GenerateFileHeaderSyntax(options)
+            => GenerateFileHeaderSyntax(options, localisationFile)
                 .AddMembers(
                     SyntaxFactory.NamespaceDeclaration(
                                      SyntaxFactory.IdentifierName(localisationFile.Namespace))
@@ -42,7 +41,7 @@ namespace LocalisationAnalyser.Localisation
                                                               SyntaxFactory.Token(SyntaxKind.PublicKeyword),
                                                               SyntaxFactory.Token(SyntaxKind.StaticKeyword))))));
 
-        public static CompilationUnitSyntax GenerateFileHeaderSyntax(AnalyzerConfigOptions? options)
+        public static CompilationUnitSyntax GenerateFileHeaderSyntax(AnalyzerConfigOptions? options, LocalisationFile localisationFile)
         {
             if (options == null || !options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.license_header", out string licenseHeader))
                 licenseHeader = string.Empty;
@@ -63,7 +62,7 @@ namespace LocalisationAnalyser.Localisation
                 builder.AppendLine();
 
             return SyntaxFactory.ParseCompilationUnit(
-                string.Format(SyntaxTemplates.CreateFileHeader(options.GetLocalisationClassNamespace()),
+                string.Format(SyntaxTemplates.CreateFileHeader(localisationFile.Namespace),
                     builder));
         }
 

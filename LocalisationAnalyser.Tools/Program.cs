@@ -72,7 +72,7 @@ namespace LocalisationAnalyser.Tools
             var workspace = MSBuildWorkspace.Create();
             var project = await workspace.OpenProjectAsync(projectFile.FullName);
 
-            var localisationFiles = project.Documents.Where(d => d.Folders.FirstOrDefault() == SyntaxTemplates.LOCALISATION_CLASS_NAMESPACE)
+            var localisationFiles = project.Documents.Where(d => d.Folders.FirstOrDefault() == SyntaxTemplates.DEFAULT_LOCALISATION_NAMESPACE)
                                            .Where(d => d.Name.EndsWith(".cs"))
                                            .Where(d => Path.GetFileNameWithoutExtension(d.Name).EndsWith(SyntaxTemplates.STRINGS_FILE_SUFFIX))
                                            .ToArray();

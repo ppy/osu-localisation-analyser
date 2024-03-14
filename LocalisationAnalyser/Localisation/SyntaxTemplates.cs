@@ -32,7 +32,7 @@ namespace LocalisationAnalyser.Localisation
         /// <summary>
         /// The path to localisations relative to the project directory.
         /// </summary>
-        public const string LOCALISATION_CLASS_NAMESPACE = "Localisation";
+        public const string DEFAULT_LOCALISATION_NAMESPACE = "Localisation";
 
         /// <summary>
         /// The name of the 'prefix' const used for building the lookup key.
@@ -109,10 +109,10 @@ private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}
         /// <summary>
         /// The template for the localisation file header.
         /// </summary>
-        public static string CreateFileHeader(string classNamespace)
+        public static string CreateFileHeader(string localisationNamespace)
         {
-            if (classNamespace.StartsWith(FRAMEWORK_LOCALISATION_NAMESPACE, StringComparison.Ordinal))
-                return $"{{0}}";
+            if (localisationNamespace.StartsWith(FRAMEWORK_LOCALISATION_NAMESPACE, StringComparison.Ordinal))
+                return "{0}";
 
             return $"{{0}}using {FRAMEWORK_LOCALISATION_NAMESPACE};";
         }

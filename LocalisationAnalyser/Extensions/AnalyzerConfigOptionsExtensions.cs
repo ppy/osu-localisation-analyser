@@ -2,22 +2,33 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using LocalisationAnalyser.Localisation;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace LocalisationAnalyser.Extensions
 {
     public static class AnalyzerConfigOptionsExtensions
     {
-        public static string GetLocalisationClassNamespace(this AnalyzerConfigOptions? options)
+        /// <summary>
+        /// Retrieves the namespace under which the localisation strings are expected to be placed.
+        /// </summary>
+        /// <param name="config">The config that may provide a custom value via <c>localisation_namespace</c>.</param>
+        /// <param name="fallback">The fallback value in case no custom value is provided.</param>
+        /// <returns>The localisation strings namespace - either a custom value from <paramref name="config"/>, or the given <paramref name="fallback"/>.</returns>
+        /// <exception cref="InvalidOperationException">If the config contained an empty string as a custom value.</exception>
+        public static string GetLocalisationNamespace(this AnalyzerConfigOptions? config, string fallback)
         {
-            if (options == null || !options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.class_namespace", out string? customFileNamespace))
-                return SyntaxTemplates.LOCALISATION_CLASS_NAMESPACE;
+            if (config == null)
+                return fallback;
 
-            if (string.IsNullOrEmpty(customFileNamespace))
-                throw new InvalidOperationException("Custom file namespace cannot be empty.");
+            if (config.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.localisation_namespace", out string? customFileNamespace))
+            {
+                if (string.IsNullOrEmpty(customFileNamespace))
+                    throw new InvalidOperationException("Custom localisation namespace cannot be empty.");
 
-            return customFileNamespace;
+                return customFileNamespace;
+            }
+
+            return fallback;
         }
 
         /// <summary>
@@ -27,7 +38,7 @@ namespace LocalisationAnalyser.Extensions
         /// <param name="fallback">The fallback value in case no custom value is provided.</param>
         /// <returns>The localisation resource namespace - either a custom value from <paramref name="config"/>, or the given <paramref name="fallback"/>.</returns>
         /// <exception cref="InvalidOperationException">If the config contained an empty string as a custom value.</exception>
-        public static string GetLocalisationResourceNamespace(this AnalyzerConfigOptions? config, string fallback)
+        public static string GetResourceNamespace(this AnalyzerConfigOptions? config, string fallback)
         {
             if (config == null)
                 return fallback;

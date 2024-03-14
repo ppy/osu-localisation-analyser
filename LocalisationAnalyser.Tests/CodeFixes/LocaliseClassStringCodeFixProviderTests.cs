@@ -18,7 +18,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         [InlineData("InterpolatedStringWithQuotes")]
         [InlineData("CustomPrefixNamespace")]
         [InlineData("CustomResourceNamespace")]
-        [InlineData("CustomFileNamespace")]
+        [InlineData("CustomLocalisationNamespace")]
         [InlineData("NestedClass")]
         [InlineData("LongString")]
         [InlineData("LicenseHeader")]
