@@ -5,8 +5,14 @@ This is a .NET analyser providing code fixes to generate localisations for use i
 # `.editorconfig` options
 
 ```sh
-# Customises the "prefix" namespace value. Defaults to "{AssemblyName}.Localisation".
-dotnet_diagnostic.OLOC001.prefix_namespace = Some.Custom.Namespace
+# The namespace in which the localisation files (.cs) are placed relative to the current project.
+# Defaults to `Localisation`.
+dotnet_diagnostic.OLOC001.localisation_namespace = Some.Custom.Namespace
+
+# The namespace in which the localisation resources (.resx) are expected to be found.
+# The localisation lookup key is formed using this as `{resource_namespace}:{key}`.
+# Defaults to `{AssemblyName}.Localisation`.
+dotnet_diagnostic.OLOC001.resource_namespace = Some.Custom.Namespace
 
 # The number of words to use in the source string to generate the target member name. Defaults to all words in the string.
 dotnet_diagnostic.OLOC001.words_in_name = 5

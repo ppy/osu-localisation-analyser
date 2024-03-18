@@ -36,7 +36,7 @@ namespace LocalisationAnalyser.Tests.Localisation
         [Fact]
         public async Task EmptyFileContainsNoMembers()
         {
-            var localisation = await setupFile($@"{SyntaxTemplates.FILE_HEADER_TEMPLATE}
+            var localisation = await setupFile($@"using {SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE};
 
 namespace {test_namespace}
 {{
@@ -78,7 +78,7 @@ namespace {test_namespace}
             const string key_name = "TestKey";
             const string english_text = "TestEnglish";
 
-            var localisation = await setupFile($@"{SyntaxTemplates.FILE_HEADER_TEMPLATE}
+            var localisation = await setupFile($@"using {SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE};
 
 namespace {test_namespace}
 {{
@@ -134,7 +134,7 @@ namespace {test_namespace}
             var param2 = new LocalisationParameter("string", "second");
             var param3 = new LocalisationParameter("customobj", "third");
 
-            var localisation = await setupFile($@"{SyntaxTemplates.FILE_HEADER_TEMPLATE}
+            var localisation = await setupFile($@"using {SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE};
 
 namespace {test_namespace}
 {{
@@ -168,7 +168,7 @@ namespace {test_namespace}
             const string prop_name = "TestProperty";
             const string key_name = "TestKey";
 
-            var localisation = await setupFile($@"{SyntaxTemplates.FILE_HEADER_TEMPLATE}
+            var localisation = await setupFile($@"using {SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE};
 
 namespace {test_namespace}
 {{
@@ -292,7 +292,7 @@ namespace {test_namespace}
             const string prop_name = "TestProperty";
             const string key_name = "TestKey";
 
-            var localisation = await setupFile($@"{SyntaxTemplates.FILE_HEADER_TEMPLATE}
+            var localisation = await setupFile($@"using {SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE};
 
 namespace {test_namespace}
 {{
@@ -318,7 +318,7 @@ namespace {test_namespace}
             const string prop_name = "TestProperty";
             const string key_name = "TestKey";
 
-            var localisation = await setupFile($@"{SyntaxTemplates.FILE_HEADER_TEMPLATE}
+            var localisation = await setupFile($@"using {SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE};
 
 namespace {test_namespace}
 {{
@@ -352,7 +352,7 @@ namespace {test_namespace}
             const string prop_name = "TestProperty";
             const string key_name = "TestKey";
 
-            var localisation = await setupFile($@"{SyntaxTemplates.FILE_HEADER_TEMPLATE}
+            var localisation = await setupFile($@"using {SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE};
 
 namespace {test_namespace}
 {{
@@ -393,7 +393,7 @@ namespace {test_namespace}
         {
             var sb = new StringBuilder();
 
-            sb.Append($@"{string.Format(SyntaxTemplates.FILE_HEADER_TEMPLATE, string.Empty)}
+            sb.Append($@"using {SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE};
 
 namespace {test_namespace}
 {{

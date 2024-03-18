@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using LocalisationAnalyser.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -24,46 +25,44 @@ namespace LocalisationAnalyser.Localisation
         /// </summary>
         /// <returns>The syntax.</returns>
         public static SyntaxNode GenerateClassSyntax(Workspace workspace, LocalisationFile localisationFile, AnalyzerConfigOptions? options)
-            => GenerateFileHeaderSyntax(options)
-                .AddMembers(
-                    SyntaxFactory.NamespaceDeclaration(
-                                     SyntaxFactory.IdentifierName(localisationFile.Namespace))
-                                 .WithMembers(
-                                     SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
-                                         SyntaxFactory.ClassDeclaration(localisationFile.Name)
-                                                      .WithMembers(SyntaxFactory.List(
-                                                          localisationFile.Members
-                                                                          .Select(m => m.Parameters.Length == 0 ? GeneratePropertySyntax(m) : GenerateMethodSyntax(workspace, m))
-                                                                          .Prepend(GeneratePrefixSyntax(localisationFile))
-                                                                          .Append(GenerateGetKeySyntax())))
-                                                      .WithModifiers(
-                                                          new SyntaxTokenList(
-                                                              SyntaxFactory.Token(SyntaxKind.PublicKeyword),
-                                                              SyntaxFactory.Token(SyntaxKind.StaticKeyword))))));
-
-        public static CompilationUnitSyntax GenerateFileHeaderSyntax(AnalyzerConfigOptions? options)
         {
-            if (options == null || !options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.license_header", out string licenseHeader))
-                licenseHeader = string.Empty;
+            CompilationUnitSyntax node =
+                SyntaxFactory.CompilationUnit()
+                             .AddMembers(
+                                 SyntaxFactory.NamespaceDeclaration(
+                                                  SyntaxFactory.IdentifierName(localisationFile.Namespace))
+                                              .WithMembers(
+                                                  SyntaxFactory.SingletonList<MemberDeclarationSyntax>(
+                                                      SyntaxFactory.ClassDeclaration(localisationFile.Name)
+                                                                   .WithMembers(SyntaxFactory.List(
+                                                                       localisationFile.Members
+                                                                                       .Select(m => m.Parameters.Length == 0
+                                                                                           ? GeneratePropertySyntax(m)
+                                                                                           : GenerateMethodSyntax(workspace, m))
+                                                                                       .Prepend(GeneratePrefixSyntax(localisationFile))
+                                                                                       .Append(GenerateGetKeySyntax())))
+                                                                   .WithModifiers(
+                                                                       new SyntaxTokenList(
+                                                                           SyntaxFactory.Token(SyntaxKind.PublicKeyword),
+                                                                           SyntaxFactory.Token(SyntaxKind.StaticKeyword))))));
 
-            string[] lines = licenseHeader.Split(new[] { "\\n" }, StringSplitOptions.RemoveEmptyEntries);
+            // Add a using directive if the file is outside the osu.Framework.Localisation namespace.
+            if (!localisationFile.Namespace.StartsWith(SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE, StringComparison.Ordinal))
+                node = AddUsingDirectiveIfNotExisting(node, SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE);
 
-            var builder = new StringBuilder();
+            string[]? license = options.GetLicenseHeader();
+            if (license == null)
+                return node;
 
-            foreach (var line in lines)
-            {
-                if (!line.StartsWith("//"))
-                    builder.Append("// ");
-                builder.AppendLine(line);
-            }
-
-            // One extra line at the end (before the using declarations).
-            if (lines.Length > 0)
-                builder.AppendLine();
-
-            return SyntaxFactory.ParseCompilationUnit(
-                string.Format(SyntaxTemplates.FILE_HEADER_TEMPLATE,
-                    builder));
+            return node.WithLeadingTrivia(new SyntaxTriviaList(
+                license.SelectMany(s => new[]
+                       {
+                           SyntaxFactory.Comment(s),
+                           SyntaxFactory.EndOfLine(Environment.NewLine)
+                       })
+                       // One leading space before any other content.
+                       .Append(
+                           SyntaxFactory.EndOfLine(Environment.NewLine))));
         }
 
         /// <summary>
@@ -217,8 +216,9 @@ namespace LocalisationAnalyser.Localisation
             if (node.DescendantNodes().OfType<UsingDirectiveSyntax>().Select(convertUsingDirectiveToString).Any(ud => ud == directive))
                 return node;
 
-            return node.AddUsings(SyntaxFactory.UsingDirective(
-                SyntaxFactory.ParseName(directive)));
+            return node.AddUsings(
+                SyntaxFactory.UsingDirective(
+                    SyntaxFactory.ParseName(directive)));
         }
 
         public static string EncodeXmlDoc(string text)

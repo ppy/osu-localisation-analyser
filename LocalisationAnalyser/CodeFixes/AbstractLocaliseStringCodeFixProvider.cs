@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using LocalisationAnalyser.Abstractions.IO;
+using LocalisationAnalyser.Extensions;
 using LocalisationAnalyser.Localisation;
 using LocalisationAnalyser.Utils;
 using Microsoft.CodeAnalysis;
@@ -274,17 +275,17 @@ namespace LocalisationAnalyser.CodeFixes
             if (containingType == null)
                 throw new InvalidOperationException("String is not within a class, struct, or enum type.");
 
-            var projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath!);
-            var localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Split('/')).ToArray());
+            string localisationNamespace = options.GetLocalisationNamespace(SyntaxTemplates.DEFAULT_LOCALISATION_NAMESPACE);
 
             // The class being localised.
-            var incomingClassName = containingType.Identifier.Text;
+            string? incomingClassName = containingType.Identifier.Text;
 
             // The localisation class.
-            var localisationNamespace = $"{project.AssemblyName}.{SyntaxTemplates.PROJECT_RELATIVE_LOCALISATION_PATH.Replace('/', '.')}";
-            var localisationName = GetLocalisationFileName(containingType.Identifier.Text);
-            var localisationFileName = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(localisationName, "cs"));
-            var localisationFile = fileSystem.FileInfo.FromFileName(localisationFileName);
+            string projectDirectory = fileSystem.Path.GetDirectoryName(project.FilePath!);
+            string localisationDirectory = fileSystem.Path.Combine(new[] { projectDirectory }.Concat(localisationNamespace.Split('.')).ToArray());
+            string localisationFileName = BuildLocalisationName(containingType.Identifier.Text);
+            string localisationFilePath = fileSystem.Path.Combine(localisationDirectory, fileSystem.Path.ChangeExtension(localisationFileName, "cs"));
+            IFileInfo localisationFile = fileSystem.FileInfo.FromFileName(localisationFilePath);
 
             if (localisationFile.Exists)
             {
@@ -298,34 +299,32 @@ namespace LocalisationAnalyser.CodeFixes
                 }
             }
 
-            // The prefix namespace defaults to the localisation class' namespace, but can be customised via .editorconfig.
-            var prefixNamespace = localisationNamespace;
-
-            if (options != null && options.TryGetValue($"dotnet_diagnostic.{DiagnosticRules.STRING_CAN_BE_LOCALISED.Id}.prefix_namespace", out var customPrefixNamespace))
-            {
-                if (string.IsNullOrEmpty(customPrefixNamespace))
-                    throw new InvalidOperationException("Custom namespace cannot be empty.");
-
-                prefixNamespace = customPrefixNamespace;
-            }
-
-            return (localisationFile, new LocalisationFile(localisationNamespace, localisationName, GetLocalisationPrefix(prefixNamespace, incomingClassName)));
+            return
+            (
+                localisationFile,
+                new LocalisationFile(
+                    $"{project.AssemblyName}.{localisationNamespace}",
+                    localisationFileName,
+                    BuildResourcePrefix(
+                        options.GetResourceNamespace($"{project.AssemblyName}.{SyntaxTemplates.DEFAULT_LOCALISATION_NAMESPACE}"),
+                        incomingClassName))
+            );
         }
 
         /// <summary>
-        /// Retrieves "prefix" value for the localisation class corresponding to a given class name and namespace.
+        /// Builds the "prefix" value for the localisation class.
         /// </summary>
-        /// <param name="namespace">The namespace in which the localisation class will be placed.</param>
-        /// <param name="className">The name of the original class.</param>
-        /// <returns>The prefix value.</returns>
-        protected virtual string GetLocalisationPrefix(string @namespace, string className) => $"{@namespace}.{className}";
+        /// <param name="namespace">The resource namespace.</param>
+        /// <param name="className">The name of the class being localised.</param>
+        /// <returns>The final prefix value.</returns>
+        protected virtual string BuildResourcePrefix(string @namespace, string className) => $"{@namespace}.{className}";
 
         /// <summary>
-        /// Retrieves the name of the localisation class corresponding to a given class name.
+        /// Builds the name for a localisation class.
         /// </summary>
-        /// <param name="className">The name of the original class.</param>
+        /// <param name="className">The name of the class being localised.</param>
         /// <returns>The name of the localisation class corresponding to <paramref name="className"/>.</returns>
-        protected virtual string GetLocalisationFileName(string className) => className;
+        protected virtual string BuildLocalisationName(string className) => className;
 
         /// <summary>
         /// Whether to add the resultant localisation class file to the workspace.

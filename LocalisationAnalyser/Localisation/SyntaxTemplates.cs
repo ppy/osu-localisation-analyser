@@ -30,7 +30,7 @@ namespace LocalisationAnalyser.Localisation
         /// <summary>
         /// The path to localisations relative to the project directory.
         /// </summary>
-        public const string PROJECT_RELATIVE_LOCALISATION_PATH = "Localisation";
+        public const string DEFAULT_LOCALISATION_NAMESPACE = "Localisation";
 
         /// <summary>
         /// The name of the 'prefix' const used for building the lookup key.
@@ -93,11 +93,6 @@ public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}(
             // Ignore the extra newline here - somehow this format messes up R#.
             $@"
 private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}}"";";
-
-        /// <summary>
-        /// The template for the localisation file header.
-        /// </summary>
-        public static readonly string FILE_HEADER_TEMPLATE = $@"{{0}}using {FRAMEWORK_LOCALISATION_NAMESPACE};";
 
         /// <summary>
         /// The suffix attached to a localisation file name.
