@@ -35,7 +35,14 @@ namespace LocalisationAnalyser.CodeFixes
 
             LocalisationFile updatedFile = currentFile.WithMembers(currentFile.Members.Select(m =>
             {
-                if (m.Name != ((PropertyDeclarationSyntax)member).Identifier.Text)
+                string? identifier = member switch
+                {
+                    PropertyDeclarationSyntax property => property.Identifier.Text,
+                    MethodDeclarationSyntax method => method.Identifier.Text,
+                    _ => null
+                };
+
+                if (m.Name != identifier)
                     return m;
 
                 return FixMember(m);

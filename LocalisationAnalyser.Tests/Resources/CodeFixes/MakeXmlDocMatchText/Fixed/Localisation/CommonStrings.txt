@@ -11,6 +11,11 @@ namespace TestProject.Localisation
         /// </summary>
         public static LocalisableString DoesNotMatch => new TranslatableString(getKey(@"does_not_match"), @"dnm");
 
+        /// <summary>
+        /// "dnm {0}"
+        /// </summary>
+        public static LocalisableString MethodDoesNotMatch(string arg0) => new TranslatableString(getKey(@"method_does_not_match"), @"dnm {0}", arg0);
+
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }
