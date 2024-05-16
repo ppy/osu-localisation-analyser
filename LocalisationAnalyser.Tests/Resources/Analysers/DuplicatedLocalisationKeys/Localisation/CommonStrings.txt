@@ -1,0 +1,36 @@
+using osu.Framework.Localisation;
+
+namespace TestProject.Localisation
+{
+    public static class CommonStrings
+    {
+        private const string prefix = @"TestProject.Localisation.Common";
+
+        /// <summary>
+        /// "first string"
+        /// </summary>
+        public static LocalisableString FirstString => new TranslatableString(getKey([|@"first_string"|]), @"first string");
+
+        /// <summary>
+        /// "second string"
+        /// </summary>
+        public static LocalisableString SecondString => new TranslatableString(getKey([|@"first_string"|]), @"second string");
+
+        /// <summary>
+        /// "third string"
+        /// </summary>
+        public static LocalisableString ThirdString => new TranslatableString(getKey(@"third_string"), @"third string");
+
+        /// <summary>
+        /// "first string with arguments (like {0})"
+        /// </summary>
+        public static LocalisableString FirstStringWithArguments(string test) => new TranslatableString(getKey([|@"first_string"|]), @"first string with arguments (like {0})");
+
+        /// <summary>
+        /// "second string with arguments (like {0})"
+        /// </summary>
+        public static LocalisableString SecondStringWithArguments(string test) => new TranslatableString(getKey(@"second_string_with_args"), @"second string with arguments (like {0})");
+
+        private static string getKey(string key) => $@"{prefix}:{key}";
+    }
+}
