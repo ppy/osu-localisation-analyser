@@ -38,6 +38,15 @@ namespace LocalisationAnalyser
             true,
             "Prevent confusion by matching the XMLDoc and the translation text.");
 
+        public static readonly DiagnosticDescriptor LOCALISATION_KEY_USED_MULTIPLE_TIMES_IN_CLASS = new DiagnosticDescriptor(
+            "OLOC004",
+            "Localisation key used multiple times in class",
+            "The localisation key '{0}' has been used multiple times in this class",
+            "Globalization",
+            DiagnosticSeverity.Warning,
+            true,
+            "Use unique localisation keys for every member in a single class containing localisations.");
+
         public static readonly DiagnosticDescriptor RESOLVED_ATTRIBUTE_NULLABILITY_IS_REDUNDANT = new DiagnosticDescriptor(
             "OSUF001",
             "Nullability should be provided by the type",
