@@ -68,6 +68,16 @@ namespace LocalisationAnalyser.Tools.Php
         }
 
         /// <summary>
+        /// Advances by a number of trivia.
+        /// </summary>
+        /// <param name="length">The number of trivia to advance by.</param>
+        public void Advance(int length)
+        {
+            for (int i = 0; i < length; i++)
+                Advance();
+        }
+
+        /// <summary>
         /// Advances to the next trivia.
         /// </summary>
         /// <exception cref="InvalidOperationException">Thrown when at the end of the PHP content.</exception>
@@ -102,6 +112,19 @@ namespace LocalisationAnalyser.Tools.Php
 
             trivia = content[currentIndex + 1];
             return true;
+        }
+
+        /// <summary>
+        /// Peeks a number of future trivia.
+        /// </summary>
+        /// <param name="length">The length of trivia to peek.</param>
+        /// <returns>The trivia.</returns>
+        public string PeekNext(int length)
+        {
+            int startIndex = Math.Min(content.Length, currentIndex + 1);
+            int endIndex = Math.Min(content.Length, startIndex + length);
+
+            return content.AsSpan()[startIndex..endIndex].ToString();
         }
 
         /// <summary>
