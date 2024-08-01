@@ -27,6 +27,7 @@ namespace LocalisationAnalyser.Tools.Tests
         [InlineData("😊😊", "\"😊😊\"")]
         [InlineData("hello\nworld", "'hello\nworld'")]
         [InlineData("hello\nworld", "\"hello\nworld\"")]
+        [InlineData("hello\\nworld", "'hello\\nworld'")]
         [InlineData("hello\nworld", "\"hello\\nworld\"")]
         public void TestBasicString(string expected, string input)
         {
