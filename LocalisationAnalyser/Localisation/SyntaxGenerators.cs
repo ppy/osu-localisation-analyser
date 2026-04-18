@@ -93,6 +93,19 @@ namespace LocalisationAnalyser.Localisation
                     member.Parameters.Select(param => SyntaxFactory.Argument(
                         GenerateIdentifierName(param.Name)))));
 
+            if (member.QuantityParameterName != null)
+            {
+                return SyntaxFactory.ParseMemberDeclaration(
+                    string.Format(SyntaxTemplates.METHOD_MEMBER_PLURALISABLE_TEMPLATE,
+                        member.Name,
+                        Formatter.Format(paramList, workspace).ToFullString(),
+                        member.Key,
+                        convertToVerbatim(member.EnglishText),
+                        trimParens(Formatter.Format(argList, workspace).ToFullString()), // The entire string minus the parens
+                        EncodeXmlDoc(member.XmlDoc),
+                        member.QuantityParameterName))!;
+            }
+
             return SyntaxFactory.ParseMemberDeclaration(
                 string.Format(SyntaxTemplates.METHOD_MEMBER_TEMPLATE,
                     member.Name,

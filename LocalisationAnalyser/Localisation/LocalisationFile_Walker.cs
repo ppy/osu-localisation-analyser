@@ -233,7 +233,7 @@ namespace LocalisationAnalyser.Localisation
                     return false;
 
                 // Validate creation expression.
-                if (creationSyntax.Type.ToString() != SyntaxTemplates.MEMBER_CONSTRUCTION_TYPE
+                if (creationSyntax.Type.ToString() != SyntaxTemplates.TRANSLATABLE_STRING_TYPE
                     || creationSyntax.ArgumentList == null
                     || creationSyntax.ArgumentList.Arguments.Count < 2)
                 {
