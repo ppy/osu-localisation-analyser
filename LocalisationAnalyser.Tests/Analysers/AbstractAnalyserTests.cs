@@ -26,6 +26,7 @@ namespace LocalisationAnalyser.Tests.Analysers
                 $"{resources_namespace}.ResolvedAttribute.txt",
                 $"{resources_namespace}.LocalisableString.txt",
                 $"{resources_namespace}.TranslatableString.txt",
+                $"{resources_namespace}.PluralisableString.txt",
                 $"{resources_namespace}.SettingSourceAttribute.txt",
             };
 

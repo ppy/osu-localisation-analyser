@@ -16,6 +16,16 @@ namespace TestProject.Localisation
         /// </summary>
         public static LocalisableString MethodDoesNotMatch(string arg0) => new TranslatableString(getKey(@"method_does_not_match"), @"method does not match {0}", arg0);
 
+        /// <summary>
+        /// "does not match pluralisable"
+        /// </summary>
+        public static LocalisableString DoesNotMatchPluralisable(int quantity) => new PluralisableString(new TranslatableString(getKey(@"does_not_match_pluralisable"), @"does not match pluralisable", quantity), quantity, '|');
+
+        /// <summary>
+        /// "does not match pluralisable {0}|does not match pluralisable {1}"
+        /// </summary>
+        public static LocalisableString DoesNotMatchPluralisableWithForms(int quantity) => new PluralisableString(new TranslatableString(getKey(@"does_not_match_pluralisable_1"), @"does not match pluralisable {0}|does not match pluralisable {1}", quantity), quantity, '|');
+
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }

@@ -1,0 +1,13 @@
+using TestProject.Localisation;
+
+namespace Test
+{
+    class Program
+    {
+        static void Main()
+        {
+            int i = 5;
+            string x = ProgramStrings.DuplicateParameters(i);
+        }
+    }
+}

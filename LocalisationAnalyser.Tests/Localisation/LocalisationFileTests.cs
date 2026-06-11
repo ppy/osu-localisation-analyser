@@ -376,6 +376,84 @@ namespace {test_namespace}
             Assert.Equal(localisation.Members[0].EnglishText, localisation.Members[0].XmlDoc);
         }
 
+        [Fact]
+        public async Task MethodIsGeneratedWithQuantityParameter()
+        {
+            const string method_name = "TestMethod";
+            const string key_name = "TestKey";
+            const string english_text = "TestEnglish";
+
+            var quantityParam = new LocalisationParameter("int", "quantity", true);
+
+            await setupLocalisation(new LocalisationMember(method_name, key_name, english_text, quantityParam));
+
+            checkResult($@"
+        /// <summary>
+        /// ""{english_text}""
+        /// </summary>
+        public static LocalisableString {method_name}(int {quantityParam.Name}) => new PluralisableString(new TranslatableString(getKey(@""{key_name}""), @""{english_text}"", {quantityParam.Name}), {quantityParam.Name}, '|');
+");
+        }
+
+        [Fact]
+        public async Task QuantityParameterIsPopulatedFromFile()
+        {
+            const string method_name = "TestMethod";
+            const string key_name = "TestKey";
+            const string english_text = "TestEnglish";
+            const string quantity_param_name = "quantity";
+            const string non_quantity_param_name = "non_quantity";
+
+            var localisation = await setupFile($@"using {SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE};
+
+namespace {test_namespace}
+{{
+    public static class TestClass
+    {{
+        private const string prefix = @""{test_namespace}.{test_class_name}"";
+
+        /// <summary>
+        /// ""{english_text}""
+        /// </summary>
+        public static LocalisableString {method_name}(int {quantity_param_name}, int {non_quantity_param_name}) => new PluralisableString(new TranslatableString(getKey(@""{key_name}""), @""{english_text}"", {non_quantity_param_name}), {quantity_param_name}, '|');
+
+        private static string getKey(string key) => $@""{{prefix}}:{{key}}"";
+    }}
+}}");
+
+            Assert.True(localisation.Members[0].Parameters[0].IsQuantity);
+            Assert.False(localisation.Members[0].Parameters[1].IsQuantity);
+        }
+
+        [Fact]
+        public async Task CustomQuantitySeparator()
+        {
+            const string method_name = "TestMethod";
+            const string key_name = "TestKey";
+            const string english_text = "TestEnglish";
+            const string quantity_param_name = "quantity";
+            const char quantity_separator = '?';
+
+            var localisation = await setupFile($@"using {SyntaxTemplates.FRAMEWORK_LOCALISATION_NAMESPACE};
+
+namespace {test_namespace}
+{{
+    public static class TestClass
+    {{
+        private const string prefix = @""{test_namespace}.{test_class_name}"";
+
+        /// <summary>
+        /// ""{english_text}""
+        /// </summary>
+        public static LocalisableString {method_name}(int {quantity_param_name}) => new PluralisableString(new TranslatableString(getKey(@""{key_name}""), @""{english_text}"", {quantity_param_name}), {quantity_param_name}, '{quantity_separator}');
+
+        private static string getKey(string key) => $@""{{prefix}}:{{key}}"";
+    }}
+}}");
+
+            Assert.Equal(quantity_separator, localisation.Members[0].QuantitySeparator);
+        }
+
         private async Task<LocalisationFile> setupFile(string contents)
         {
             mockFs.AddFile(test_file_name, contents);

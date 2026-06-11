@@ -1,0 +1,16 @@
+using osu.Framework.Localisation;
+
+namespace TestProject.Localisation
+{
+    public static class ProgramStrings
+    {
+        private const string prefix = @"TestProject.Localisation.Program";
+
+        /// <summary>
+        /// "duplicate parameters: {0}{0}{0}{0}"
+        /// </summary>
+        public static LocalisableString DuplicateParameters(int i) => new TranslatableString(getKey(@"duplicate_parameters"), @"duplicate parameters: {0}{0}{0}{0}", i);
+
+        private static string getKey(string key) => $@"{prefix}:{key}";
+    }
+}

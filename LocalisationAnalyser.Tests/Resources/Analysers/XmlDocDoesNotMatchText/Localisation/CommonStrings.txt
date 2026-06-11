@@ -36,6 +36,26 @@ namespace TestProject.Localisation
         /// </summary>
 |]        public static LocalisableString MethodDoesNotMatch(string arg0) => new TranslatableString(getKey(@"method_does_not_match"), @"dnm {0}", arg0);
 
+        /// <summary>
+        /// "matches pluralisable"
+        /// </summary>
+        public static LocalisableString MatchesPluralisable(int quantity) => new PluralisableString(new TranslatableString(getKey(@"matches_pluralisable"), @"matches pluralisable"), quantity, '|');
+
+        /// <summary>
+        /// "matches pluralisable {0}|matches pluralisable {1}"
+        /// </summary>
+        public static LocalisableString MatchesPluralisableWithForms(int quantity) => new PluralisableString(new TranslatableString(getKey(@"matches_pluralisable_1"), @"matches pluralisable {0}|matches pluralisable {1}", quantity), quantity, '|');
+
+        ///[| <summary>
+        /// "does not match pluralisable"
+        /// </summary>
+|]        public static LocalisableString DoesNotMatchPluralisable(int quantity) => new PluralisableString(new TranslatableString(getKey(@"does_not_match_pluralisable"), @"dnm pluralisable"), quantity, '|');
+
+        ///[| <summary>
+        /// "does not match pluralisable {0}|does not match pluralisable {1}"
+        /// </summary>
+|]        public static LocalisableString DoesNotMatchPluralisableWithForms(int quantity) => new PluralisableString(new TranslatableString(getKey(@"does_not_match_pluralisable_1"), @"dnm pluralisable {0}|dnm pluralisable {1}", quantity), quantity, '|');
+
         private static string getKey(string key) => $@"{prefix}:{key}";
     }
 }
