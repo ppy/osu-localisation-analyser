@@ -13,24 +13,41 @@ namespace LocalisationAnalyser.Localisation
         /// <summary>
         /// The type.
         /// </summary>
-        public readonly string Type;
+        public string Type { get; init; }
 
         /// <summary>
         /// The name.
         /// </summary>
-        public readonly string Name;
+        public string Name { get; init; }
 
         /// <summary>
         /// Whether this parameter represents a quantity.
         /// Controls whether the localisation member is a pluralisable string or not.
         /// </summary>
-        public readonly bool IsQuantity;
+        public bool IsQuantity { get; init; }
 
+        /// <summary>
+        /// Creates a new <see cref="LocalisationParameter"/>.
+        /// </summary>
+        /// <param name="type">The parameter type.</param>
+        /// <param name="name">The parameter name.</param>
+        /// <param name="isQuantity">For pluralisable strings, whether this parameter represents the quantity.</param>
         public LocalisationParameter(string type, string name, bool isQuantity = false)
         {
             Type = type;
             Name = name;
             IsQuantity = isQuantity;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="LocalisationParameter"/>, using another as a reference.
+        /// </summary>
+        /// <param name="other">The other <see cref="LocalisationParameter"/>.</param>
+        public LocalisationParameter(LocalisationParameter other)
+        {
+            Type = other.Type;
+            Name = other.Name;
+            IsQuantity = other.IsQuantity;
         }
 
         public bool Equals(LocalisationParameter? other)

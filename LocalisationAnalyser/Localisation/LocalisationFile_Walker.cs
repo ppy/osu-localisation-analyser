@@ -174,25 +174,28 @@ namespace LocalisationAnalyser.Localisation
 
             private void analyseNode(MemberDeclarationSyntax node)
             {
-                if (!tryAnalyseMemberDefinition(node, out var name, out var parameters, out var body))
+                if (!tryAnalyseMemberDefinition(node, out string name, out var parameters, out ArrowExpressionClauseSyntax? body, out char quantitySeparator))
                     return;
 
-                if (!tryAnalyseMemberBody(body!, out var key, out var englishText))
+                if (body == null)
                     return;
 
-                Members.Add(new LocalisationMember(name, key, englishText, currentXmlDoc, parameters));
+                if (!tryAnalyseMemberBody(body, out string key, out string englishText))
+                    return;
+
+                Members.Add(new LocalisationMember(name, key, englishText, currentXmlDoc, parameters) { QuantitySeparator = quantitySeparator });
             }
 
             private bool tryAnalyseMemberDefinition(MemberDeclarationSyntax member, out string name, out LocalisationParameter[] parameters,
-                                                    out ArrowExpressionClauseSyntax? body)
+                                                    out ArrowExpressionClauseSyntax? body, out char quantitySeparator)
             {
                 name = string.Empty;
                 parameters = Array.Empty<LocalisationParameter>();
                 body = null;
+                quantitySeparator = '|';
 
                 TypeSyntax returnType;
 
-                // Deconstruct member.
                 if (member is PropertyDeclarationSyntax propertyMember)
                 {
                     returnType = propertyMember.Type;
@@ -205,63 +208,99 @@ namespace LocalisationAnalyser.Localisation
                     name = methodMember.Identifier.ValueText;
                     body = methodMember.ExpressionBody;
 
+                    if (body.Expression is not ObjectCreationExpressionSyntax creationSyntax)
+                        return false;
+
+                    string quantityParameterName = string.Empty;
+
+                    if (creationSyntax.Type.ToString() == SyntaxTemplates.PLURALISABLE_STRING_TYPE)
+                    {
+                        if (creationSyntax.ArgumentList == null
+                            || creationSyntax.ArgumentList.Arguments.Count < 3
+                            || creationSyntax.ArgumentList.Arguments[1].Expression is not IdentifierNameSyntax quantityIdentifier
+                            || creationSyntax.ArgumentList.Arguments[2].Expression is not LiteralExpressionSyntax quantityLiteral
+                            || quantityLiteral.Kind() != SyntaxKind.CharacterLiteralExpression)
+                        {
+                            return false;
+                        }
+
+                        quantityParameterName = quantityIdentifier.Identifier.ValueText;
+                        quantitySeparator = quantityLiteral.Token.ValueText[0];
+                    }
+
                     parameters = methodMember.ParameterList.Parameters
                                              .Where(p => p.Type != null)
-                                             .Select(p => new LocalisationParameter(p.Type!.ToString(), p.Identifier.ValueText))
+                                             .Select(p => new LocalisationParameter(p.Type!.ToString(), p.Identifier.ValueText, p.Identifier.ValueText == quantityParameterName))
                                              .ToArray();
                 }
                 else
                     return false;
 
                 // Validate return type and member definition.
-                if (returnType.ToString() != SyntaxTemplates.MEMBER_RETURN_TYPE
-                    || body == null)
-                {
+                if (returnType.ToString() != SyntaxTemplates.MEMBER_RETURN_TYPE || body == null)
                     return false;
-                }
 
                 return true;
             }
 
-            private bool tryAnalyseMemberBody(ArrowExpressionClauseSyntax body, out string key, out string englishText)
+            private bool tryAnalyseMemberBody(SyntaxNode expression, out string key, out string englishText)
             {
+                if (expression is ArrowExpressionClauseSyntax arrowExpression)
+                    return tryAnalyseMemberBody(arrowExpression.Expression, out key, out englishText);
+
                 key = string.Empty;
                 englishText = string.Empty;
 
                 // Validate body.
-                if (body.Expression is not ObjectCreationExpressionSyntax creationSyntax)
+                if (expression is not ObjectCreationExpressionSyntax creationSyntax)
                     return false;
 
-                // Validate creation expression.
-                if (creationSyntax.Type.ToString() != SyntaxTemplates.TRANSLATABLE_STRING_TYPE
-                    || creationSyntax.ArgumentList == null
-                    || creationSyntax.ArgumentList.Arguments.Count < 2)
+                switch (creationSyntax.Type.ToString())
                 {
-                    return false;
+                    case SyntaxTemplates.PLURALISABLE_STRING_TYPE:
+                        // Validate creation expression.
+                        if (creationSyntax.ArgumentList == null
+                            || creationSyntax.ArgumentList.Arguments.Count < 1
+                            || creationSyntax.ArgumentList.Arguments[0].Expression is not ObjectCreationExpressionSyntax innerCreationSyntax)
+                        {
+                            return false;
+                        }
+
+                        return tryAnalyseMemberBody(innerCreationSyntax, out key, out englishText);
+
+                    case SyntaxTemplates.TRANSLATABLE_STRING_TYPE:
+                        // Validate creation expression.
+                        if (creationSyntax.ArgumentList == null
+                            || creationSyntax.ArgumentList.Arguments.Count < 2)
+                        {
+                            return false;
+                        }
+
+                        // Validate key argument.
+                        if (creationSyntax.ArgumentList.Arguments[0].Expression is not InvocationExpressionSyntax getKeyInvocation
+                            || getKeyInvocation.Expression.ToString() != SyntaxTemplates.GET_KEY_METHOD_NAME
+                            || getKeyInvocation.ArgumentList.Arguments.Count == 0
+                            || getKeyInvocation.ArgumentList.Arguments[0].Expression is not LiteralExpressionSyntax keyLiteral
+                            || keyLiteral.Kind() != SyntaxKind.StringLiteralExpression)
+                        {
+                            return false;
+                        }
+
+                        // Validate english literal argument.
+                        if (creationSyntax.ArgumentList.Arguments[1].Expression is not LiteralExpressionSyntax englishTextLiteral
+                            || (englishTextLiteral.Kind() != SyntaxKind.StringLiteralExpression
+                                && englishTextLiteral.Kind() != SyntaxKind.InterpolatedStringExpression))
+                        {
+                            return false;
+                        }
+
+                        key = keyLiteral.Token.ValueText;
+                        englishText = englishTextLiteral.Token.ValueText;
+
+                        return true;
                 }
 
-                // Validate key argument.
-                if (creationSyntax.ArgumentList.Arguments[0].Expression is not InvocationExpressionSyntax getKeyInvocation
-                    || getKeyInvocation.Expression.ToString() != SyntaxTemplates.GET_KEY_METHOD_NAME
-                    || getKeyInvocation.ArgumentList.Arguments.Count == 0
-                    || getKeyInvocation.ArgumentList.Arguments[0].Expression is not LiteralExpressionSyntax keyLiteral
-                    || keyLiteral.Kind() != SyntaxKind.StringLiteralExpression)
-                {
-                    return false;
-                }
-
-                // Validate english literal argument.
-                if (creationSyntax.ArgumentList.Arguments[1].Expression is not LiteralExpressionSyntax englishTextLiteral
-                    || (englishTextLiteral.Kind() != SyntaxKind.StringLiteralExpression
-                        && englishTextLiteral.Kind() != SyntaxKind.InterpolatedStringExpression))
-                {
-                    return false;
-                }
-
-                key = keyLiteral.Token.ValueText;
-                englishText = englishTextLiteral.Token.ValueText;
-
-                return true;
+                return false;
             }
         }
     }

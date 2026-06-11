@@ -34,6 +34,6 @@ namespace LocalisationAnalyser.CodeFixes
         }
 
         protected override LocalisationMember FixMember(LocalisationMember member)
-            => new LocalisationMember(member.Name, member.Key, member.XmlDoc, member.XmlDoc, member.Parameters.ToArray());
+            => new LocalisationMember(member) { EnglishText = member.XmlDoc };
     }
 }

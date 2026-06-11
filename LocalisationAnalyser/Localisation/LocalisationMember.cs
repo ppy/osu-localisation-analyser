@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace LocalisationAnalyser.Localisation
 {
@@ -14,17 +15,17 @@ namespace LocalisationAnalyser.Localisation
         /// <summary>
         /// The name.
         /// </summary>
-        public readonly string Name;
+        public string Name { get; init; }
 
         /// <summary>
         /// The key to use for lookups.
         /// </summary>
-        public readonly string Key;
+        public string Key { get; init; }
 
         /// <summary>
         /// The english default text. This is also used for the XMLDoc.
         /// </summary>
-        public readonly string EnglishText;
+        public string EnglishText { get; init; }
 
         /// <summary>
         /// The XMLDoc for this member. Usually matches <see cref="EnglishText"/>.
@@ -32,17 +33,17 @@ namespace LocalisationAnalyser.Localisation
         /// <remarks>
         /// This value is not XML-encoded.
         /// </remarks>
-        public readonly string XmlDoc;
+        public string XmlDoc { get; init; }
 
         /// <summary>
         /// Any parameters. If this is non-empty, the <see cref="LocalisationMember"/> represents a method.
         /// </summary>
-        public readonly ImmutableArray<LocalisationParameter> Parameters;
+        public ImmutableArray<LocalisationParameter> Parameters { get; init; }
 
         /// <summary>
         /// When a quantity parameter is specified, the character that separates the pluralisable forms.
         /// </summary>
-        public char QuantitySeparator { get; set; } = '|';
+        public char QuantitySeparator { get; init; } = '|';
 
         /// <summary>
         /// Creates a new <see cref="LocalisationMember"/>.
@@ -74,12 +75,31 @@ namespace LocalisationAnalyser.Localisation
             Parameters = parameters.ToImmutableArray();
         }
 
+        /// <summary>
+        /// Creates a new <see cref="LocalisationMember"/>, using another as a reference.
+        /// </summary>
+        /// <param name="other">The other <see cref="LocalisationMember"/>.</param>
+        public LocalisationMember(LocalisationMember other)
+        {
+            Name = other.Name;
+            Key = other.Key;
+            EnglishText = other.EnglishText;
+            XmlDoc = other.XmlDoc;
+            Parameters = other.Parameters.Select(p => new LocalisationParameter(p)).ToImmutableArray();
+            QuantitySeparator = other.QuantitySeparator;
+        }
+
         public bool Equals(LocalisationMember? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            return Name == other.Name && Key == other.Key && EnglishText == other.EnglishText && XmlDoc == other.XmlDoc && Parameters.Equals(other.Parameters);
+            return Name == other.Name
+                   && Key == other.Key
+                   && EnglishText == other.EnglishText
+                   && XmlDoc == other.XmlDoc
+                   && Parameters.Equals(other.Parameters)
+                   && QuantitySeparator == other.QuantitySeparator;
         }
 
         public override bool Equals(object? obj)
@@ -100,6 +120,7 @@ namespace LocalisationAnalyser.Localisation
                 hashCode = (hashCode * 397) ^ EnglishText.GetHashCode();
                 hashCode = (hashCode * 397) ^ XmlDoc.GetHashCode();
                 hashCode = (hashCode * 397) ^ Parameters.GetHashCode();
+                hashCode = (hashCode * 397) ^ QuantitySeparator.GetHashCode();
                 return hashCode;
             }
         }
