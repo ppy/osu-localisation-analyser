@@ -43,7 +43,7 @@ namespace LocalisationAnalyser.Localisation
         /// <summary>
         /// When a quantity parameter is specified, the character that separates the pluralisable forms.
         /// </summary>
-        public char QuantitySeparator { get; init; } = '|';
+        public char QuantitySeparator { get; init; } = SyntaxTemplates.DEFAULT_QUANTITY_SEPARATOR;
 
         /// <summary>
         /// Creates a new <see cref="LocalisationMember"/>.

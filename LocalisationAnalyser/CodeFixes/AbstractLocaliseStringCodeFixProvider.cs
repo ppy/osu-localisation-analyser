@@ -89,11 +89,11 @@ namespace LocalisationAnalyser.CodeFixes
             var paramNames = new List<LocalisationParameter>();
             var paramValues = new List<ExpressionSyntax>();
 
-            bool isPluralisable = literal.Token.ValueText.Contains('|');
+            bool isPluralisable = literal.Token.ValueText.Contains(SyntaxTemplates.DEFAULT_QUANTITY_SEPARATOR);
 
             if (isPluralisable)
             {
-                paramNames.Insert(0, new LocalisationParameter("int", "quantity", true));
+                paramNames.Insert(0, new LocalisationParameter("int", SyntaxTemplates.DEFAULT_QUANTITY_PARAM_NAME, true));
                 paramValues.Insert(0, SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)));
             }
 
@@ -190,7 +190,7 @@ namespace LocalisationAnalyser.CodeFixes
                 }
             }
 
-            bool isPluralisable = interpolated.Contents.ToString().Contains('|');
+            bool isPluralisable = interpolated.Contents.ToString().Contains(SyntaxTemplates.DEFAULT_QUANTITY_SEPARATOR);
 
             if (isPluralisable)
             {
@@ -199,7 +199,7 @@ namespace LocalisationAnalyser.CodeFixes
                 if (possibleQuantityIndex == -1)
                 {
                     // There is no existing parameter we can use as a quantity, so we must add one ourselves.
-                    paramNames.Insert(0, new LocalisationParameter("int", "quantity", true));
+                    paramNames.Insert(0, new LocalisationParameter("int", SyntaxTemplates.DEFAULT_QUANTITY_PARAM_NAME, true));
                     paramValues.Insert(0, SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)));
 
                     // And after doing so, move all other parameters along one index.

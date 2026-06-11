@@ -125,5 +125,15 @@ private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}
         /// The common localisation class name.
         /// </summary>
         public const string COMMON_STRINGS_CLASS_NAME = "Common";
+
+        /// <summary>
+        /// The quantity separator for pluralisable strings.
+        /// </summary>
+        public const char DEFAULT_QUANTITY_SEPARATOR = '|';
+
+        /// <summary>
+        /// The quantity parameter name for pluralisable strings, when an existing parameter cannot be inferred.
+        /// </summary>
+        public const string DEFAULT_QUANTITY_PARAM_NAME = "quantity";
     }
 }

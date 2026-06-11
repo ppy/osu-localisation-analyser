@@ -192,7 +192,7 @@ namespace LocalisationAnalyser.Localisation
                 name = string.Empty;
                 parameters = Array.Empty<LocalisationParameter>();
                 body = null;
-                quantitySeparator = '|';
+                quantitySeparator = SyntaxTemplates.DEFAULT_QUANTITY_SEPARATOR;
 
                 TypeSyntax returnType;
 

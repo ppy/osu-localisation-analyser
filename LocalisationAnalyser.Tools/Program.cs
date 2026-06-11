@@ -299,7 +299,7 @@ namespace LocalisationAnalyser.Tools
                                 stringValue = $"{stringValue[..match.Index]}{{{formatIndices[j]}}}{stringValue[(match.Index + match.Length)..]}";
                             }
 
-                            if (stringValue.Contains('|'))
+                            if (stringValue.Contains(SyntaxTemplates.DEFAULT_QUANTITY_SEPARATOR))
                             {
                                 // Translation AND pluralisation
                                 switch (formatParamNames.Count)
@@ -309,7 +309,7 @@ namespace LocalisationAnalyser.Tools
                                             generateMemberNameFromKey(fullKey),
                                             fullKey,
                                             stringValue,
-                                            new LocalisationParameter("int", "quantity", true));
+                                            new LocalisationParameter("int", SyntaxTemplates.DEFAULT_QUANTITY_PARAM_NAME, true));
 
                                         break;
 
