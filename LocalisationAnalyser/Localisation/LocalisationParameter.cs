@@ -21,14 +21,16 @@ namespace LocalisationAnalyser.Localisation
         public readonly string Name;
 
         /// <summary>
-        /// Creates a new <see cref="LocalisationParameter"/>.
+        /// Whether this parameter represents a quantity.
+        /// Controls whether the localisation member is a pluralisable string or not.
         /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="name">The name.</param>
-        public LocalisationParameter(string type, string name)
+        public readonly bool IsQuantity;
+
+        public LocalisationParameter(string type, string name, bool isQuantity = false)
         {
             Type = type;
             Name = name;
+            IsQuantity = isQuantity;
         }
 
         public bool Equals(LocalisationParameter? other)
@@ -36,7 +38,7 @@ namespace LocalisationAnalyser.Localisation
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            return Type == other.Type && Name == other.Name;
+            return Type == other.Type && Name == other.Name && IsQuantity == other.IsQuantity;
         }
 
         public override bool Equals(object? obj)
@@ -52,7 +54,7 @@ namespace LocalisationAnalyser.Localisation
         {
             unchecked
             {
-                return (Type.GetHashCode() * 397) ^ Name.GetHashCode();
+                return (Type.GetHashCode() * 397) ^ (Name.GetHashCode() * 397) ^ IsQuantity.GetHashCode();
             }
         }
     }

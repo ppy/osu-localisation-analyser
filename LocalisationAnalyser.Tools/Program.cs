@@ -204,12 +204,7 @@ namespace LocalisationAnalyser.Tools
 
             // Convert keys to lower-case.
             for (int i = 0; i < members.Length; i++)
-            {
-                members[i] = new LocalisationMember(members[i].Name, members[i].Key.ToLowerInvariant(), members[i].EnglishText, members[i].Parameters.ToArray())
-                {
-                    QuantityParameterName = members[i].QuantityParameterName
-                };
-            }
+                members[i] = new LocalisationMember(members[i].Name, members[i].Key.ToLowerInvariant(), members[i].EnglishText, members[i].Parameters.ToArray());
 
             // Remove duplicates.
             members = members.Distinct(new LocalisationMemberKeyEqualityComparer()).ToArray();
@@ -314,10 +309,7 @@ namespace LocalisationAnalyser.Tools
                                             generateMemberNameFromKey(fullKey),
                                             fullKey,
                                             stringValue,
-                                            new LocalisationParameter("int", "quantity"))
-                                        {
-                                            QuantityParameterName = "quantity"
-                                        };
+                                            new LocalisationParameter("int", "quantity", true));
 
                                         break;
 
@@ -326,10 +318,7 @@ namespace LocalisationAnalyser.Tools
                                             generateMemberNameFromKey(fullKey),
                                             fullKey,
                                             stringValue,
-                                            new LocalisationParameter("int", formatParamNames[0].Camelize()))
-                                        {
-                                            QuantityParameterName = formatParamNames[0].Camelize()
-                                        };
+                                            new LocalisationParameter("int", formatParamNames[0].Camelize(), true));
 
                                         break;
 

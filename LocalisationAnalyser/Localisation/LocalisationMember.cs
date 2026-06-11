@@ -34,8 +34,6 @@ namespace LocalisationAnalyser.Localisation
         /// </remarks>
         public readonly string XmlDoc;
 
-        public string? QuantityParameterName { get; set; }
-
         /// <summary>
         /// Any parameters. If this is non-empty, the <see cref="LocalisationMember"/> represents a method.
         /// </summary>
