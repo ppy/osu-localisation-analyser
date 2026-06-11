@@ -86,12 +86,23 @@ namespace LocalisationAnalyser.CodeFixes
 
         private async Task<Solution> localiseLiteralAsync(Document document, LiteralExpressionSyntax literal, bool preview, CancellationToken cancellationToken, bool useExisting)
         {
+            var paramNames = new List<LocalisationParameter>();
+            var paramValues = new List<ExpressionSyntax>();
+
+            bool isPluralisable = literal.Token.ValueText.Contains(SyntaxTemplates.DEFAULT_QUANTITY_SEPARATOR);
+
+            if (isPluralisable)
+            {
+                paramNames.Insert(0, new LocalisationParameter("int", SyntaxTemplates.DEFAULT_QUANTITY_PARAM_NAME, true));
+                paramValues.Insert(0, SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)));
+            }
+
             return await addMember(
                 document,
                 literal,
                 literal.Token.ValueText,
-                Enumerable.Empty<LocalisationParameter>(),
-                Enumerable.Empty<ExpressionSyntax>(),
+                paramNames,
+                paramValues,
                 preview,
                 cancellationToken,
                 useExisting);
@@ -99,12 +110,12 @@ namespace LocalisationAnalyser.CodeFixes
 
         private async Task<Solution> localiseInterpolatedStringAsync(Document document, InterpolatedStringExpressionSyntax interpolated, bool preview, CancellationToken cancellationToken)
         {
-            var formatString = new StringBuilder();
-            var paramNames = new List<string>();
+            var stringParts = new List<InterpolatedStringPart>();
+            var paramNames = new List<LocalisationParameter>();
             var paramValues = new List<ExpressionSyntax>();
-            var paramTypes = new List<string>();
 
-            int argCount = 0;
+            var namedArgLocations = new Dictionary<string, int>();
+            int totalArgCount = 0;
             int anonymousArgCount = 0;
 
             var semanticModel = await document.GetSemanticModelAsync(cancellationToken);
@@ -116,17 +127,31 @@ namespace LocalisationAnalyser.CodeFixes
                 switch (part)
                 {
                     case InterpolatedStringTextSyntax str:
-                        formatString.Append(str.TextToken.ValueText);
+                        stringParts.Add(new InterpolatedStringPart(str.TextToken.ValueText));
                         break;
 
                     case InterpolationSyntax interpolation:
-                        formatString.Append($"{{{argCount++}}}");
+                        if (interpolation.Expression is IdentifierNameSyntax identifierName)
+                        {
+                            // Handleing for pluralisable strings, which have multiple parameters with the same name.
+                            if (namedArgLocations.TryGetValue(identifierName.Identifier.ValueText, out int existingLocation))
+                            {
+                                stringParts.Add(new InterpolatedStringPart(existingLocation));
+                                break;
+                            }
+
+                            int newLocation = totalArgCount++;
+                            namedArgLocations.Add(identifierName.Identifier.ValueText, newLocation);
+                            stringParts.Add(new InterpolatedStringPart(newLocation));
+                        }
+                        else
+                            stringParts.Add(new InterpolatedStringPart(totalArgCount++));
 
                         var typeInfo = semanticModel.GetTypeInfo(interpolation.Expression, cancellationToken).Type;
                         if (typeInfo == null)
                             throw new InvalidOperationException("Couldn't determine the type of an interpolation expression.");
 
-                        paramTypes.Add(typeInfo.SpecialType switch
+                        string paramType = typeInfo.SpecialType switch
                         {
                             SpecialType.System_Object => "object",
                             SpecialType.System_Boolean => "bool",
@@ -144,17 +169,17 @@ namespace LocalisationAnalyser.CodeFixes
                             SpecialType.System_Double => "double",
                             SpecialType.System_String => "string",
                             _ => typeInfo.Name
-                        });
+                        };
 
                         if (interpolation.Expression is IdentifierNameSyntax identifier)
                         {
                             // Simple identifier which can be used for both the name and value.
-                            paramNames.Add(identifier.Identifier.ValueText);
+                            paramNames.Add(new LocalisationParameter(paramType, identifier.Identifier.ValueText));
                             paramValues.Add(identifier);
                             break;
                         }
 
-                        paramNames.Add($"arg{anonymousArgCount++}");
+                        paramNames.Add(new LocalisationParameter(paramType, $"arg{anonymousArgCount++}"));
 
                         if (interpolation.Expression is ParenthesizedExpressionSyntax parens)
                             paramValues.Add(parens.Expression);
@@ -165,10 +190,43 @@ namespace LocalisationAnalyser.CodeFixes
                 }
             }
 
+            bool isPluralisable = interpolated.Contents.ToString().Contains(SyntaxTemplates.DEFAULT_QUANTITY_SEPARATOR);
+
+            if (isPluralisable)
+            {
+                int possibleQuantityIndex = paramNames.FindIndex(p => p.Type == "int");
+
+                if (possibleQuantityIndex == -1)
+                {
+                    // There is no existing parameter we can use as a quantity, so we must add one ourselves.
+                    paramNames.Insert(0, new LocalisationParameter("int", SyntaxTemplates.DEFAULT_QUANTITY_PARAM_NAME, true));
+                    paramValues.Insert(0, SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)));
+
+                    // And after doing so, move all other parameters along one index.
+                    for (int i = 0; i < stringParts.Count; i++)
+                    {
+                        if (stringParts[i].Index != null)
+                            stringParts[i] = new InterpolatedStringPart(stringParts[i].Index!.Value + 1);
+                    }
+                }
+                else
+                {
+                    // Re-use the existing parameter, but now mark it as also being the quantity.
+                    paramNames[possibleQuantityIndex] = new LocalisationParameter(paramNames[possibleQuantityIndex])
+                    {
+                        IsQuantity = true
+                    };
+                }
+            }
+
+            var formatString = new StringBuilder();
+            foreach (var part in stringParts)
+                formatString.Append(part.Index != null ? $"{{{part.Index}}}" : part.Text);
+
             return await addMember(document,
                 interpolated,
                 formatString.ToString(),
-                paramNames.Select((name, i) => new LocalisationParameter(paramTypes[i], name)),
+                paramNames,
                 paramValues,
                 preview,
                 cancellationToken,
@@ -396,6 +454,22 @@ namespace LocalisationAnalyser.CodeFixes
             }
 
             return keyBuilder.ToString();
+        }
+
+        private class InterpolatedStringPart
+        {
+            public readonly int? Index;
+            public readonly string? Text;
+
+            public InterpolatedStringPart(int index)
+            {
+                Index = index;
+            }
+
+            public InterpolatedStringPart(string text)
+            {
+                Text = text;
+            }
         }
     }
 }

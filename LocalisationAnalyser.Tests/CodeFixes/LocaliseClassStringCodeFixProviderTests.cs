@@ -15,6 +15,7 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         [InlineData("BasicString")]
         [InlineData("VerbatimString")]
         [InlineData("InterpolatedString")]
+        [InlineData("InterpolatedStringWithDuplicateParameters")]
         [InlineData("InterpolatedStringWithQuotes")]
         [InlineData("CustomPrefixNamespace")]
         [InlineData("CustomResourceNamespace")]
@@ -26,6 +27,10 @@ namespace LocalisationAnalyser.Tests.CodeFixes
         [InlineData("StringWithApostrophe")]
         [InlineData("SequentialCapitals")]
         [InlineData("SettingSourceAttribute")]
+        [InlineData("PluralisableString")]
+        [InlineData("PluralisableStringWithMultipleParameters")]
+        [InlineData("PluralisableStringWithNonQuantityParameters")]
+        [InlineData("PluralisableStringWithoutParameters")]
         public async Task Check(string name) => await RunTest(name);
 
         [Theory]

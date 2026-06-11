@@ -1,0 +1,11 @@
+// Minimal template code for PluralisableString to be used in analysis.
+
+namespace osu.Framework.Localisation
+{
+    public class PluralisableString
+    {
+        public PluralisableString(LocalisableString str, int quantity, char separator)
+        {
+        }
+    }
+}

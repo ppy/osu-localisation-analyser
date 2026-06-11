@@ -1,0 +1,16 @@
+using osu.Framework.Localisation;
+
+namespace TestProject.Localisation
+{
+    public static class ProgramStrings
+    {
+        private const string prefix = @"TestProject.Localisation.Program";
+
+        /// <summary>
+        /// "a{0}|b{0}"
+        /// </summary>
+        public static LocalisableString AB(int quantityParam) => new PluralisableString(new TranslatableString(getKey(@"ab"), @"a{0}|b{0}", quantityParam), quantityParam, '|');
+
+        private static string getKey(string key) => $@"{prefix}:{key}";
+    }
+}

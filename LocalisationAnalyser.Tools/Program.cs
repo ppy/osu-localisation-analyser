@@ -202,9 +202,11 @@ namespace LocalisationAnalyser.Tools
                 await printWarning($"  -> WARNING: Skipping duplicate key \"{g.Key}\" ({string.Join(", ", g)}) in {file}.");
             }
 
-            // Convert keys to lower-case and remove duplicates.
+            // Convert keys to lower-case.
             for (int i = 0; i < members.Length; i++)
                 members[i] = new LocalisationMember(members[i].Name, members[i].Key.ToLowerInvariant(), members[i].EnglishText, members[i].Parameters.ToArray());
+
+            // Remove duplicates.
             members = members.Distinct(new LocalisationMemberKeyEqualityComparer()).ToArray();
 
             // Only create the .cs file for the english localisation.
@@ -297,11 +299,49 @@ namespace LocalisationAnalyser.Tools
                                 stringValue = $"{stringValue[..match.Index]}{{{formatIndices[j]}}}{stringValue[(match.Index + match.Length)..]}";
                             }
 
-                            yield return new LocalisationMember(
-                                generateMemberNameFromKey(fullKey),
-                                fullKey,
-                                stringValue,
-                                formatParamNames.Select(p => new LocalisationParameter("LocalisableString", p.Camelize())).ToArray());
+                            if (stringValue.Contains(SyntaxTemplates.DEFAULT_QUANTITY_SEPARATOR))
+                            {
+                                // Translation AND pluralisation
+                                switch (formatParamNames.Count)
+                                {
+                                    case 0:
+                                        yield return new LocalisationMember(
+                                            generateMemberNameFromKey(fullKey),
+                                            fullKey,
+                                            stringValue,
+                                            new LocalisationParameter("int", SyntaxTemplates.DEFAULT_QUANTITY_PARAM_NAME, true));
+
+                                        break;
+
+                                    case 1:
+                                        yield return new LocalisationMember(
+                                            generateMemberNameFromKey(fullKey),
+                                            fullKey,
+                                            stringValue,
+                                            new LocalisationParameter("int", formatParamNames[0].Camelize(), true));
+
+                                        break;
+
+                                    default:
+                                        // With 2 or more parameters, we can't cleanly intercept a quantity parameter, so just give the original translatable string.
+                                        yield return new LocalisationMember(
+                                            generateMemberNameFromKey(fullKey),
+                                            fullKey,
+                                            stringValue,
+                                            formatParamNames.Select(p => new LocalisationParameter("LocalisableString", p.Camelize())).ToArray());
+
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                // Simple, just a translation.
+                                yield return new LocalisationMember(
+                                    generateMemberNameFromKey(fullKey),
+                                    fullKey,
+                                    stringValue,
+                                    formatParamNames.Select(p => new LocalisationParameter("LocalisableString", p.Camelize())).ToArray());
+                            }
 
                             break;
                     }

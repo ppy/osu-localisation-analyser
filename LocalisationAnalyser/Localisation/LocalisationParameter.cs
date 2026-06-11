@@ -13,22 +13,41 @@ namespace LocalisationAnalyser.Localisation
         /// <summary>
         /// The type.
         /// </summary>
-        public readonly string Type;
+        public string Type { get; init; }
 
         /// <summary>
         /// The name.
         /// </summary>
-        public readonly string Name;
+        public string Name { get; init; }
+
+        /// <summary>
+        /// Whether this parameter represents a quantity.
+        /// Controls whether the localisation member is a pluralisable string or not.
+        /// </summary>
+        public bool IsQuantity { get; init; }
 
         /// <summary>
         /// Creates a new <see cref="LocalisationParameter"/>.
         /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="name">The name.</param>
-        public LocalisationParameter(string type, string name)
+        /// <param name="type">The parameter type.</param>
+        /// <param name="name">The parameter name.</param>
+        /// <param name="isQuantity">For pluralisable strings, whether this parameter represents the quantity.</param>
+        public LocalisationParameter(string type, string name, bool isQuantity = false)
         {
             Type = type;
             Name = name;
+            IsQuantity = isQuantity;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="LocalisationParameter"/>, using another as a reference.
+        /// </summary>
+        /// <param name="other">The other <see cref="LocalisationParameter"/>.</param>
+        public LocalisationParameter(LocalisationParameter other)
+        {
+            Type = other.Type;
+            Name = other.Name;
+            IsQuantity = other.IsQuantity;
         }
 
         public bool Equals(LocalisationParameter? other)
@@ -36,7 +55,7 @@ namespace LocalisationAnalyser.Localisation
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
 
-            return Type == other.Type && Name == other.Name;
+            return Type == other.Type && Name == other.Name && IsQuantity == other.IsQuantity;
         }
 
         public override bool Equals(object? obj)
@@ -52,7 +71,7 @@ namespace LocalisationAnalyser.Localisation
         {
             unchecked
             {
-                return (Type.GetHashCode() * 397) ^ Name.GetHashCode();
+                return (Type.GetHashCode() * 397) ^ (Name.GetHashCode() * 397) ^ IsQuantity.GetHashCode();
             }
         }
     }

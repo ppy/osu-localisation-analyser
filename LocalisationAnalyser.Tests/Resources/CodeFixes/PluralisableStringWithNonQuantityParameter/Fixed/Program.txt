@@ -1,0 +1,14 @@
+using TestProject.Localisation;
+
+namespace Test
+{
+    class Program
+    {
+        static void Main()
+        {
+            string stringParam = "2";
+
+            string a = ProgramStrings.AB(0, stringParam);
+        }
+    }
+}

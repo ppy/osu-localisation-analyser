@@ -18,7 +18,9 @@ namespace LocalisationAnalyser.Localisation
         /// <summary>
         /// The construction type of either property or method members (see: <see cref="PROPERTY_MEMBER_TEMPLATE"/> and <see cref="METHOD_MEMBER_TEMPLATE"/>).
         /// </summary>
-        public const string MEMBER_CONSTRUCTION_TYPE = "TranslatableString";
+        public const string TRANSLATABLE_STRING_TYPE = "TranslatableString";
+
+        public const string PLURALISABLE_STRING_TYPE = "PluralisableString";
 
         /// <summary>
         /// The construction type of the localisable attribute which replaces <see cref="System.ComponentModel.DescriptionAttribute"/>.
@@ -60,7 +62,7 @@ private const string {PREFIX_CONST_NAME} = @""{{0}}"";
 /// <summary>
 {{3}}
 /// </summary>
-public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_KEY_METHOD_NAME}(@""{{1}}""), @""{{2}}"");
+public static {MEMBER_RETURN_TYPE} {{0}} => new {TRANSLATABLE_STRING_TYPE}({GET_KEY_METHOD_NAME}(@""{{1}}""), @""{{2}}"");
 ";
 
         /// <summary>
@@ -78,7 +80,27 @@ public static {MEMBER_RETURN_TYPE} {{0}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_
 /// <summary>
 {{5}}
 /// </summary>
-public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {MEMBER_CONSTRUCTION_TYPE}({GET_KEY_METHOD_NAME}(@""{{2}}""), @""{{3}}"", {{4}});
+public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {TRANSLATABLE_STRING_TYPE}({GET_KEY_METHOD_NAME}(@""{{2}}""), @""{{3}}"", {{4}});
+";
+
+        /// <summary>
+        /// The template for a pluralisable localisation method.
+        /// </summary>
+        /// <remarks>
+        /// {0} : Name
+        /// {1} : Method parameters
+        /// {2} : Lookup key
+        /// {3} : Verbatim english text
+        /// {4} : Localisation parameters
+        /// {5} : Xmldoc
+        /// {6} : Quantity parameter name
+        /// {7} : Quantity separator
+        /// </remarks>
+        public static readonly string METHOD_MEMBER_PLURALISABLE_TEMPLATE = $@"
+/// <summary>
+{{5}}
+/// </summary>
+public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {PLURALISABLE_STRING_TYPE}(new {TRANSLATABLE_STRING_TYPE}({GET_KEY_METHOD_NAME}(@""{{2}}""), @""{{3}}"", {{4}}), {{6}}, '{{7}}');
 ";
 
         /// <summary>
@@ -103,5 +125,15 @@ private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}
         /// The common localisation class name.
         /// </summary>
         public const string COMMON_STRINGS_CLASS_NAME = "Common";
+
+        /// <summary>
+        /// The quantity separator for pluralisable strings.
+        /// </summary>
+        public const char DEFAULT_QUANTITY_SEPARATOR = '|';
+
+        /// <summary>
+        /// The quantity parameter name for pluralisable strings, when an existing parameter cannot be inferred.
+        /// </summary>
+        public const string DEFAULT_QUANTITY_PARAM_NAME = "quantity";
     }
 }

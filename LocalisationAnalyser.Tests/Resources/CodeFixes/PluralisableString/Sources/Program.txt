@@ -1,0 +1,12 @@
+namespace Test
+{
+    class Program
+    {
+        static void Main()
+        {
+            int quantityParam = 0;
+
+            string a = [|$"a{quantityParam}|b{quantityParam}"|];
+        }
+    }
+}

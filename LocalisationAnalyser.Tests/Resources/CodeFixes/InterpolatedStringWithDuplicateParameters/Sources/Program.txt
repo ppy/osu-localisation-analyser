@@ -1,0 +1,11 @@
+namespace Test
+{
+    class Program
+    {
+        static void Main()
+        {
+            int i = 5;
+            string x = [|$"duplicate parameters: {i}{i}{i}{i}"|];
+        }
+    }
+}

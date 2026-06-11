@@ -34,10 +34,39 @@ namespace LocalisationAnalyser.Analysers
             if (member.EnglishText == member.XmlDoc)
                 return;
 
-            var creationExpression = (ObjectCreationExpressionSyntax)method.ExpressionBody.Expression;
-            var textArgument = creationExpression.ArgumentList!.Arguments[1];
+            if (method.ExpressionBody.Expression is not ObjectCreationExpressionSyntax creationExpression
+                || creationExpression.ArgumentList == null)
+            {
+                return;
+            }
 
-            context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.TEXT_DOES_NOT_MATCH_XMLDOC, textArgument.GetLocation()));
+            switch (creationExpression.Type.ToString())
+            {
+                case SyntaxTemplates.PLURALISABLE_STRING_TYPE:
+                    if (creationExpression.ArgumentList.Arguments.Count < 1
+                        || creationExpression.ArgumentList.Arguments[0].Expression is not ObjectCreationExpressionSyntax innerCreationExpression)
+                    {
+                        return;
+                    }
+
+                    reportError(innerCreationExpression);
+                    break;
+
+                case SyntaxTemplates.TRANSLATABLE_STRING_TYPE:
+                    reportError(creationExpression);
+                    break;
+            }
+
+            void reportError(ObjectCreationExpressionSyntax expression)
+            {
+                if (expression.ArgumentList == null
+                    || expression.ArgumentList.Arguments.Count < 2)
+                {
+                    return;
+                }
+
+                context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.TEXT_DOES_NOT_MATCH_XMLDOC, expression.ArgumentList.Arguments[1].GetLocation()));
+            }
         }
 
         protected override void AnalyseProperty(SyntaxTreeAnalysisContext context, PropertyDeclarationSyntax property, LocalisationFile localisationFile)

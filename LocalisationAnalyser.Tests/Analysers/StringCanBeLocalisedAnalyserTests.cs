@@ -20,6 +20,7 @@ namespace LocalisationAnalyser.Tests.Analysers
         [InlineData("StringConcatenation")]
         [InlineData("VerbatimString")]
         [InlineData("VerbatimInterpolatedString")]
+        [InlineData("PluralisableString")]
         public Task RunTest(string name) => Check(name);
     }
 }
