@@ -94,12 +94,13 @@ public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {TRANSLATABLE_STRING_TYPE}(
         /// {4} : Localisation parameters
         /// {5} : Xmldoc
         /// {6} : Quantity parameter name
+        /// {7} : Quantity separator
         /// </remarks>
         public static readonly string METHOD_MEMBER_PLURALISABLE_TEMPLATE = $@"
 /// <summary>
 {{5}}
 /// </summary>
-public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {PLURALISABLE_STRING_TYPE}(new {TRANSLATABLE_STRING_TYPE}({GET_KEY_METHOD_NAME}(@""{{2}}""), @""{{3}}"", {{4}}), {{6}}, '|');
+public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {PLURALISABLE_STRING_TYPE}(new {TRANSLATABLE_STRING_TYPE}({GET_KEY_METHOD_NAME}(@""{{2}}""), @""{{3}}"", {{4}}), {{6}}, '{{7}}');
 ";
 
         /// <summary>

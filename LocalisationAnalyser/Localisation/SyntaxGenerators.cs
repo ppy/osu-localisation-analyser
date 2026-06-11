@@ -105,7 +105,8 @@ namespace LocalisationAnalyser.Localisation
                         convertToVerbatim(member.EnglishText),
                         trimParens(Formatter.Format(argList, workspace).ToFullString()), // The entire string minus the parens
                         EncodeXmlDoc(member.XmlDoc),
-                        quantityParam.Name))!;
+                        quantityParam.Name,
+                        member.QuantitySeparator))!;
             }
 
             return SyntaxFactory.ParseMemberDeclaration(

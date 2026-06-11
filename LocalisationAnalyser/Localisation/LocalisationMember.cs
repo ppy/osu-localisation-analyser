@@ -40,6 +40,11 @@ namespace LocalisationAnalyser.Localisation
         public readonly ImmutableArray<LocalisationParameter> Parameters;
 
         /// <summary>
+        /// When a quantity parameter is specified, the character that separates the pluralisable forms.
+        /// </summary>
+        public char QuantitySeparator { get; set; } = '|';
+
+        /// <summary>
         /// Creates a new <see cref="LocalisationMember"/>.
         /// </summary>
         /// <param name="name">The name.</param>
