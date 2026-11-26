@@ -237,7 +237,7 @@ namespace LocalisationAnalyser.Localisation
                     return false;
 
                 // Validate return type and member definition.
-                if (returnType.ToString() != SyntaxTemplates.MEMBER_RETURN_TYPE || body == null)
+                if (returnType.ToString() != SyntaxTemplates.LOCALISABLE_STRING_TYPE || body == null)
                     return false;
 
                 return true;
