@@ -13,7 +13,7 @@ namespace LocalisationAnalyser.Localisation
         /// <summary>
         /// The return type of either property or method members (see: <see cref="PROPERTY_MEMBER_TEMPLATE"/> and <see cref="METHOD_MEMBER_TEMPLATE"/>).
         /// </summary>
-        public const string MEMBER_RETURN_TYPE = "LocalisableString";
+        public const string LOCALISABLE_STRING_TYPE = "LocalisableString";
 
         /// <summary>
         /// The construction type of either property or method members (see: <see cref="PROPERTY_MEMBER_TEMPLATE"/> and <see cref="METHOD_MEMBER_TEMPLATE"/>).
@@ -62,7 +62,7 @@ private const string {PREFIX_CONST_NAME} = @""{{0}}"";
 /// <summary>
 {{3}}
 /// </summary>
-public static {MEMBER_RETURN_TYPE} {{0}} => new {TRANSLATABLE_STRING_TYPE}({GET_KEY_METHOD_NAME}(@""{{1}}""), @""{{2}}"");
+public static {LOCALISABLE_STRING_TYPE} {{0}} => new {TRANSLATABLE_STRING_TYPE}({GET_KEY_METHOD_NAME}(@""{{1}}""), @""{{2}}"");
 ";
 
         /// <summary>
@@ -80,7 +80,7 @@ public static {MEMBER_RETURN_TYPE} {{0}} => new {TRANSLATABLE_STRING_TYPE}({GET_
 /// <summary>
 {{5}}
 /// </summary>
-public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {TRANSLATABLE_STRING_TYPE}({GET_KEY_METHOD_NAME}(@""{{2}}""), @""{{3}}"", {{4}});
+public static {LOCALISABLE_STRING_TYPE} {{0}}{{1}} => new {TRANSLATABLE_STRING_TYPE}({GET_KEY_METHOD_NAME}(@""{{2}}""), @""{{3}}"", {{4}});
 ";
 
         /// <summary>
@@ -100,7 +100,7 @@ public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {TRANSLATABLE_STRING_TYPE}(
 /// <summary>
 {{5}}
 /// </summary>
-public static {MEMBER_RETURN_TYPE} {{0}}{{1}} => new {PLURALISABLE_STRING_TYPE}(new {TRANSLATABLE_STRING_TYPE}({GET_KEY_METHOD_NAME}(@""{{2}}""), @""{{3}}"", {{4}}), {{6}}, '{{7}}');
+public static {LOCALISABLE_STRING_TYPE} {{0}}{{1}} => new {PLURALISABLE_STRING_TYPE}(new {TRANSLATABLE_STRING_TYPE}({GET_KEY_METHOD_NAME}(@""{{2}}""), @""{{3}}"", {{4}}), {{6}}, '{{7}}');
 ";
 
         /// <summary>
@@ -132,7 +132,7 @@ private static string {GET_KEY_METHOD_NAME}(string key) => $@""{{prefix}}:{{key}
         public const char DEFAULT_QUANTITY_SEPARATOR = '|';
 
         /// <summary>
-        /// The quantity parameter name for pluralisable strings, when an existing parameter cannot be inferred.
+        /// The quantity parameter name for pluralisable strings.
         /// </summary>
         public const string DEFAULT_QUANTITY_PARAM_NAME = "quantity";
     }
